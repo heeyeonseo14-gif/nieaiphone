@@ -1,313 +1,466 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>NIEaiphone — 联系人美化</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>聊天 — NIEaiphone</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg1:#f4e8fb; --bg2:#eddffb;
-  --card: rgba(255,255,255,0.96);
+  --page-bg1:#f4e8fb; --page-bg2:#eedffb;
+  --card-bg: rgba(255,255,255,0.95);
   --accent1:#9b86e6; --accent2:#7a64d0;
   --muted:#7b6c88; --text:#2f2436;
-  --surface: #ffffff;
-  --btn-bg: linear-gradient(135deg,var(--accent1),var(--accent2));
-  --btn-border: rgba(0,0,0,0.04);
-  --shadow: 0 18px 40px rgba(40,24,60,0.06);
+  --user-color:#ffd6e6; --ai-color:#d7c8ff;
 }
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:"Quicksand",system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text)}
-a{color:inherit;text-decoration:none}
+html,body{height:100%;margin:0;font-family:"Quicksand",system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--page-bg1),var(--page-bg2));color:var(--text);-webkit-font-smoothing:antialiased}
+.app{width:94%;max-width:420px;margin:12px auto;border-radius:20px;background:var(--card-bg);padding:12px;box-shadow:0 18px 50px rgba(40,24,60,0.06);overflow:hidden}
+.header{display:flex;align-items:center;gap:10px}
+.back{width:44px;height:44px;border-radius:12px;border:1px solid rgba(0,0,0,0.04);display:flex;align-items:center;justify-content:center;cursor:pointer;background:white}
+.h-title{flex:1;font-weight:700;font-size:18px}
+.top-actions{display:flex;gap:8px}
+.action{padding:8px 12px;border-radius:12px;background:white;border:1px solid rgba(0,0,0,0.04);cursor:pointer;font-weight:600;min-width:76px;text-align:center;box-shadow:0 6px 18px rgba(20,12,50,0.03)}
+.action.primary{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#fff;border:none;box-shadow:0 14px 30px rgba(122,100,208,0.15)}
+.main{margin-top:10px}
+.pane{background:rgba(255,255,255,0.98);border-radius:14px;padding:12px;min-height:60vh;max-height:76vh;overflow:auto;position:relative}
 
-/* App frame */
-.app{width:94%;max-width:420px;margin:12px auto;border-radius:24px;background:var(--card);padding:12px;box-shadow:var(--shadow);overflow:hidden}
-.header{display:flex;align-items:center;gap:12px;padding:6px}
-.btn-icon{width:44px;height:44px;border-radius:12px;border:1px solid var(--btn-border);display:flex;align-items:center;justify-content:center;background:transparent;cursor:pointer;flex-shrink:0}
-.titleArea{flex:1}
-.title{font-weight:700;font-size:18px;margin:0}
-.subtitle{font-size:12px;color:var(--muted);margin-top:4px}
-
-/* top actions group */
-.actions{display:flex;gap:10px}
-.actionBtn{padding:8px 12px;border-radius:12px;background:rgba(255,255,255,0.98);border:1px solid var(--btn-border);cursor:pointer;min-width:84px;text-align:center;font-weight:600;box-shadow: 0 6px 18px rgba(30,14,60,0.03)}
-.actionBtn.primary{background:var(--btn-bg);color:#fff;border:none;box-shadow:0 12px 30px rgba(122,100,208,0.18)}
-
-/* main area */
-.main{margin-top:10px;display:flex;flex-direction:column;gap:10px}
-.pane{background:var(--surface);border-radius:14px;padding:12px;min-height:56vh;max-height:74vh;overflow:auto;position:relative}
-
-/* CONTACTS GRID (beautified) */
-.contactsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-top:8px}
-.contactCard{background:linear-gradient(180deg,rgba(255,255,255,0.9),rgba(250,248,255,0.9));border-radius:14px;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;cursor:pointer;transition:transform .18s,box-shadow .18s;border:1px solid rgba(0,0,0,0.02)}
+/* contacts */
+.contactsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-top:6px}
+.contactCard{background:linear-gradient(180deg,rgba(255,255,255,0.98),#fbf8ff);border-radius:14px;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;cursor:pointer;transition:transform .18s,box-shadow .18s;border:1px solid rgba(0,0,0,0.02)}
 .contactCard:hover{transform:translateY(-6px);box-shadow:0 22px 40px rgba(30,14,60,0.06)}
-.iconWrap{width:64px;height:64px;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(20,12,40,0.04);overflow:hidden}
-.iconWrap img{width:56px;height:56px;object-fit:cover;border-radius:8px}
-.contactLabel{font-size:13px;font-weight:600;color:var(--text)}
+.iconWrap{width:68px;height:68px;border-radius:14px;background:linear-gradient(180deg,#fff,#faf8ff);display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 8px 22px rgba(20,10,40,0.04)}
+.iconWrap img{width:60px;height:60px;object-fit:cover;border-radius:10px}
+.contactName{font-size:13px;font-weight:700;color:var(--text)}
 
-/* empty state */
-.emptyState{padding:18px;border-radius:12px;border:1px dashed rgba(0,0,0,0.04);text-align:center;color:var(--muted)}
+/* empty */
+.empty{padding:18px;border-radius:10px;border:1px dashed rgba(0,0,0,0.04);text-align:center;color:var(--muted);margin-top:8px}
 
-/* footer small controls */
-.footerControls{display:flex;gap:8px;justify-content:center;padding-top:10px}
+/* chat pane */
+.chatHeader{display:flex;align-items:center;gap:12px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,0.04);margin-bottom:8px}
+.chatAvatar{width:52px;height:52px;border-radius:12px;overflow:hidden}
+.chatAvatar img{width:100%;height:100%;object-fit:cover}
+.chatInfo{flex:1}
+.chatTitle{font-weight:700}
+.chatSub{font-size:12px;color:var(--muted)}
+.chatActions{display:flex;gap:8px}
 
-/* modal base */
-.modalWrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.36);z-index:1200;padding:12px}
-.modal{width:100%;max-width:560px;background:#fff;border-radius:12px;padding:14px;box-shadow:0 30px 80px rgba(10,10,20,0.45);max-height:86vh;overflow:auto}
-.formRow{display:flex;gap:10px;align-items:center;margin-bottom:10px}
-.formRow label{width:96px;color:var(--muted);font-size:13px}
-.formRow input[type=text], .formRow input[type=file], .formRow select, .formRow textarea{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
-.modalActions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+/* messages */
+.messages{padding:12px;display:flex;flex-direction:column;gap:12px;min-height:36vh}
+.msgRow{display:flex;gap:10px;align-items:flex-end;transition:transform .26s cubic-bezier(.2,.9,.4,1),opacity .26s}
+.msgRow.enter{transform:translateY(6px);opacity:0}
+.msgRow.enter.show{transform:translateY(0);opacity:1}
+.msgRow.mine{justify-content:flex-end}
+.msgAvatar{width:36px;height:36px;border-radius:8px;overflow:hidden}
+.msgAvatar img{width:100%;height:100%;object-fit:cover}
 
-/* ensure big touch targets */
-button, .actionBtn, .btn-icon { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+/* bubble styles improved */
+.bubble{max-width:78%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5;box-shadow:0 10px 30px rgba(34,18,60,0.06)}
+.bubble.user{background:linear-gradient(180deg,#fff0f5,var(--user-color));color:#3b1a2f;border-bottom-right-radius:6px}
+.bubble.ai{background:linear-gradient(180deg,#f3eeff,var(--ai-color));color:#2b1b3a;border-bottom-left-radius:6px}
 
-/* small screens tweak */
+/* typing dots */
+.dots{display:inline-block;height:12px}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin:0 3px;opacity:.25;animation:dots 1s infinite}
+.dot:nth-child(1){animation-delay:0s}
+.dot:nth-child(2){animation-delay:.12s}
+.dot:nth-child(3){animation-delay:.24s}
+@keyframes dots{0%{opacity:.2;transform:translateY(0)}50%{opacity:1;transform:translateY(-6px)}100%{opacity:.2;transform:translateY(0)}}
+
+/* composer */
+.composer{display:flex;gap:8px;align-items:end;padding-top:8px;border-top:1px solid rgba(0,0,0,0.03)}
+textarea{flex:1;min-height:48px;max-height:120px;padding:10px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);resize:none}
+.send{padding:10px 14px;border-radius:12px;background:linear-gradient(135deg,var(--accent1),var(--accent2));color:white;border:none;cursor:pointer}
+
+/* feed bottom button */
+.feedBottom{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#fff;padding:10px 18px;border-radius:999px;box-shadow:0 12px 30px rgba(122,100,208,0.18);cursor:pointer;border:none;z-index:60}
+
+/* modal */
+.modalWrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.36);z-index:120; padding:12px}
+.modal{width:100%;max-width:520px;background:#fff;border-radius:12px;padding:14px;box-shadow:0 30px 80px rgba(10,10,20,0.45);max-height:86vh;overflow:auto}
+.formRow{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.formRow label{width:90px;color:var(--muted);font-size:13px}
+.formRow input[type=text], .formRow input[type=file], .formRow select{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+.modalActions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+
+/* small */
+.hidden{display:none}
 @media (max-width:420px){
   .contactsGrid{grid-template-columns:repeat(3,1fr);gap:10px}
   .iconWrap{width:56px;height:56px}
+  .feedBottom{left:50%}
 }
 </style>
 </head>
 <body>
-  <div class="app" role="application" aria-label="NIEaiphone">
+  <div class="app" role="application" aria-label="NIE 聊天应用">
     <div class="header">
-      <button class="btn-icon" id="goBack" title="返回">←</button>
-      <div class="titleArea">
-        <div class="title">NIEaiphone</div>
-        <div class="subtitle">点击联系人进入聊天，或创建新的联系人/群聊</div>
-      </div>
-      <div class="actions">
-        <button class="actionBtn" id="openFeedBtn">朋友圈</button>
-        <button class="actionBtn" id="addContactBtn">添加联系人</button>
-        <button class="actionBtn" id="addGroupBtn">创建群聊</button>
+      <button class="back" id="btnBack">←</button>
+      <div class="h-title">聊天</div>
+      <div class="top-actions">
+        <button class="action" id="btnFeed">朋友圈</button>
+        <button class="action" id="btnAdd">添加联系人</button>
+        <button class="action" id="btnGroup">创建群聊</button>
       </div>
     </div>
 
     <div class="main">
-      <div class="pane" id="contactsPane" aria-live="polite">
+      <div id="contactsPane" class="pane">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <div style="font-weight:700">联系人</div>
-          <div style="font-size:13px;color:var(--muted)">最近互动会显示在上方</div>
+          <div style="font-size:13px;color:var(--muted)">点击联系人进入聊天</div>
         </div>
 
-        <!-- Grid -->
         <div id="contactsGrid" class="contactsGrid"></div>
 
-        <div id="emptyState" class="emptyState hidden" style="margin-top:12px">
-          你还没有联系人。点击“添加联系人”开始创建，或使用“创建群聊”快速生成一个演示群。
+        <div id="emptyHint" class="empty hidden">当前没有联系人。点击“添加联系人”开始创建，或用“创建群聊”快速生成一个示例群。</div>
+      </div>
+
+      <!-- chat pane -->
+      <div id="chatPane" class="pane hidden">
+        <div class="chatHeader">
+          <div class="chatAvatar" id="chatAvatar"><img src="" alt=""></div>
+          <div class="chatInfo">
+            <div class="chatTitle" id="chatTitle">对话</div>
+            <div class="chatSub" id="chatSub">单聊 · 人数：1</div>
+          </div>
+          <div class="chatActions">
+            <button class="action" id="openAi">AI 设置</button>
+            <button class="action" id="backContacts">返回</button>
+          </div>
         </div>
 
-        <div class="footerControls" style="margin-top:12px">
-          <button class="actionBtn" id="exportBtn">导出数据</button>
-          <button class="actionBtn" id="importBtn">导入数据</button>
+        <div id="messages" class="messages"></div>
+
+        <div class="composer">
+          <textarea id="txtInput" placeholder="输入消息，Enter 发送（Shift+Enter 换行）"></textarea>
+          <button class="send" id="sendBtn">发送</button>
         </div>
       </div>
+
+      <!-- feed pane -->
+      <div id="feedPane" class="pane hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-weight:700">朋友圈</div>
+          <div style="font-size:13px;color:var(--muted)">AI 可发动态 · 支持点赞/评论（本地保存）</div>
+        </div>
+        <div style="margin-bottom:10px">
+          <textarea id="postText" placeholder="在朋友圈说点什么..." style="width:100%;height:64px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);padding:8px"></textarea>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+            <button class="action" id="publishBtn">发布</button>
+            <button class="action" id="aiPostBtn">AI 发一条</button>
+            <button class="action" id="closeFeedBtn">关闭</button>
+          </div>
+        </div>
+        <div id="feedList"></div>
+      </div>
+
     </div>
   </div>
 
-  <!-- Add Contact Modal -->
-  <div class="modalWrap" id="contactModal" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
-      <h3 id="contactTitle">添加联系人</h3>
-      <div class="formRow"><label>名字</label><input type="text" id="contactName" placeholder="姓名"></div>
-      <div class="formRow"><label>头像文件</label><input type="file" id="contactFile" accept="image/*"></div>
-      <div class="formRow"><label>或头像 URL</label><input type="text" id="contactUrl" placeholder="图片链接"></div>
-      <div class="modalActions">
-        <button class="actionBtn" id="contactCancel">取消</button>
-        <button class="actionBtn primary" id="contactSave">保存</button>
-      </div>
-    </div>
-  </div>
+  <!-- modals -->
+  <div class="modalWrap" id="contactModal"><div class="modal">
+    <h3>添加联系人</h3>
+    <div class="formRow"><label>名字</label><input type="text" id="contactName" placeholder="名字"></div>
+    <div class="formRow"><label>头像文件</label><input type="file" id="contactFile" accept="image/*"></div>
+    <div class="formRow"><label>或头像 URL</label><input type="text" id="contactURL" placeholder="图片 URL"></div>
+    <div class="modalActions"><button class="action" id="contactCancel">取消</button><button class="action primary" id="contactSave">保存</button></div>
+  </div></div>
 
-  <!-- Group Modal -->
-  <div class="modalWrap" id="groupModal" aria-hidden="true">
-    <div class="modal" role="dialog">
-      <h3>创建群聊（最多 8 人）</h3>
-      <div class="formRow"><label>群名</label><input type="text" id="groupName" placeholder="群聊名称"></div>
-      <div class="formRow"><label>群头像</label><input type="file" id="groupFile" accept="image/*"></div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:8px">选择成员（点击选择）</div>
-      <div id="groupContacts" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
-      <div class="modalActions">
-        <button class="actionBtn" id="groupCancel">取消</button>
-        <button class="actionBtn primary" id="groupCreate">创建</button>
-      </div>
-    </div>
-  </div>
+  <div class="modalWrap" id="groupModal"><div class="modal">
+    <h3>创建群聊（最多 8 人）</h3>
+    <div class="formRow"><label>群名</label><input type="text" id="groupName" placeholder="群名称"></div>
+    <div class="formRow"><label>群头像</label><input type="file" id="groupFile" accept="image/*"></div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">从联系人中选择成员</div>
+    <div id="groupContacts" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
+    <div class="modalActions"><button class="action" id="groupCancel">取消</button><button class="action primary" id="groupCreate">创建</button></div>
+  </div></div>
 
 <script>
-/* --------------------------
-   简洁版逻辑：联系人渲染 + 按钮功能
-   - 这个文件修复了原来按钮“点不了”的问题（遮挡/层级/disabled）
-   - 所有按钮绑定事件，modal 使用 display flex/none
----------------------------*/
-
-const STATE_KEY = 'nie_demo_v1';
+/* ---- state & helpers ---- */
+const STATE_KEY = 'nie_simple_v2';
+const FEED_KEY = 'nie_feed_v1';
 const DEFAULT = {
-  contacts: [
-    { id:'ai', name:'与 AI 聊天', avatar: '' }
-  ],
-  conversations: {}
+  me: { name: '你', avatar: '' },
+  ai: { name: '小NIE', avatar: '' },
+  contacts: [ { id:'ai', name:'与 AI 聊天', avatar:'' } ],
+  conversations: { 'ai': { members:['me','ai'], messages:[] } }
 };
 let state = loadState();
 
-// DOM refs
-const contactsGrid = document.getElementById('contactsGrid');
-const emptyState = document.getElementById('emptyState');
-const contactModal = document.getElementById('contactModal');
-const groupModal = document.getElementById('groupModal');
-
-document.getElementById('addContactBtn').addEventListener('click', ()=> openContactModal());
-document.getElementById('contactCancel').addEventListener('click', ()=> closeModal(contactModal));
-document.getElementById('contactSave').addEventListener('click', ()=> saveContactFromModal());
-document.getElementById('addGroupBtn').addEventListener('click', ()=> openGroupModal());
-document.getElementById('groupCancel').addEventListener('click', ()=> closeModal(groupModal));
-document.getElementById('groupCreate').addEventListener('click', ()=> createGroupFromModal());
-document.getElementById('openFeedBtn').addEventListener('click', ()=> alert('朋友圈入口（演示） — 稍后会跳转到朋友圈页面'));
-document.getElementById('exportBtn').addEventListener('click', ()=> exportData());
-document.getElementById('importBtn').addEventListener('click', ()=> importData());
-
-// simple functions
-function loadState(){
-  try{
-    const raw = localStorage.getItem(STATE_KEY);
-    if(!raw){ localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT); }
-    return JSON.parse(raw);
-  }catch(e){ console.error(e); localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT); }
-}
+function loadState(){ try{ const s=localStorage.getItem(STATE_KEY); if(!s){ localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT);} return JSON.parse(s);}catch(e){console.error(e); localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT);} }
 function saveState(){ localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
+function loadFeed(){ try{ return JSON.parse(localStorage.getItem(FEED_KEY)||'[]'); }catch(e){return [];} }
+function saveFeed(f){ localStorage.setItem(FEED_KEY, JSON.stringify(f)); }
 
+/* ---- DOM refs ---- */
+const contactsGrid = document.getElementById('contactsGrid');
+const contactsPane = document.getElementById('contactsPane');
+const chatPane = document.getElementById('chatPane');
+const feedPane = document.getElementById('feedPane');
+const emptyHint = document.getElementById('emptyHint');
+const btnAdd = document.getElementById('btnAdd');
+const btnGroup = document.getElementById('btnGroup');
+const btnFeed = document.getElementById('btnFeed');
+const btnBack = document.getElementById('btnBack');
+
+/* chat refs */
+const chatAvatar = document.getElementById('chatAvatar').querySelector('img');
+const chatTitle = document.getElementById('chatTitle');
+const chatSub = document.getElementById('chatSub');
+const messagesEl = document.getElementById('messages');
+const txtInput = document.getElementById('txtInput');
+const sendBtn = document.getElementById('sendBtn');
+
+/* modals & feed */
+const contactModal = document.getElementById('contactModal');
+const contactName = document.getElementById('contactName');
+const contactFile = document.getElementById('contactFile');
+const contactURL = document.getElementById('contactURL');
+const contactCancel = document.getElementById('contactCancel');
+const contactSave = document.getElementById('contactSave');
+
+const groupModal = document.getElementById('groupModal');
+const groupContacts = document.getElementById('groupContacts');
+const groupName = document.getElementById('groupName');
+const groupFile = document.getElementById('groupFile');
+const groupCancel = document.getElementById('groupCancel');
+const groupCreate = document.getElementById('groupCreate');
+
+const postText = document.getElementById('postText');
+const publishBtn = document.getElementById('publishBtn');
+const aiPostBtn = document.getElementById('aiPostBtn');
+const feedList = document.getElementById('feedList');
+const closeFeedBtn = document.getElementById('closeFeedBtn');
+
+/* ---- events ---- */
+btnAdd.addEventListener('click', ()=> openContactModal());
+contactCancel.addEventListener('click', ()=> closeModal(contactModal));
+contactSave.addEventListener('click', ()=> saveContact());
+btnGroup.addEventListener('click', ()=> openGroupModal());
+groupCancel.addEventListener('click', ()=> closeModal(groupModal));
+groupCreate.addEventListener('click', ()=> createGroup());
+btnFeed.addEventListener('click', ()=> openFeed());
+btnBack.addEventListener('click', ()=> location.href='home.html');
+publishBtn.addEventListener('click', ()=> publishPost());
+aiPostBtn.addEventListener('click', ()=> aiPublish());
+closeFeedBtn.addEventListener('click', ()=> closeFeed());
+
+sendBtn.addEventListener('click', ()=> sendMsg());
+txtInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMsg(); } });
+
+/* ---- initial render ---- */
+renderContacts();
+applyEmptyHint();
+renderFeed();
+
+/* ----- functions ----- */
 function renderContacts(){
   contactsGrid.innerHTML = '';
-  if(!state.contacts || state.contacts.length === 0){
-    emptyState.classList.remove('hidden');
-  } else {
-    emptyState.classList.add('hidden');
-  }
-  // show AI first
-  const sorted = [...state.contacts];
-  for(const c of sorted){
-    const card = document.createElement('div');
-    card.className = 'contactCard';
-    card.dataset.id = c.id;
+  (state.contacts || []).forEach(c=>{
+    const el = document.createElement('div'); el.className='contactCard'; el.dataset.id = c.id;
     const av = c.avatar || defaultAvatar();
-    card.innerHTML = `<div class="iconWrap"><img src="${escapeAttr(av)}" alt=""></div><div class="contactLabel">${escapeHtml(c.name)}</div>`;
-    card.addEventListener('click', ()=> {
-      // open chat demo
-      alert('打开聊天：' + c.name + '\n（演示）');
-    });
-    contactsGrid.appendChild(card);
-  }
-}
-
-function defaultAvatar(){
-  return 'data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect rx='36' width='100%' height='100%' fill='white'/><text x='50%' y='50%' font-size='110' text-anchor='middle' dominant-baseline='central'>🙂</text></svg>`);
-}
-
-function escapeHtml(s){ if(!s) return ''; return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
-function escapeAttr(s){ return (s||'').replaceAll('"','&quot;'); }
-
-// modal helpers
-function showModal(el){ el.style.display = 'flex'; el.setAttribute('aria-hidden','false'); }
-function closeModal(el){ el.style.display = 'none'; el.setAttribute('aria-hidden','true'); }
-
-// contact modal flow
-function openContactModal(){
-  document.getElementById('contactName').value = '';
-  document.getElementById('contactFile').value = '';
-  document.getElementById('contactUrl').value = '';
-  showModal(contactModal);
-}
-async function saveContactFromModal(){
-  const name = document.getElementById('contactName').value.trim();
-  if(!name) return alert('请输入名字');
-  let avatar = '';
-  const fileInput = document.getElementById('contactFile');
-  const urlInput = document.getElementById('contactUrl').value.trim();
-  if(fileInput.files && fileInput.files[0]){
-    avatar = await fileToDataUrl(fileInput.files[0]);
-  } else if(urlInput){
-    avatar = urlInput;
-  }
-  const id = 'c' + Date.now();
-  state.contacts = state.contacts || [];
-  state.contacts.push({ id, name, avatar });
-  saveState();
-  renderContacts();
-  closeModal(contactModal);
-}
-
-// group modal
-function openGroupModal(){
-  // populate with current contacts (checkboxes)
-  const list = document.getElementById('groupContacts');
-  list.innerHTML = '';
-  const all = state.contacts || [];
-  for(const c of all){
-    const box = document.createElement('label');
-    box.style.display='flex'; box.style.flexDirection='column'; box.style.alignItems='center'; box.style.gap='6px';
-    const id = 'gchk_' + c.id;
-    box.innerHTML = `<input type="checkbox" id="${id}" value="${escapeAttr(c.id)}"><div style="font-size:13px">${escapeHtml(c.name)}</div>`;
-    list.appendChild(box);
-  }
-  document.getElementById('groupName').value = '';
-  document.getElementById('groupFile').value = '';
-  showModal(groupModal);
-}
-async function createGroupFromModal(){
-  const name = document.getElementById('groupName').value.trim() || ('群聊' + (Math.floor(Math.random()*90)+10));
-  const checked = Array.from(document.querySelectorAll('#groupContacts input[type=checkbox]:checked')).map(i=>i.value);
-  if(checked.length < 1) return alert('请选择至少一个成员');
-  if(checked.length + 1 > 8) return alert('最多 8 人（含你）');
-  let avatar = '';
-  if(document.getElementById('groupFile').files && document.getElementById('groupFile').files[0]){
-    avatar = await fileToDataUrl(document.getElementById('groupFile').files[0]);
-  }
-  const gid = 'g' + Date.now();
-  // add a contact representing the group
-  state.contacts.push({ id: gid, name, avatar: avatar || defaultAvatar() });
-  saveState(); renderContacts(); closeModal(groupModal);
-  alert('群聊创建成功：' + name + '\n（已添加到联系人）');
-}
-
-// file helper
-function fileToDataUrl(file){
-  return new Promise((resolve,reject)=>{
-    const fr = new FileReader();
-    fr.onload = ()=> resolve(fr.result);
-    fr.onerror = e => reject(e);
-    fr.readAsDataURL(file);
+    el.innerHTML = `<div class="iconWrap"><img src="${av}" alt=""></div><div class="contactName">${escapeHtml(c.name)}</div>`;
+    el.addEventListener('click', ()=> openConversation(c.id));
+    contactsGrid.appendChild(el);
   });
 }
+function applyEmptyHint(){ if(!state.contacts || state.contacts.length===0) emptyHint.classList.remove('hidden'); else emptyHint.classList.add('hidden'); }
 
-// export / import
-function exportData(){
-  const data = JSON.stringify(state, null, 2);
-  const blob = new Blob([data], { type:'application/json' });
+function defaultAvatar(){ return 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect rx='36' width='100%' height='100%' fill='white'/><text x='50%' y='50%' font-size='110' text-anchor='middle' dominant-baseline='central'>🙂</text></svg>`); }
+
+function escapeHtml(s){ if(!s) return ''; return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+
+/* open chat */
+function openConversation(id){
+  state.active = id;
+  // ensure conversation exists
+  state.conversations[id] = state.conversations[id] || { members: id==='ai' ? ['me','ai'] : ['me', id], messages: [] };
+  // render header
+  const target = state.contacts.find(c=>c.id===id) || (id==='ai' ? { name: state.ai.name || 'AI', avatar: state.ai.avatar || defaultAvatar() } : { name:'群聊', avatar: defaultAvatar() });
+  chatTitle.textContent = target.name;
+  chatSub.textContent = (state.conversations[id].members?.length>1 ? '群聊 · 人数：' + state.conversations[id].members.length : '单聊 · 人数：1');
+  chatAvatar.src = target.avatar || defaultAvatar();
+  // show chat pane
+  contactsPane.classList.add('hidden'); chatPane.classList.remove('hidden'); feedPane.classList.add('hidden');
+  renderMessages();
+}
+
+/* back to contacts */
+document.getElementById('backContacts').addEventListener('click', ()=> { contactsPane.classList.remove('hidden'); chatPane.classList.add('hidden'); feedPane.classList.add('hidden'); state.active = null; });
+
+/* messages render */
+function renderMessages(){
+  messagesEl.innerHTML = '';
+  const conv = state.conversations[state.active] || { messages: [] };
+  conv.messages.forEach(m=>{
+    const row = document.createElement('div'); row.className = 'msgRow' + (m.from==='me' ? ' mine' : '');
+    const avat = document.createElement('div'); avat.className = 'msgAvatar'; const img=document.createElement('img');
+    if(m.from==='me') img.src = state.me.avatar || defaultAvatar(); else if(m.from==='ai') img.src = state.ai.avatar || defaultAvatar(); else { const c = state.contacts.find(x=>x.id===m.from); img.src = c ? (c.avatar||defaultAvatar()) : defaultAvatar(); }
+    img.style.width='100%'; img.style.height='100%'; img.style.objectFit='cover'; avat.appendChild(img);
+    const bubble = document.createElement('div'); bubble.className='bubble ' + (m.from==='me' ? 'user' : 'ai');
+    if(m.temp){ bubble.innerHTML = '<span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>'; }
+    else bubble.innerHTML = escapeHtml(m.text).replaceAll('\\n','<br>');
+    if(m.from==='me'){ row.appendChild(bubble); row.appendChild(avat); } else { row.appendChild(avat); row.appendChild(bubble); }
+    messagesEl.appendChild(row);
+    row.classList.add('enter'); setTimeout(()=>row.classList.add('show'), 10);
+  });
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+/* send */
+async function sendMsg(){
+  const text = txtInput.value.trim(); if(!text) return;
+  const id = state.active || 'ai';
+  pushMessage(id, { from:'me', text, ts: Date.now() });
+  txtInput.value=''; renderMessages();
+  pushMessage(id, { from:'ai', text:'', temp:true, ts: Date.now() }); renderMessages();
+  try{
+    const reply = await generateReply(text, id);
+    // remove temp
+    const conv = state.conversations[id]; if(conv.messages.length && conv.messages[conv.messages.length-1].temp) conv.messages.pop();
+    pushMessage(id, { from:'ai', text: reply, ts: Date.now() });
+    saveState(); renderMessages();
+  } catch(err){
+    console.error(err); const conv = state.conversations[id]; if(conv.messages.length && conv.messages[conv.messages.length-1].temp) conv.messages.pop();
+    pushMessage(id, { from:'ai', text:'出错：' + (err.message||'未知'), ts: Date.now() }); saveState(); renderMessages();
+  }
+}
+function pushMessage(convId, msg){
+  state.conversations[convId] = state.conversations[convId] || { members:['me','ai'], messages:[] };
+  state.conversations[convId].messages.push(msg); saveState();
+}
+
+/* simple local reply (demo) */
+async function generateReply(user, convId){
+  await new Promise(r=>setTimeout(r, 500 + Math.random()*700));
+  if(/你好|嗨|hi/.test(user)) return (state.ai?.name||'小NIE') + '：你好～';
+  if(/笑话/.test(user)) return '有一个程序员走进咖啡馆，说：我来调试。';
+  return '（演示回复）' + user.split('').reverse().join('').slice(0,140);
+}
+
+/* ---- add contact modal ---- */
+function openContactModal(){ contactName.value=''; contactFile.value=''; contactURL.value=''; showModal(contactModal); }
+async function saveContact(){
+  const name = contactName.value.trim(); if(!name) return alert('请输入名字');
+  let avatar = '';
+  if(contactFile.files && contactFile.files[0]) avatar = await fileToDataUrl(contactFile.files[0]);
+  else if(contactURL.value.trim()) avatar = contactURL.value.trim();
+  const id = 'c' + Date.now();
+  state.contacts.push({ id, name, avatar }); saveState(); renderContacts(); applyEmptyHint(); closeModal(contactModal);
+}
+
+/* ---- group modal ---- */
+function openGroupModal(){
+  groupContacts.innerHTML='';
+  // list existing contacts
+  const list = state.contacts || [];
+  list.forEach(c=>{
+    const div = document.createElement('div'); div.style.padding='8px'; div.style.border='1px solid rgba(0,0,0,0.04)'; div.style.borderRadius='8px'; div.style.textAlign='center';
+    div.innerHTML = `<label style="display:flex;flex-direction:column;align-items:center;gap:6px"><input type="checkbox" value="${c.id}"><div style="font-size:13px">${escapeHtml(c.name)}</div></label>`;
+    groupContacts.appendChild(div);
+  });
+  groupName.value=''; groupFile.value=''; showModal(groupModal);
+}
+async function createGroup(){
+  const checked = Array.from(groupContacts.querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value);
+  if(checked.length < 1) return alert('请选择至少一位成员');
+  if(checked.length + 1 > 8) return alert('最多支持 8 人');
+  const name = groupName.value.trim() || ('群聊 ' + (Math.floor(Math.random()*90)+10));
+  let avatar = '';
+  if(groupFile.files && groupFile.files[0]) avatar = await fileToDataUrl(groupFile.files[0]);
+  const gid = 'g' + Date.now();
+  state.conversations[gid] = { members: ['me', ...checked], messages: [], name };
+  state.contacts.push({ id: gid, name, avatar: avatar || defaultAvatar() });
+  saveState(); renderContacts(); applyEmptyHint(); closeModal(groupModal);
+  alert('群聊已创建：' + name);
+}
+
+/* ---- feed functions ---- */
+function openFeed(){ contactsPane.classList.add('hidden'); chatPane.classList.add('hidden'); feedPane.classList.remove('hidden'); renderFeed(); }
+function closeFeed(){ feedPane.classList.add('hidden'); contactsPane.classList.remove('hidden'); chatPane.classList.add('hidden'); }
+
+async function publishPost(){
+  const t = postText.value.trim(); if(!t) return alert('请输入内容');
+  const posts = loadFeed();
+  posts.push({ id:'p'+Date.now(), name: state.me.name, avatar: state.me.avatar||defaultAvatar(), text:t, likes:[], comments:[], ts:Date.now() });
+  saveFeed(posts); postText.value=''; renderFeed(); alert('发布成功');
+}
+async function aiPublish(){
+  const posts = loadFeed();
+  posts.push({ id:'p'+Date.now(), name: state.ai.name||'AI', avatar: state.ai.avatar||defaultAvatar(), text: 'AI：今天也想和你说点心里话～', likes:[], comments:[], ts:Date.now() });
+  saveFeed(posts); renderFeed(); alert('AI 已发布一条动态');
+}
+function renderFeed(){
+  const list = loadFeed(); feedList.innerHTML = '';
+  for(let i=list.length-1;i>=0;i--){
+    const p = list[i];
+    const node = document.createElement('div'); node.style.padding='12px'; node.style.borderBottom='1px solid rgba(0,0,0,0.03)';
+    node.innerHTML = `<div style="display:flex;gap:10px;align-items:center"><div style="width:44px;height:44px;border-radius:10px;overflow:hidden"><img src="${p.avatar||defaultAvatar()}" style="width:100%;height:100%;object-fit:cover"></div><div><div style="font-weight:700">${escapeHtml(p.name)}</div><div style="font-size:12px;color:var(--muted)">${new Date(p.ts).toLocaleString()}</div></div></div><div style="margin-top:8px">${escapeHtml(p.text)}</div><div style="margin-top:8px;display:flex;gap:8px"><button class="action" data-id="${p.id}" data-action="like">赞 (${p.likes?.length||0})</button><button class="action" data-id="${p.id}" data-action="comment">评论 (${p.comments?.length||0})</button></div>`;
+    feedList.appendChild(node);
+  }
+  // bind actions
+  feedList.querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click', (e)=>{
+      const id = b.dataset.id; const act = b.dataset.action;
+      if(act==='like') toggleLike(id); else openComment(id);
+    });
+  });
+}
+function toggleLike(id){
+  const list = loadFeed(); const p = list.find(x=>x.id===id); if(!p) return;
+  const me = state.me.name || '你'; p.likes = p.likes || [];
+  const ix = p.likes.indexOf(me); if(ix>=0) p.likes.splice(ix,1); else p.likes.push(me);
+  saveFeed(list); renderFeed();
+}
+function openComment(id){
+  const txt = prompt('输入评论：'); if(!txt) return;
+  const list = loadFeed(); const p = list.find(x=>x.id===id); if(!p) return;
+  p.comments = p.comments || []; p.comments.push({ name: state.me.name || '你', text: txt, ts: Date.now() });
+  saveFeed(list); renderFeed();
+}
+
+/* ---- misc helpers ---- */
+function showModal(el){ el.style.display='flex'; el.setAttribute('aria-hidden','false'); }
+function closeModal(el){ el.style.display='none'; el.setAttribute('aria-hidden','true'); }
+async function fileToDataUrl(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror= rej; fr.readAsDataURL(file); }); }
+
+/* ---- contact save & utils ----- */
+async function saveContact(){
+  const name = contactName.value.trim(); if(!name) return alert('请输入名字');
+  let avatar = '';
+  if(contactFile.files && contactFile.files[0]) avatar = await fileToDataUrl(contactFile.files[0]);
+  else if(contactURL.value.trim()) avatar = contactURL.value.trim();
+  const id = 'c'+Date.now();
+  state.contacts.push({ id, name, avatar }); saveState(); renderContacts(); applyEmptyHint(); closeModal(contactModal);
+}
+
+/* file to data url used above */
+async function fileToDataUrl(file){ return new Promise((resolve,reject)=>{ const fr=new FileReader(); fr.onload = ()=> resolve(fr.result); fr.onerror = reject; fr.readAsDataURL(file); }); }
+
+/* feed persistence */
+function loadFeed(){ try{ return JSON.parse(localStorage.getItem(FEED_KEY)||'[]'); }catch(e){return [];} }
+function saveFeed(list){ localStorage.setItem(FEED_KEY, JSON.stringify(list)); }
+
+/* export simple for debug (not shown in UI) */
+function exportState(){
+  const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'nie_backup_'+Date.now()+'.json'; a.click();
+  const a = document.createElement('a'); a.href = url; a.download = 'nie_state.json'; a.click();
   URL.revokeObjectURL(url);
 }
-function importData(){
-  const input = document.createElement('input'); input.type='file'; input.accept='application/json';
-  input.onchange = async (e)=>{
-    const f = e.target.files[0]; if(!f) return;
-    const text = await f.text();
-    try{
-      const j = JSON.parse(text);
-      if(j.contacts) state.contacts = j.contacts;
-      if(j.conversations) state.conversations = j.conversations;
-      saveState(); renderContacts(); alert('导入成功');
-    }catch(err){ alert('导入失败：'+err.message); }
-  };
-  input.click();
-}
 
-// initial render
-renderContacts();
+/* utility functions */
+function escapeHtml(s){ if(!s) return ''; return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+function defaultAvatar(){ return 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect rx='36' width='100%' height='100%' fill='white'/><text x='50%' y='50%' font-size='110' text-anchor='middle' dominant-baseline='central'>🙂</text></svg>`); }
 
-// ensure buttons clickable on mobile (prevent accidental overlay)
+/* prevent overlay issues on mobile */
 document.body.addEventListener('touchstart', ()=>{}, {passive:true});
+
+/* ensure initial data exists */
+if(!state.contacts || state.contacts.length===0) state.contacts = DEFAULT.contacts;
+if(!state.conversations) state.conversations = DEFAULT.conversations;
+saveState(); renderContacts(); applyEmptyHint(); renderFeed();
 
 </script>
 </body>
