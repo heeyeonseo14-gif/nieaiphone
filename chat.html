@@ -210,6 +210,49 @@ textarea{flex:1;min-height:48px;max-height:140px;padding:10px;border-radius:12px
 <script>
 document.addEventListener('DOMContentLoaded', ()=>{
 
+  /* ----------------- STORAGE: localStorage first, IndexedDB as fallback -----------------
+     原因：在某些环境（content://、file://、内嵌浏览器）localStorage 写入不会持久化，
+     使用 IndexedDB 作为后备，可以保证刷新后仍能恢复数据。
+  ------------------------------------------------------------------------------- */
+
+  // 简单的 IndexedDB KV 辅助（基于原生 API）
+  function idbOpen(){
+    return new Promise((resolve,reject)=>{
+      const rq = indexedDB.open('nie_db_v1', 1);
+      rq.onupgradeneeded = ()=> {
+        const db = rq.result;
+        if(!db.objectStoreNames.contains('kv')) db.createObjectStore('kv');
+      };
+      rq.onsuccess = ()=> resolve(rq.result);
+      rq.onerror = ()=> reject(rq.error);
+    });
+  }
+  async function idbGet(key){
+    try{
+      const db = await idbOpen();
+      return await new Promise((res,rej)=>{
+        const tx = db.transaction('kv','readonly');
+        const store = tx.objectStore('kv');
+        const r = store.get(key);
+        r.onsuccess = ()=> res(r.result);
+        r.onerror = ()=> rej(r.error);
+      });
+    }catch(e){ return null; }
+  }
+  async function idbSet(key, val){
+    try{
+      const db = await idbOpen();
+      return await new Promise((res,rej)=>{
+        const tx = db.transaction('kv','readwrite');
+        const store = tx.objectStore('kv');
+        const r = store.put(val, key);
+        r.onsuccess = ()=> res(true);
+        r.onerror = ()=> rej(r.error);
+      });
+    }catch(e){ return false; }
+  }
+
+  /* keys and defaults */
   const STATE_KEY = 'nie_full_v6_fix';
   const FEED_KEY = 'nie_feed_v4';
   const DEFAULT = {
@@ -224,593 +267,74 @@ document.addEventListener('DOMContentLoaded', ()=>{
     feedAutoInterval:60000
   };
 
-  function loadState(){
+  async function loadState(){
+    // 先尝试 localStorage
     try{
       const raw = localStorage.getItem(STATE_KEY);
-      if(!raw){ localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT); }
-      const parsed = JSON.parse(raw);
-      // 做完整合并，不覆盖已保存字段
-      const merged = {...DEFAULT, ...parsed};
-      merged.me = {...DEFAULT.me, ...(parsed.me||{})};
-      merged.ai = {...DEFAULT.ai, ...(parsed.ai||{})};
-      merged.bubble = {...DEFAULT.bubble, ...(parsed.bubble||{})};
-      merged.contacts = Array.isArray(parsed.contacts) ? parsed.contacts : DEFAULT.contacts.slice();
-      merged.conversations = parsed.conversations && typeof parsed.conversations === 'object' ? parsed.conversations : {};
-      merged.background = parsed.background || DEFAULT.background;
-      merged.active = parsed.active || null;
-      merged.feedAuto = !!parsed.feedAuto;
-      return merged;
+      if(raw){
+        const parsed = JSON.parse(raw);
+        return mergeWithDefault(parsed);
+      }
+    }catch(e){ /* localStorage 不可用或权限错误 */ }
+    // 再尝试 IndexedDB
+    try{
+      const raw = await idbGet(STATE_KEY);
+      if(raw){
+        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        return mergeWithDefault(parsed);
+      }
+    }catch(e){ console.warn('idb load err', e); }
+    // 无持久化，使用 DEFAULT 并写回到可用存储（尝试保存）
+    try{ await saveStateToStorage(DEFAULT); }catch(e){}
+    return structuredClone(DEFAULT);
+  }
+
+  function mergeWithDefault(parsed){
+    const merged = {...DEFAULT, ...parsed};
+    merged.me = {...DEFAULT.me, ...(parsed.me||{})};
+    merged.ai = {...DEFAULT.ai, ...(parsed.ai||{})};
+    merged.bubble = {...DEFAULT.bubble, ...(parsed.bubble||{})};
+    merged.contacts = Array.isArray(parsed.contacts) ? parsed.contacts : DEFAULT.contacts.slice();
+    merged.conversations = parsed.conversations && typeof parsed.conversations === 'object' ? parsed.conversations : {};
+    // 这里区分 undefined 与 空字符串：如果 parsed 中明确有 background（即使是空字符串）就保留
+    merged.background = (parsed.hasOwnProperty && parsed.hasOwnProperty('background')) ? parsed.background : DEFAULT.background;
+    merged.active = parsed.hasOwnProperty && parsed.hasOwnProperty('active') ? parsed.active : (parsed.active || null);
+    merged.feedAuto = !!parsed.feedAuto;
+    return merged;
+  }
+
+  async function saveStateToStorage(s){
+    // 优先 localStorage
+    try{
+      localStorage.setItem(STATE_KEY, JSON.stringify(s));
+      // also save feed in localStorage if exists
+      return true;
+    }catch(e){ /* localStorage 写入失败，使用 idb */ }
+    try{
+      await idbSet(STATE_KEY, s);
+      return true;
     }catch(e){
-      console.error('loadState err',e);
-      localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT));
-      return structuredClone(DEFAULT);
+      console.error('save to idb fail', e);
+      return false;
     }
   }
 
-  function saveState(){
+  async function saveState(){
     try{
-      localStorage.setItem(STATE_KEY, JSON.stringify(state));
+      await saveStateToStorage(state);
       applyBubbleColors();
       applyBackground();
     }catch(e){ console.error(e); }
   }
 
-  let state = loadState();
-  let autoPostTimer = null;
-
-  /* DOM refs */
-  const contactsGrid = document.getElementById('contactsGrid');
-  const emptyHint = document.getElementById('emptyHint');
-  const contactsPane = document.getElementById('contactsPane');
-  const chatPane = document.getElementById('chatPane');
-  const feedPane = document.getElementById('feedPane');
-  const topActions = document.getElementById('topActions');
-  const bottomBar = document.getElementById('bottomBar');
-  const chatAvatarImg = document.querySelector('#chatAvatar img');
-  const chatTitle = document.getElementById('chatTitle');
-  const chatSub = document.getElementById('chatSub');
-  const messagesEl = document.getElementById('messages');
-  const txtInput = document.getElementById('txtInput');
-  const toastEl = document.getElementById('toast');
-
-  /* bind ui */
-  document.getElementById('btnAdd').addEventListener('click', ()=> openContactModal());
-  document.getElementById('contactCancel').addEventListener('click', ()=> closeModal('contactModal'));
-  document.getElementById('contactSave').addEventListener('click', ()=> saveContact());
-  document.getElementById('btnGroup').addEventListener('click', ()=> openGroupModal());
-  document.getElementById('groupCancel').addEventListener('click', ()=> closeModal('groupModal'));
-  document.getElementById('groupCreate').addEventListener('click', ()=> createGroup());
-  document.getElementById('btnFeed').addEventListener('click', ()=> openFeed());
-  document.getElementById('closeFeedBtn').addEventListener('click', ()=> closeFeed());
-  document.getElementById('publishBtn').addEventListener('click', ()=> publishPost());
-  document.getElementById('aiPostBtn').addEventListener('click', ()=> aiPublish());
-  document.getElementById('openAi').addEventListener('click', ()=> openAiModal());
-  document.getElementById('aiCancel').addEventListener('click', ()=> closeModal('aiModal'));
-  document.getElementById('aiSave').addEventListener('click', ()=> saveAiSettings());
-  document.getElementById('openProfileBtn').addEventListener('click', ()=> openProfileModal());
-  document.getElementById('profileCancel').addEventListener('click', ()=> closeModal('profileModal'));
-  document.getElementById('profileSave').addEventListener('click', ()=> saveProfile());
-  document.getElementById('backContacts').addEventListener('click', ()=> showContacts());
-  document.getElementById('sendBtn').addEventListener('click', ()=> sendMsg());
-  txtInput.addEventListener('keydown', (e)=> { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMsg(); } });
-  document.getElementById('changeBgBtn').addEventListener('click', ()=> openBgModal());
-  document.getElementById('bgCancel').addEventListener('click', ()=> closeModal('bgModal'));
-  document.getElementById('bgSet').addEventListener('click', ()=> setBackgroundFromModal());
-
-  document.getElementById('commentCancel').addEventListener('click', ()=> closeModal('commentModal'));
-  document.getElementById('commentConfirm').addEventListener('click', ()=> commentConfirm());
-
-  document.getElementById('contactModal').addEventListener('click', (e)=> { if(e.target === e.currentTarget) closeModal('contactModal'); });
-  document.getElementById('groupModal').addEventListener('click', (e)=> { if(e.target === e.currentTarget) closeModal('groupModal'); });
-  document.getElementById('aiModal').addEventListener('click', (e)=> { if(e.target === e.currentTarget) closeModal('aiModal'); });
-  document.getElementById('profileModal').addEventListener('click', (e)=> { if(e.target === e.currentTarget) closeModal('profileModal'); });
-  document.getElementById('bgModal').addEventListener('click', (e)=> { if(e.target === e.currentTarget) closeModal('bgModal'); });
-  document.getElementById('commentModal').addEventListener('click', (e)=> { if(e.target === e.currentTarget) closeModal('commentModal'); });
-
-  document.getElementById('autoPostSwitch').addEventListener('change', (e)=> toggleAutoPost(e.target.checked));
-
-  /* initial: ensure at least one AI contact exists (but do not overwrite saved avatar/background) */
-  (function ensureDefaultAI(){
-    if(!Array.isArray(state.contacts) || state.contacts.length === 0){
-      const id = 'ai_' + Date.now();
-      const avatar = state.ai.avatar && state.ai.avatar.length>10 ? state.ai.avatar : defaultAvatar();
-      state.contacts = [ { id, name: state.ai.name || '小NIE', avatar: avatar, role: state.ai.role || '' } ];
-      state.conversations[id] = state.conversations[id] || { members:['me', id], messages:[] };
-      saveState();
-    } else {
-      // if there is an ai_ contact but no avatar, sync from state.ai.avatar if exists
-      const aiIndex = state.contacts.findIndex(c=>String(c.id).startsWith('ai_'));
-      if(aiIndex>=0 && state.ai.avatar && state.ai.avatar.length>10){
-        // replace contact object to avoid accidental shared refs
-        const old = state.contacts[aiIndex];
-        state.contacts[aiIndex] = { id: old.id, name: state.ai.name||old.name, avatar: state.ai.avatar, role: old.role||state.ai.role||'' };
-        saveState();
-      }
-    }
+  /* initial state load (async) */
+  let state = null;
+  (async ()=>{
+    state = await loadState();
+    initUI(); // after state loaded, run UI init
   })();
 
-  /* render contacts */
-  function renderContacts(){
-    contactsGrid.innerHTML = '';
-    (state.contacts||[]).forEach(c=>{
-      const el = document.createElement('div'); el.className='contactCard'; el.dataset.id=c.id;
-      const av = c.avatar || defaultAvatar();
-      el.innerHTML = `<div class="iconWrap"><img src="${escapeAttr(av)}" alt=""></div><div class="contactName">${escapeHtml(c.name)}</div>`;
-      el.addEventListener('click', ()=> openConversation(c.id));
-      // 长按或右键删除（移动端长按）
-      el.addEventListener('contextmenu', (ev)=>{ ev.preventDefault(); tryDeleteContact(c.id); });
-      el.addEventListener('touchstart', (ev)=>{ el.__touchStart = Date.now(); }, {passive:true});
-      el.addEventListener('touchend', (ev)=>{ const t = Date.now() - (el.__touchStart||0); if(t>700) tryDeleteContact(c.id); });
-      contactsGrid.appendChild(el);
-    });
-    applyEmptyHint();
-  }
-  function applyEmptyHint(){ emptyHint.style.display = (!state.contacts || state.contacts.length===0) ? 'block':'none'; }
-
-  /* try delete contact with a nicer UI than native confirm() */
-  function tryDeleteContact(id){
-    // show a simple confirm modal (reuse browser confirm fallback)
-    const c = state.contacts.find(x=>x.id===id);
-    if(!c) return;
-    const ok = confirm('删除联系人 "' + (c.name||'') + '"？');
-    if(ok){
-      // remove related conversation
-      delete state.conversations[id];
-      state.contacts = state.contacts.filter(x=>x.id!==id);
-      saveState();
-      renderContacts();
-      showToast('已删除联系人');
-    }
-  }
-
-  /* open conversation */
-  function openConversation(id){
-    state.active = id;
-    state.conversations[id] = state.conversations[id] || { members:['me', id], messages:[], name: (state.contacts.find(c=>c.id===id)?.name || '对方') };
-    const target = (state.contacts||[]).find(x=>x.id===id) || { name: state.ai.name||'对方', avatar: state.ai.avatar||defaultAvatar() };
-    chatTitle.textContent = target.name;
-    chatSub.textContent = ''; // don't show group人数 in single view
-    chatAvatarImg.src = target.avatar || defaultAvatar();
-    topActions.style.display='none'; bottomBar.style.display='none';
-    contactsPane.classList.add('hidden'); chatPane.classList.remove('hidden'); feedPane.classList.add('hidden');
-    renderMessages();
-    saveState();
-  }
-
-  function showContacts(){ state.active=null; chatPane.classList.add('hidden'); feedPane.classList.add('hidden'); contactsPane.classList.remove('hidden'); topActions.style.display=''; bottomBar.style.display=''; saveState(); }
-
-  /* render messages */
-  function renderMessages(){
-    messagesEl.innerHTML='';
-    const conv = state.conversations[state.active]||{messages:[]};
-    conv.messages.forEach(m=>{
-      const row=document.createElement('div'); row.className='msgRow'+(m.from==='me'?' mine':'');
-      const avat=document.createElement('div'); avat.className='msgAvatar';
-      const img=document.createElement('img'); img.style.width='100%'; img.style.height='100%'; img.style.objectFit='cover';
-      if(m.from==='me') img.src = state.me.avatar || defaultAvatar();
-      else {
-        const c = state.contacts.find(x=>x.id===m.from);
-        img.src = c ? (c.avatar||defaultAvatar()) : (state.ai.avatar||defaultAvatar());
-      }
-      avat.appendChild(img);
-      const bubble=document.createElement('div'); bubble.className='bubble ' + (m.from==='me'?'user':'ai');
-      bubble.innerHTML = escapeHtml(m.text).replaceAll('\\n','<br>');
-      if(m.from==='me'){ row.appendChild(bubble); row.appendChild(avat); }
-      else { row.appendChild(avat); row.appendChild(bubble); }
-      messagesEl.appendChild(row);
-    });
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-  }
-
-  function pushMessage(convId,msg){
-    state.conversations[convId] = state.conversations[convId] || { members:['me'], messages:[] };
-    state.conversations[convId].messages.push(msg);
-    saveState();
-  }
-
-  async function sendMsg(){
-    const raw = txtInput.value.trim(); if(!raw) return;
-    const id = state.active || (state.contacts[0] && state.contacts[0].id);
-    if(!id) return showToast('请先添加联系人');
-    pushMessage(id, { from:'me', text:raw, ts:Date.now() });
-    txtInput.value=''; renderMessages();
-
-    const conv = state.conversations[id] || { members:[] };
-    // group message handling
-    if(String(id).startsWith('g')){
-      const members = conv.members.filter(m=>m!=='me');
-      for(const memberId of members){
-        await new Promise(r=>setTimeout(r, 200 + Math.random()*300));
-        const replies = await requestReplyGroup(raw, id, memberId);
-        replies.forEach(r=> pushMessage(id, { from: memberId, text: r, ts: Date.now() }));
-        renderMessages();
-      }
-      return;
-    }
-
-    // single chat
-    pushMessage(id, { from:'ai', text:'...', ts:Date.now(), temp:true });
-    renderMessages();
-    const replies = await requestReply(raw, id);
-    const convArr = state.conversations[id];
-    if(convArr && convArr.messages.length && convArr.messages[convArr.messages.length-1].temp) convArr.messages.pop();
-    replies.forEach(r=> pushMessage(id, { from:'ai', text:r, ts:Date.now() }));
-    renderMessages();
-  }
-
-  /* requestReply（不会把人设原文直接作为回复）*/
-  async function requestReply(userText, convId){
-    const backend = localStorage.getItem('chat_backend_url');
-    const persona = {...state.ai};
-    const replyCount = Math.max(1, Math.min(20, (persona.replyCount||1)));
-    const actionsEnabled = !!persona.actionsEnabled;
-    if(backend){
-      try{
-        const payload = {message:userText, persona:{ name: persona.name, gender: persona.gender, role_desc: persona.role, style: persona.style, catch: persona.catch }};
-        const res = await fetch(backend, {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify(payload)});
-        if(!res.ok) throw new Error('后端返回 '+res.status);
-        const j = await res.json();
-        let text = j.reply || j.text || (j.choices && j.choices[0]?.message?.content) || JSON.stringify(j);
-        let parts = splitReplyParts(text, replyCount);
-        if(actionsEnabled) parts = parts.map(p=>`（他笑了笑）${p}`);
-        return parts.slice(0,replyCount);
-      }catch(e){ console.warn('backend err',e); showToast('后端请求失败，使用本地生成'); }
-    }
-
-    // fallback 本地生成（安全）
-    await new Promise(r=>setTimeout(r, 250 + Math.random()*300));
-    const baseCandidates = [];
-    if(/^(你好|hi|嗨|hello)/i.test(userText)) baseCandidates.push('你好～很高兴和你说话');
-    if(userText.length < 8) baseCandidates.push(`你说的「${userText}」我听到了`);
-    if(userText.length >= 8) baseCandidates.push(`我注意到你提到「${userText.slice(0,40)}」`);
-    if(baseCandidates.length===0) baseCandidates.push('嗯，我知道了');
-    const styleNotes = (persona.catch || persona.style || '').split(/[；;，,]/).map(s=>s.trim()).filter(Boolean);
-    const pickStyle = styleNotes.length ? `（风格：${styleNotes[0]}）` : '';
-    const parts = [];
-    for(let i=0;i<replyCount;i++){
-      const j = baseCandidates[i % baseCandidates.length];
-      const p = pickStyle ? `${j} ${pickStyle}` : j;
-      parts.push(p);
-    }
-    if(actionsEnabled) return parts.map(p=>`（他轻轻一笑）${p}`);
-    return parts;
-  }
-
-  function splitReplyParts(text, count){
-    let parts = (text+'').split(/\n{1,}|\.\s+/).map(s=>s.trim()).filter(Boolean);
-    if(parts.length===0) parts = [String(text).slice(0,200)];
-    while(parts.length < count) parts.push(parts[parts.length-1]||parts[0]);
-    return parts.slice(0,count);
-  }
-
-  /* group reply */
-  async function requestReplyGroup(userText, convId, memberId){
-    const member = state.contacts.find(c=>c.id===memberId) || { name:'TA' };
-    const conv = state.conversations[convId] || {};
-    const memberRoles = conv.memberRoles || {};
-    const role = memberRoles[memberId] || (member && member.role) || '';
-    await new Promise(r=>setTimeout(r, 200 + Math.random()*200));
-    // 基础响应：不直接把人设发为消息
-    const short = userText.length < 20 ? userText : userText.slice(0,30);
-    const base = role ? `${short}` : `${short}`;
-    return [ base ];
-  }
-
-  /* FEED */
-  function loadFeed(){ try{ return JSON.parse(localStorage.getItem(FEED_KEY)||'[]'); }catch(e){ return []; } }
-  function saveFeed(list){ localStorage.setItem(FEED_KEY, JSON.stringify(list)); }
-  function renderFeed(){
-    const root = document.getElementById('feedList'); root.innerHTML=''; const list = loadFeed();
-    for(let i=list.length-1;i>=0;i--){
-      const p = list[i];
-      if(p.ownerId){
-        const owner = state.contacts.find(c=>c.id===p.ownerId);
-        if(owner){ p.name = owner.name; p.avatar = owner.avatar; }
-      }
-      const el = document.createElement('div'); el.className='feedItem';
-      el.innerHTML = `<div class="feedMeta"><div style="width:44px;height:44px;border-radius:10px;overflow:hidden;background:#fff"><img src="${escapeAttr(p.avatar||defaultAvatar())}" style="width:100%;height:100%;object-fit:cover"></div><div style="flex:1"><div style="font-weight:700">${escapeHtml(p.name)}</div><div style="font-size:12px;color:var(--muted)">${new Date(p.ts).toLocaleString()}</div></div></div><div style="margin-top:8px">${escapeHtml(p.text)}</div><div class="postActions"><button class="action" data-id="${p.id}" data-act="like">赞 (${p.likes?.length||0})</button><button class="action" data-id="${p.id}" data-act="comment">评论 (${p.comments?.length||0})</button></div>`;
-      const likeLine = document.createElement('div'); likeLine.className='likeList';
-      const names = (p.likes||[]).join('、');
-      likeLine.innerHTML = names ? `赞：${escapeHtml(names)}` : '';
-      el.appendChild(likeLine);
-      if(p.comments && p.comments.length){
-        const cwrap = document.createElement('div'); cwrap.style.marginTop='8px';
-        p.comments.forEach(c=> cwrap.innerHTML += `<div style="font-size:13px;border-top:1px dashed rgba(0,0,0,0.03);padding:6px 0"><strong>${escapeHtml(c.name)}</strong>：${escapeHtml(c.text)}<div style="font-size:11px;color:var(--muted)">${new Date(c.ts).toLocaleString()}</div></div>`);
-        el.appendChild(cwrap);
-      }
-      root.appendChild(el);
-    }
-    root.querySelectorAll('button').forEach(b=> b.addEventListener('click', (ev)=>{
-      const id = ev.currentTarget.dataset.id, act = ev.currentTarget.dataset.act;
-      if(act==='like') toggleLike(id);
-      else openCommentModal(id);
-    }));
-  }
-
-  function publishPost(){
-    const t = document.getElementById('postText').value.trim(); if(!t) return showToast('请输入内容');
-    const list = loadFeed();
-    list.push({ id:'p'+Date.now(), ownerId: null, name: state.me.name||'你', avatar: state.me.avatar||defaultAvatar(), text:t, likes:[], comments:[], ts:Date.now() });
-    saveFeed(list); document.getElementById('postText').value=''; renderFeed(); showToast('已发布');
-  }
-
-  function aiPublish(){
-    const aiContact = state.contacts.find(c=>String(c.id).startsWith('ai_')) || state.contacts[0];
-    const ownerId = aiContact ? aiContact.id : null;
-    const list = loadFeed();
-    list.push({ id:'p'+Date.now(), ownerId: ownerId, name: aiContact ? aiContact.name : state.ai.name, avatar: aiContact ? aiContact.avatar : state.ai.avatar||defaultAvatar(), text: (state.ai.catch||'今天也想和你说点心里话～'), likes:[], comments:[], ts:Date.now() });
-    saveFeed(list); renderFeed(); showToast('AI 已发一条');
-  }
-
-  function toggleLike(id){
-    const list = loadFeed(); const p = list.find(x=>x.id===id); if(!p) return;
-    const me = state.me.name || '你'; p.likes = p.likes || []; const idx = p.likes.indexOf(me); if(idx>=0) p.likes.splice(idx,1); else p.likes.push(me); saveFeed(list); renderFeed();
-  }
-
-  /* comment modal */
-  let commentTarget = null;
-  function openCommentModal(id){
-    commentTarget = id;
-    const post = loadFeed().find(x=>x.id===id);
-    document.getElementById('commentTargetInfo').textContent = post ? `${post.name} · ${new Date(post.ts).toLocaleString()}` : '';
-    document.getElementById('commentText').value = '';
-    showModal('commentModal');
-  }
-  function commentConfirm(){
-    const text = document.getElementById('commentText').value.trim(); if(!text) return showToast('请输入评论');
-    const list = loadFeed(); const p = list.find(x=>x.id===commentTarget); if(!p) return closeModal('commentModal');
-    p.comments = p.comments || []; p.comments.push({ name: state.me.name||'你', text, ts:Date.now() }); saveFeed(list); renderFeed(); closeModal('commentModal'); showToast('已评论');
-  }
-
-  function openFeed(){ contactsPane.classList.add('hidden'); chatPane.classList.add('hidden'); feedPane.classList.remove('hidden'); renderFeed(); document.getElementById('autoPostSwitch').checked = !!state.feedAuto; }
-  function closeFeed(){ feedPane.classList.add('hidden'); contactsPane.classList.remove('hidden'); chatPane.classList.add('hidden'); topActions.style.display=''; bottomBar.style.display=''; saveState(); }
-
-  function toggleAutoPost(on){
-    state.feedAuto = !!on; saveState();
-    if(autoPostTimer) { clearInterval(autoPostTimer); autoPostTimer = null; }
-    if(on){ autoPostTimer = setInterval(()=> aiPublish(), state.feedAutoInterval || 60000); showToast('AI 自动发已开启'); }
-    else showToast('AI 自动发已关闭');
-  }
-
-  /* modals */
-  function showModal(id){ const el = document.getElementById(id); el.classList.add('show'); el.setAttribute('aria-hidden','false'); }
-  function closeModal(id){ const el = document.getElementById(id); el.classList.remove('show'); el.setAttribute('aria-hidden','true'); }
-
-  /* AI modal: 如果 active 是群聊，切换到 group 模式，按成员分别设置 */
-  function openAiModal(){
-    const active = state.active;
-    document.getElementById('aiSingleWrap').style.display = 'block';
-    document.getElementById('aiGroupWrap').style.display = 'none';
-    document.getElementById('aiModalTitle').textContent = '他的设定';
-    // 单人默认值
-    document.getElementById('aiName').value = state.ai.name || '';
-    document.getElementById('aiGender').value = state.ai.gender || 'neutral';
-    document.getElementById('aiRole').value = state.ai.role || '';
-    document.getElementById('aiStyleCatch').value = (state.ai.style ? state.ai.style + (state.ai.catch ? '；' + state.ai.catch : '') : state.ai.catch || '');
-    document.getElementById('userColor').value = state.bubble.user || '#ffd6e6';
-    document.getElementById('aiColor').value = state.bubble.ai || '#d7c8ff';
-    document.getElementById('aiReplyCount').value = state.ai.replyCount || 1;
-    document.getElementById('aiActionsEnabled').checked = !!state.ai.actionsEnabled;
-
-    // 如果当前打开的是群聊（gid 以 g 开头），准备群内设置面板
-    if(active && String(active).startsWith('g')){
-      const conv = state.conversations[active] || { members:[] };
-      const members = conv.members.filter(m=>m!=='me'); // 不显示“我”
-      const wrap = document.getElementById('aiGroupMembersList'); wrap.innerHTML='';
-      members.forEach(mid=>{
-        const contact = state.contacts.find(c=>c.id===mid) || { name:'成员', avatar: defaultAvatar(), role:'' };
-        const row = document.createElement('div'); row.style.display='flex'; row.style.gap='10px'; row.style.alignItems='flex-start'; row.style.marginBottom='10px';
-        row.innerHTML = `<div style="width:64px"><div style="width:56px;height:56px;border-radius:10px;overflow:hidden"><img src="${escapeAttr(contact.avatar||defaultAvatar())}" style="width:100%;height:100%;object-fit:cover"></div><input type="file" data-mid="${escapeAttr(mid)}" accept="image/*" style="margin-top:6px"></div><div style="flex:1"><div style="font-weight:700;margin-bottom:6px">${escapeHtml(contact.name)}</div><input type="text" data-mid="${escapeAttr(mid)}" placeholder="在群内显示的名字（可选）" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);margin-bottom:6px"><textarea data-mid="${escapeAttr(mid)}" placeholder="群内人设（仅作为生成提示）" style="width:100%;min-height:64px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)"></textarea></div>`;
-        wrap.appendChild(row);
-        // 填默认值
-        const nameInput = row.querySelector('input[type=text]');
-        const textArea = row.querySelector('textarea');
-        nameInput.value = contact.name || '';
-        textArea.value = (conv.memberRoles && conv.memberRoles[mid]) ? conv.memberRoles[mid] : (contact.role || '');
-      });
-      document.getElementById('aiSingleWrap').style.display='none';
-      document.getElementById('aiGroupWrap').style.display='block';
-      document.getElementById('aiModalTitle').textContent = '群聊：成员设定';
-    }
-    showModal('aiModal');
-  }
-
-  async function saveAiSettings(){
-    const active = state.active;
-    // 如果是群聊模式
-    if(active && String(active).startsWith('g')){
-      const conv = state.conversations[active] || {};
-      conv.memberRoles = conv.memberRoles || {};
-      // 读取用户输入，并同步到 memberRoles 与 contact（可更新名字/头像）
-      const wrap = document.getElementById('aiGroupMembersList');
-      const fileInputs = wrap.querySelectorAll('input[type=file]');
-      // 先处理文件 -> dataURL（异步）
-      const filePromises = Array.from(fileInputs).map(inp=>{
-        const f = inp.files && inp.files[0];
-        if(!f) return Promise.resolve({mid: inp.dataset.mid, data: null});
-        return fileToDataUrl(f).then(d=>({mid: inp.dataset.mid, data: d})).catch(()=>({mid: inp.dataset.mid, data:null}));
-      });
-      const results = await Promise.all(filePromises);
-      // 处理每个成员输入框
-      const textInputs = wrap.querySelectorAll('input[type=text]');
-      const textareas = wrap.querySelectorAll('textarea');
-      textInputs.forEach(inp=>{
-        const mid = inp.dataset.mid; const v = inp.value.trim();
-        if(v){
-          const c = state.contacts.find(x=>x.id===mid);
-          if(c) c.name = v;
-        }
-      });
-      textareas.forEach(ta=>{
-        const mid = ta.dataset.mid; const v = ta.value.trim();
-        if(mid) conv.memberRoles[mid] = v;
-      });
-      // apply avatars from file upload results
-      results.forEach(r=>{
-        if(r.data){
-          const c = state.contacts.find(x=>x.id===r.mid);
-          if(c) c.avatar = r.data;
-        }
-      });
-      // save conversation back
-      state.conversations[active] = conv;
-      saveState();
-      renderContacts();
-      closeModal('aiModal');
-      showToast('群聊成员设定已保存');
-      return;
-    }
-
-    // 单人 AI 保存（会同步替换 ai_ 联系人对象，不会影响其他联系人）
-    state.ai.name = document.getElementById('aiName').value.trim() || state.ai.name;
-    state.ai.gender = document.getElementById('aiGender').value;
-    state.ai.role = document.getElementById('aiRole').value.trim();
-    const sc = document.getElementById('aiStyleCatch').value.trim();
-    if(sc.includes('；')||sc.includes(';')||sc.includes(',')){ const parts=sc.split(/；|;|,/).map(s=>s.trim()).filter(Boolean); state.ai.style=parts[0]||state.ai.style; state.ai.catch=parts.slice(1).join('；')||state.ai.catch; } else { state.ai.style=sc||state.ai.style; state.ai.catch=sc||state.ai.catch; }
-    const f = document.getElementById('aiAvatarFile').files;
-    if(f && f[0]) state.ai.avatar = await fileToDataUrl(f[0]);
-    state.bubble.user = document.getElementById('userColor').value || state.bubble.user;
-    state.bubble.ai = document.getElementById('aiColor').value || state.bubble.ai;
-    let rc = parseInt(document.getElementById('aiReplyCount').value) || 1; rc = Math.max(1, Math.min(20, rc)); state.ai.replyCount = rc;
-    state.ai.actionsEnabled = !!document.getElementById('aiActionsEnabled').checked;
-
-    // 找到 ai_ 联系人并替换对象（构造新对象）
-    const aiContactIndex = state.contacts.findIndex(c=> String(c.id).startsWith('ai_'));
-    if(aiContactIndex >= 0){
-      const old = state.contacts[aiContactIndex];
-      const newObj = { id: old.id, name: state.ai.name || old.name, avatar: state.ai.avatar || old.avatar, role: state.ai.role || old.role };
-      state.contacts.splice(aiContactIndex, 1, newObj);
-    }
-    saveState();
-    closeModal('aiModal');
-    renderContacts();
-    showToast('已保存他的设定');
-  }
-
-  /* profile */
-  function openProfileModal(){ document.getElementById('meName').value = state.me.name || ''; document.getElementById('meRole').value = state.me.role || ''; document.getElementById('meAvatarUrl').value = ''; showModal('profileModal'); }
-  async function saveProfile(){
-    state.me.name = document.getElementById('meName').value.trim() || state.me.name;
-    state.me.role = document.getElementById('meRole').value.trim();
-    const f = document.getElementById('meAvatarFile').files;
-    if(f && f[0]) state.me.avatar = await fileToDataUrl(f[0]);
-    else if(document.getElementById('meAvatarUrl').value.trim()) state.me.avatar = document.getElementById('meAvatarUrl').value.trim();
-    saveState(); closeModal('profileModal'); showToast('已保存个人设置'); renderContacts();
-  }
-
-  /* contact/group */
-  function openContactModal(){
-    document.getElementById('contactName').value=''; document.getElementById('contactFile').value=''; document.getElementById('contactURL').value=''; document.getElementById('contactRole').value='';
-    showModal('contactModal');
-  }
-
-  async function saveContact(){
-    const name=document.getElementById('contactName').value.trim();
-    if(!name) return showToast('请输入名字');
-    let avatar='';
-    if(document.getElementById('contactFile').files && document.getElementById('contactFile').files[0]) avatar = await fileToDataUrl(document.getElementById('contactFile').files[0]);
-    else if(document.getElementById('contactURL').value.trim()) avatar = document.getElementById('contactURL').value.trim();
-    const role = document.getElementById('contactRole').value.trim();
-    const id = 'c' + Date.now() + '_' + Math.floor(Math.random()*999);
-    const newContact = { id, name, avatar: avatar || defaultAvatar(), role };
-    state.contacts.push(newContact);
-    state.conversations[id] = state.conversations[id] || { members:['me', id], messages:[] };
-    saveState();
-    renderContacts();
-    closeModal('contactModal');
-    showToast('联系人已保存');
-  }
-
-  function openGroupModal(){
-    const list = document.getElementById('groupContacts'); list.innerHTML=''; (state.contacts||[]).forEach(c=>{ const el=document.createElement('div'); el.style.textAlign='center'; el.style.padding='6px'; el.innerHTML = `<label style="display:flex;flex-direction:column;align-items:center;gap:6px"><input type="checkbox" value="${c.id}"><div style="font-size:13px">${escapeHtml(c.name)}</div></label>`; list.appendChild(el); });
-    document.getElementById('groupName').value=''; document.getElementById('groupMemberRoles').innerHTML=''; showModal('groupModal');
-    list.querySelectorAll('input[type=checkbox]').forEach(ch=>{
-      ch.addEventListener('change', ()=> renderGroupMemberRoles());
-    });
-  }
-
-  function renderGroupMemberRoles(){
-    const sel = Array.from(document.querySelectorAll('#groupContacts input[type=checkbox]:checked')).map(i=>i.value);
-    const wrap = document.getElementById('groupMemberRoles'); wrap.innerHTML='';
-    sel.forEach(id=>{
-      const c = state.contacts.find(x=>x.id===id);
-      const name = c ? c.name : id;
-      const avatar = (c && c.avatar) ? c.avatar : defaultAvatar();
-      const div = document.createElement('div'); div.style.display='flex'; div.style.gap='8px'; div.style.alignItems='center'; div.style.marginBottom='8px';
-      div.innerHTML = `<div style="width:44px;height:44px;border-radius:8px;overflow:hidden"><img src="${escapeAttr(avatar)}" style="width:100%;height:100%;object-fit:cover"></div><div style="flex:1"><div style="font-weight:700">${escapeHtml(name)}</div><input type="text" placeholder="群内人设（会在群内回复中作为提示使用）" data-id="${escapeAttr(id)}" style="width:100%;margin-top:6px;padding:6px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)"></div>`;
-      wrap.appendChild(div);
-    });
-  }
-
-  async function createGroup(){
-    const checked = Array.from(document.querySelectorAll('#groupContacts input[type=checkbox]:checked')).map(i=>i.value);
-    if(checked.length<1) return showToast('请选择至少一位成员');
-    if(checked.length+1>8) return showToast('最多 8 人');
-    const name=document.getElementById('groupName').value.trim() || ('群聊'+Math.floor(Math.random()*90+10));
-    const gid='g' + Date.now() + '_' + Math.floor(Math.random()*999);
-    const memberRoles = {};
-    Array.from(document.querySelectorAll('#groupMemberRoles input[type=text]')).forEach(inp=>{
-      const id = inp.dataset.id; if(id) memberRoles[id] = inp.value.trim();
-    });
-    state.conversations[gid] = { members:['me', ...checked], messages:[], name, memberRoles };
-    const groupContact = { id: gid, name, avatar: defaultAvatar(), role: '群聊' };
-    state.contacts.push(groupContact);
-    saveState(); renderContacts(); closeModal('groupModal'); showToast('群聊创建成功');
-  }
-
-  /* background */
-  function openBgModal(){ document.getElementById('bgFile').value=''; document.getElementById('bgUrl').value=''; showModal('bgModal'); }
-  async function setBackgroundFromModal(){
-    const f = document.getElementById('bgFile').files;
-    if(f && f[0]) state.background = await fileToDataUrl(f[0]);
-    else if(document.getElementById('bgUrl').value.trim()) state.background = document.getElementById('bgUrl').value.trim();
-    else { state.background = ''; }
-    saveState(); closeModal('bgModal'); applyBackground(); showToast('已设置聊天卡片背景（仅白卡）');
-  }
-
-  function applyBackground(){
-    const panes = document.querySelectorAll('.pane');
-    panes.forEach(p=>{
-      if(state.background){
-        p.style.backgroundImage = `url('${escapeAttr(state.background)}')`;
-        p.style.backgroundSize = 'cover';
-        p.style.backgroundPosition = 'center';
-        p.style.backgroundRepeat = 'no-repeat';
-        p.style.backgroundColor = 'rgba(255,255,255,0.6)';
-      } else {
-        p.style.backgroundImage = '';
-        p.style.backgroundColor = 'rgba(255,255,255,0.98)';
-      }
-    });
-  }
-
-  function applyBubbleColors(){ document.documentElement.style.setProperty('--user-bubble', state.bubble.user || '#ffd6e6'); document.documentElement.style.setProperty('--ai-bubble', state.bubble.ai || '#d7c8ff'); }
-
-  /* utils */
-  function defaultAvatar(){ return 'data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect rx='36' width='100%' height='100%' fill='white'/><text x='50%' y='50%' font-size='110' text-anchor='middle' dominant-baseline='central'>🙂</text></svg>`); }
-  function escapeHtml(s){ if(!s) return ''; return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
-  function escapeAttr(s){ return (s||'').replaceAll('"','&quot;').replaceAll("'",''); }
-  function fileToDataUrl(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload = ()=> res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); }); }
-  function showToast(msg, ms=1500){ toastEl.textContent = msg; toastEl.style.display = 'block'; toastEl.style.opacity = '1'; setTimeout(()=>{ toastEl.style.opacity = '0'; setTimeout(()=> toastEl.style.display='none', 250); }, ms); }
-
-  /* ---------- 补丁：返回到 home.html + storage 可用性检测 + beforeunload  ---------- */
-
-  // 1) 返回按钮：从聊天页回到主界面（home.html）
-  const btnBackEl = document.getElementById('btnBack');
-  if(btnBackEl){
-    btnBackEl.addEventListener('click', (e)=>{
-      // 优先跳回本地的 home.html（若你想跳到 GH Pages，改这里）
-      const preferred = './home.html';
-      try{
-        location.href = preferred;
-      }catch(err){
-        console.warn('跳转 home.html 失败, 尝试 location.replace', err);
-        try{ location.replace(preferred); } catch(e){}
-      }
-    });
-  }
-
-  // 2) 简单检查 localStorage 是否可用（用于提示“刷新会回到预设”的真实原因）
+  /* helper: check localStorage availability quickly */
   function checkStorageAvailable(){
     const key = '__nie_storage_test__';
     try{
@@ -823,45 +347,572 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   }
 
-  function warnIfStorageUnavailable(){
-    const ok = checkStorageAvailable();
-    if(!ok){
-      showToast('注意：当前以文件/临时来源打开，浏览器可能无法持久保存设置。建议通过 https 或本地 http 服务器/GitHub Pages 打开。', 5000);
-      const exist = document.getElementById('nie_storage_warn');
-      if(!exist){
-        const warn = document.createElement('div');
-        warn.id = 'nie_storage_warn';
-        warn.style.cssText = 'position:fixed;left:12px;right:12px;top:70px;background:linear-gradient(90deg,#fff1f3,#fff);border-radius:12px;padding:10px;border:1px solid rgba(0,0,0,0.06);z-index:9999;font-weight:600;color:#6b2d4a;box-shadow:0 10px 30px rgba(0,0,0,0.06)';
-        warn.textContent = '提示：当前页面可能无法在刷新后保存设置。推荐通过 GitHub Pages（https://...）或本地 http 服务器打开以保持数据。';
-        document.body.appendChild(warn);
-        setTimeout(()=>{ try{ warn.style.opacity='0'; setTimeout(()=> warn.remove(), 300); }catch(e){} }, 8000);
-      }
-    }else{
-      const exist = document.getElementById('nie_storage_warn');
-      if(exist) try{ exist.remove(); }catch(e){}
+  /* ---------- UI and logic (runs after state is loaded) ---------- */
+  async function initUI(){
+    let autoPostTimer = null;
+
+    /* DOM refs */
+    const contactsGrid = document.getElementById('contactsGrid');
+    const emptyHint = document.getElementById('emptyHint');
+    const contactsPane = document.getElementById('contactsPane');
+    const chatPane = document.getElementById('chatPane');
+    const feedPane = document.getElementById('feedPane');
+    const topActions = document.getElementById('topActions');
+    const bottomBar = document.getElementById('bottomBar');
+    const chatAvatarImg = document.querySelector('#chatAvatar img');
+    const chatTitle = document.getElementById('chatTitle');
+    const chatSub = document.getElementById('chatSub');
+    const messagesEl = document.getElementById('messages');
+    const txtInput = document.getElementById('txtInput');
+    const toastEl = document.getElementById('toast');
+
+    /* bind ui */
+    document.getElementById('btnAdd').addEventListener('click', ()=> openContactModal());
+    document.getElementById('contactCancel').addEventListener('click', ()=> closeModal('contactModal'));
+    document.getElementById('contactSave').addEventListener('click', ()=> saveContact());
+    document.getElementById('btnGroup').addEventListener('click', ()=> openGroupModal());
+    document.getElementById('groupCancel').addEventListener('click', ()=> closeModal('groupModal'));
+    document.getElementById('groupCreate').addEventListener('click', ()=> createGroup());
+    document.getElementById('btnFeed').addEventListener('click', ()=> openFeed());
+    document.getElementById('closeFeedBtn').addEventListener('click', ()=> closeFeed());
+    document.getElementById('publishBtn').addEventListener('click', ()=> publishPost());
+    document.getElementById('aiPostBtn').addEventListener('click', ()=> aiPublish());
+    document.getElementById('openAi').addEventListener('click', ()=> openAiModal());
+    document.getElementById('aiCancel').addEventListener('click', ()=> closeModal('aiModal'));
+    document.getElementById('aiSave').addEventListener('click', ()=> saveAiSettings());
+    document.getElementById('openProfileBtn').addEventListener('click', ()=> openProfileModal());
+    document.getElementById('profileCancel').addEventListener('click', ()=> closeModal('profileModal'));
+    document.getElementById('profileSave').addEventListener('click', ()=> saveProfile());
+    document.getElementById('backContacts').addEventListener('click', ()=> showContacts());
+    document.getElementById('sendBtn').addEventListener('click', ()=> sendMsg());
+    txtInput.addEventListener('keydown', (e)=> { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMsg(); } });
+    document.getElementById('changeBgBtn').addEventListener('click', ()=> openBgModal());
+    document.getElementById('bgCancel').addEventListener('click', ()=> closeModal('bgModal'));
+    document.getElementById('bgSet').addEventListener('click', ()=> setBackgroundFromModal());
+
+    document.getElementById('commentCancel').addEventListener('click', ()=> closeModal('commentModal'));
+    document.getElementById('commentConfirm').addEventListener('click', ()=> commentConfirm());
+
+    document.getElementById('contactModal').addEventListener('click', (e)=> { if(e.target === e.currentTarget) closeModal('contactModal'); });
+    document.getElementById('groupModal').addEventListener('click', (e)=> { if(e.target === e.currentTarget) closeModal('groupModal'); });
+    document.getElementById('aiModal').addEventListener('click', (e)=> { if(e.target === e.currentTarget) closeModal('aiModal'); });
+    document.getElementById('profileModal').addEventListener('click', (e)=> { if(e.target === e.currentTarget) closeModal('profileModal'); });
+    document.getElementById('bgModal').addEventListener('click', (e)=> { if(e.target === e.currentTarget) closeModal('bgModal'); });
+    document.getElementById('commentModal').addEventListener('click', (e)=> { if(e.target === e.currentTarget) closeModal('commentModal'); });
+
+    document.getElementById('autoPostSwitch').addEventListener('change', (e)=> toggleAutoPost(e.target.checked));
+
+    /* 返回按钮：跳回 home.html（可按需替换） */
+    const btnBackEl = document.getElementById('btnBack');
+    if(btnBackEl){
+      btnBackEl.addEventListener('click', (e)=>{
+        const preferred = './home.html';
+        try{ location.href = preferred; }catch(err){ try{ location.replace(preferred); }catch(e){} }
+      });
     }
-  }
 
-  // 在页面卸载前尝试保存一次（再保险）
-  window.addEventListener('beforeunload', ()=> {
-    try{
-      if(window._NIE && window._NIE.saveState) window._NIE.saveState();
-      else saveState();
-    }catch(e){}
-  });
+    /* initial: ensure at least one AI contact exists (but do not overwrite saved avatar/background) */
+    (function ensureDefaultAI(){
+      if(!Array.isArray(state.contacts) || state.contacts.length === 0){
+        const id = 'ai_' + Date.now();
+        const avatar = state.ai.avatar && state.ai.avatar.length>10 ? state.ai.avatar : defaultAvatar();
+        state.contacts = [ { id, name: state.ai.name || '小NIE', avatar: avatar, role: state.ai.role || '' } ];
+        state.conversations[id] = state.conversations[id] || { members:['me', id], messages:[] };
+        saveState();
+      } else {
+        const aiIndex = state.contacts.findIndex(c=>String(c.id).startsWith('ai_'));
+        if(aiIndex>=0 && state.ai.avatar && state.ai.avatar.length>10){
+          const old = state.contacts[aiIndex];
+          state.contacts[aiIndex] = { id: old.id, name: state.ai.name||old.name, avatar: state.ai.avatar, role: old.role||state.ai.role||'' };
+          saveState();
+        }
+      }
+    })();
 
-  // 立即检测一次
-  warnIfStorageUnavailable();
+    /* render contacts */
+    function renderContacts(){
+      contactsGrid.innerHTML = '';
+      (state.contacts||[]).forEach(c=>{
+        const el = document.createElement('div'); el.className='contactCard'; el.dataset.id=c.id;
+        const av = c.avatar || defaultAvatar();
+        el.innerHTML = `<div class="iconWrap"><img src="${escapeAttr(av)}" alt=""></div><div class="contactName">${escapeHtml(c.name)}</div>`;
+        el.addEventListener('click', ()=> openConversation(c.id));
+        el.addEventListener('contextmenu', (ev)=>{ ev.preventDefault(); tryDeleteContact(c.id); });
+        el.addEventListener('touchstart', (ev)=>{ el.__touchStart = Date.now(); }, {passive:true});
+        el.addEventListener('touchend', (ev)=>{ const t = Date.now() - (el.__touchStart||0); if(t>700) tryDeleteContact(c.id); });
+        contactsGrid.appendChild(el);
+      });
+      applyEmptyHint();
+    }
+    function applyEmptyHint(){ emptyHint.style.display = (!state.contacts || state.contacts.length===0) ? 'block':'none'; }
 
-  /* ---------- 补丁结束 ---------- */
+    /* nicer delete flow */
+    function tryDeleteContact(id){
+      const c = state.contacts.find(x=>x.id===id);
+      if(!c) return;
+      // 这里可以替换为自定义 modal，我先用 confirm() 作为快速交互
+      const ok = confirm('删除联系人 "' + (c.name||'') + '"？');
+      if(ok){
+        delete state.conversations[id];
+        state.contacts = state.contacts.filter(x=>x.id!==id);
+        saveState();
+        renderContacts();
+        showToast('已删除联系人');
+      }
+    }
 
-  /* initial render */
-  renderContacts(); applyEmptyHint(); applyBubbleColors(); applyBackground(); renderFeed(); saveState();
-  showContacts();
-  if(state.feedAuto) toggleAutoPost(true);
+    /* open conversation */
+    function openConversation(id){
+      state.active = id;
+      state.conversations[id] = state.conversations[id] || { members:['me', id], messages:[], name: (state.contacts.find(c=>c.id===id)?.name || '对方') };
+      const target = (state.contacts||[]).find(x=>x.id===id) || { name: state.ai.name||'对方', avatar: state.ai.avatar||defaultAvatar() };
+      chatTitle.textContent = target.name;
+      chatSub.textContent = '';
+      chatAvatarImg.src = target.avatar || defaultAvatar();
+      topActions.style.display='none'; bottomBar.style.display='none';
+      contactsPane.classList.add('hidden'); chatPane.classList.remove('hidden'); feedPane.classList.add('hidden');
+      renderMessages();
+      saveState();
+    }
 
-  /* expose for debug */
-  window._NIE = { state, saveState, renderContacts, renderFeed, loadFeed, showToast };
+    function showContacts(){ state.active=null; chatPane.classList.add('hidden'); feedPane.classList.add('hidden'); contactsPane.classList.remove('hidden'); topActions.style.display=''; bottomBar.style.display=''; saveState(); }
+
+    /* render messages */
+    function renderMessages(){
+      messagesEl.innerHTML='';
+      const conv = state.conversations[state.active]||{messages:[]};
+      conv.messages.forEach(m=>{
+        const row=document.createElement('div'); row.className='msgRow'+(m.from==='me'?' mine':'');
+        const avat=document.createElement('div'); avat.className='msgAvatar';
+        const img=document.createElement('img'); img.style.width='100%'; img.style.height='100%'; img.style.objectFit='cover';
+        if(m.from==='me') img.src = state.me.avatar || defaultAvatar();
+        else {
+          const c = state.contacts.find(x=>x.id===m.from);
+          img.src = c ? (c.avatar||defaultAvatar()) : (state.ai.avatar||defaultAvatar());
+        }
+        avat.appendChild(img);
+        const bubble=document.createElement('div'); bubble.className='bubble ' + (m.from==='me'?'user':'ai');
+        // ============================
+        // STYLE HIDE: 不在聊天里显示风格/人设标签
+        // 任何用于生成的风格都不会被拼接到 bubble 的文本上
+        // ============================
+        bubble.innerHTML = escapeHtml(m.text).replaceAll('\\n','<br>');
+        if(m.from==='me'){ row.appendChild(bubble); row.appendChild(avat); }
+        else { row.appendChild(avat); row.appendChild(bubble); }
+        messagesEl.appendChild(row);
+      });
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function pushMessage(convId,msg){
+      state.conversations[convId] = state.conversations[convId] || { members:['me'], messages:[] };
+      state.conversations[convId].messages.push(msg);
+      saveState();
+    }
+
+    async function sendMsg(){
+      const raw = txtInput.value.trim(); if(!raw) return;
+      const id = state.active || (state.contacts[0] && state.contacts[0].id);
+      if(!id) return showToast('请先添加联系人');
+      pushMessage(id, { from:'me', text:raw, ts:Date.now() });
+      txtInput.value=''; renderMessages();
+
+      const conv = state.conversations[id] || { members:[] };
+      if(String(id).startsWith('g')){
+        const members = conv.members.filter(m=>m!=='me');
+        for(const memberId of members){
+          await new Promise(r=>setTimeout(r, 200 + Math.random()*300));
+          const replies = await requestReplyGroup(raw, id, memberId);
+          replies.forEach(r=> pushMessage(id, { from: memberId, text: r, ts: Date.now() }));
+          renderMessages();
+        }
+        return;
+      }
+
+      // single chat
+      pushMessage(id, { from:'ai', text:'...', ts:Date.now(), temp:true });
+      renderMessages();
+      const replies = await requestReply(raw, id);
+      const convArr = state.conversations[id];
+      if(convArr && convArr.messages.length && convArr.messages[convArr.messages.length-1].temp) convArr.messages.pop();
+      replies.forEach(r=> pushMessage(id, { from:'ai', text:r, ts:Date.now() }));
+      renderMessages();
+    }
+
+    /* requestReply: 生成时可使用人设/风格作为提示，但不要把“风格文字”直接拼到可见结果 */
+    async function requestReply(userText, convId){
+      const backend = localStorage.getItem('chat_backend_url') || null;
+      const persona = {...state.ai};
+      const replyCount = Math.max(1, Math.min(20, (persona.replyCount||1)));
+      const actionsEnabled = !!persona.actionsEnabled;
+
+      // 如果有后端，传 persona 作为生成提示（后端负责使用/不使用）
+      if(backend){
+        try{
+          const payload = {message:userText, persona:{ name: persona.name, gender: persona.gender, role_desc: persona.role, style: persona.style, catch: persona.catch }};
+          const res = await fetch(backend, {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify(payload)});
+          if(!res.ok) throw new Error('后端返回 '+res.status);
+          const j = await res.json();
+          let text = j.reply || j.text || (j.choices && j.choices[0]?.message?.content) || JSON.stringify(j);
+          let parts = splitReplyParts(text, replyCount);
+          if(actionsEnabled) parts = parts.map(p=>`（他笑了笑）${p}`);
+          // 注意：不在本地再追加风格文字
+          return parts.slice(0,replyCount);
+        }catch(e){ console.warn('backend err',e); showToast('后端请求失败，使用本地生成'); }
+      }
+
+      // fallback 本地生成（安全），**不**拼接风格文字到回复
+      await new Promise(r=>setTimeout(r, 250 + Math.random()*300));
+      const baseCandidates = [];
+      if(/^(你好|hi|嗨|hello)/i.test(userText)) baseCandidates.push('你好～很高兴和你说话');
+      if(userText.length < 8) baseCandidates.push(`你说的「${userText}」我听到了`);
+      if(userText.length >= 8) baseCandidates.push(`我注意到你提到「${userText.slice(0,40)}」`);
+      if(baseCandidates.length===0) baseCandidates.push('嗯，我知道了');
+      const parts = [];
+      for(let i=0;i<replyCount;i++){
+        const j = baseCandidates[i % baseCandidates.length];
+        parts.push(j);
+      }
+      if(actionsEnabled) return parts.map(p=>`（他轻轻一笑）${p}`);
+      return parts;
+    }
+
+    function splitReplyParts(text, count){
+      let parts = (text+'').split(/\n{1,}|\.\s+/).map(s=>s.trim()).filter(Boolean);
+      if(parts.length===0) parts = [String(text).slice(0,200)];
+      while(parts.length < count) parts.push(parts[parts.length-1]||parts[0]);
+      return parts.slice(0,count);
+    }
+
+    /* group reply */
+    async function requestReplyGroup(userText, convId, memberId){
+      const member = state.contacts.find(c=>c.id===memberId) || { name:'TA' };
+      const conv = state.conversations[convId] || {};
+      const memberRoles = conv.memberRoles || {};
+      const role = memberRoles[memberId] || (member && member.role) || '';
+      await new Promise(r=>setTimeout(r, 200 + Math.random()*200));
+      const short = userText.length < 20 ? userText : userText.slice(0,30);
+      const base = role ? `${short}` : `${short}`;
+      return [ base ];
+    }
+
+    /* FEED */
+    function loadFeed(){ try{ return JSON.parse(localStorage.getItem(FEED_KEY)||'[]'); }catch(e){ /* try idb */ } return []; }
+    function saveFeed(list){ try{ localStorage.setItem(FEED_KEY, JSON.stringify(list)); }catch(e){ idbSet(FEED_KEY, list); } }
+    function renderFeed(){
+      const root = document.getElementById('feedList'); root.innerHTML=''; 
+      let list = [];
+      try{ list = JSON.parse(localStorage.getItem(FEED_KEY)||'[]'); }catch(e){ /* ignore */ }
+      // fallback idb read (sync can't await here) — but we saved to idb in saveFeed so load should work after reload
+      for(let i=list.length-1;i>=0;i--){
+        const p = list[i];
+        if(p.ownerId){
+          const owner = state.contacts.find(c=>c.id===p.ownerId);
+          if(owner){ p.name = owner.name; p.avatar = owner.avatar; }
+        }
+        const el = document.createElement('div'); el.className='feedItem';
+        el.innerHTML = `<div class="feedMeta"><div style="width:44px;height:44px;border-radius:10px;overflow:hidden;background:#fff"><img src="${escapeAttr(p.avatar||defaultAvatar())}" style="width:100%;height:100%;object-fit:cover"></div><div style="flex:1"><div style="font-weight:700">${escapeHtml(p.name)}</div><div style="font-size:12px;color:var(--muted)">${new Date(p.ts).toLocaleString()}</div></div></div><div style="margin-top:8px">${escapeHtml(p.text)}</div><div class="postActions"><button class="action" data-id="${p.id}" data-act="like">赞 (${p.likes?.length||0})</button><button class="action" data-id="${p.id}" data-act="comment">评论 (${p.comments?.length||0})</button></div>`;
+        const likeLine = document.createElement('div'); likeLine.className='likeList';
+        const names = (p.likes||[]).join('、');
+        likeLine.innerHTML = names ? `赞：${escapeHtml(names)}` : '';
+        el.appendChild(likeLine);
+        if(p.comments && p.comments.length){
+          const cwrap = document.createElement('div'); cwrap.style.marginTop='8px';
+          p.comments.forEach(c=> cwrap.innerHTML += `<div style="font-size:13px;border-top:1px dashed rgba(0,0,0,0.03);padding:6px 0"><strong>${escapeHtml(c.name)}</strong>：${escapeHtml(c.text)}<div style="font-size:11px;color:var(--muted)">${new Date(c.ts).toLocaleString()}</div></div>`);
+          el.appendChild(cwrap);
+        }
+        root.appendChild(el);
+      }
+      root.querySelectorAll('button').forEach(b=> b.addEventListener('click', (ev)=>{
+        const id = ev.currentTarget.dataset.id, act = ev.currentTarget.dataset.act;
+        if(act==='like') toggleLike(id);
+        else openCommentModal(id);
+      }));
+    }
+
+    function publishPost(){
+      const t = document.getElementById('postText').value.trim(); if(!t) return showToast('请输入内容');
+      let list = [];
+      try{ list = JSON.parse(localStorage.getItem(FEED_KEY)||'[]'); }catch(e){}
+      const newp = { id:'p'+Date.now(), ownerId: null, name: state.me.name||'你', avatar: state.me.avatar||defaultAvatar(), text:t, likes:[], comments:[], ts:Date.now() };
+      list.push(newp);
+      saveFeed(list); document.getElementById('postText').value=''; renderFeed(); showToast('已发布');
+    }
+
+    function aiPublish(){
+      const aiContact = state.contacts.find(c=>String(c.id).startsWith('ai_')) || state.contacts[0];
+      const ownerId = aiContact ? aiContact.id : null;
+      let list = [];
+      try{ list = JSON.parse(localStorage.getItem(FEED_KEY)||'[]'); }catch(e){}
+      list.push({ id:'p'+Date.now(), ownerId: ownerId, name: aiContact ? aiContact.name : state.ai.name, avatar: aiContact ? aiContact.avatar : state.ai.avatar||defaultAvatar(), text: (state.ai.catch||'今天也想和你说点心里话～'), likes:[], comments:[], ts:Date.now() });
+      saveFeed(list); renderFeed(); showToast('AI 已发一条');
+    }
+
+    function toggleLike(id){
+      let list = [];
+      try{ list = JSON.parse(localStorage.getItem(FEED_KEY)||'[]'); }catch(e){}
+      const p = list.find(x=>x.id===id); if(!p) return;
+      const me = state.me.name || '你'; p.likes = p.likes || []; const idx = p.likes.indexOf(me); if(idx>=0) p.likes.splice(idx,1); else p.likes.push(me); saveFeed(list); renderFeed();
+    }
+
+    /* comment modal */
+    let commentTarget = null;
+    function openCommentModal(id){
+      commentTarget = id;
+      const list = JSON.parse(localStorage.getItem(FEED_KEY)||'[]');
+      const post = list.find(x=>x.id===id);
+      document.getElementById('commentTargetInfo').textContent = post ? `${post.name} · ${new Date(post.ts).toLocaleString()}` : '';
+      document.getElementById('commentText').value = '';
+      showModal('commentModal');
+    }
+    function commentConfirm(){
+      const text = document.getElementById('commentText').value.trim(); if(!text) return showToast('请输入评论');
+      let list = [];
+      try{ list = JSON.parse(localStorage.getItem(FEED_KEY)||'[]'); }catch(e){}
+      const p = list.find(x=>x.id===commentTarget); if(!p) return closeModal('commentModal');
+      p.comments = p.comments || []; p.comments.push({ name: state.me.name||'你', text, ts:Date.now() }); saveFeed(list); renderFeed(); closeModal('commentModal'); showToast('已评论');
+    }
+
+    function openFeed(){ contactsPane.classList.add('hidden'); chatPane.classList.add('hidden'); feedPane.classList.remove('hidden'); renderFeed(); document.getElementById('autoPostSwitch').checked = !!state.feedAuto; }
+    function closeFeed(){ feedPane.classList.add('hidden'); contactsPane.classList.remove('hidden'); chatPane.classList.add('hidden'); topActions.style.display=''; bottomBar.style.display=''; saveState(); }
+
+    function toggleAutoPost(on){
+      state.feedAuto = !!on; saveState();
+      if(autoPostTimer) { clearInterval(autoPostTimer); autoPostTimer = null; }
+      if(on){ autoPostTimer = setInterval(()=> aiPublish(), state.feedAutoInterval || 60000); showToast('AI 自动发已开启'); }
+      else showToast('AI 自动发已关闭');
+    }
+
+    /* modals */
+    function showModal(id){ const el = document.getElementById(id); el.classList.add('show'); el.setAttribute('aria-hidden','false'); }
+    function closeModal(id){ const el = document.getElementById(id); el.classList.remove('show'); el.setAttribute('aria-hidden','true'); }
+
+    /* AI modal */
+    function openAiModal(){
+      const active = state.active;
+      document.getElementById('aiSingleWrap').style.display = 'block';
+      document.getElementById('aiGroupWrap').style.display = 'none';
+      document.getElementById('aiModalTitle').textContent = '他的设定';
+      document.getElementById('aiName').value = state.ai.name || '';
+      document.getElementById('aiGender').value = state.ai.gender || 'neutral';
+      document.getElementById('aiRole').value = state.ai.role || '';
+      document.getElementById('aiStyleCatch').value = (state.ai.style ? state.ai.style + (state.ai.catch ? '；' + state.ai.catch : '') : state.ai.catch || '');
+      document.getElementById('userColor').value = state.bubble.user || '#ffd6e6';
+      document.getElementById('aiColor').value = state.bubble.ai || '#d7c8ff';
+      document.getElementById('aiReplyCount').value = state.ai.replyCount || 1;
+      document.getElementById('aiActionsEnabled').checked = !!state.ai.actionsEnabled;
+
+      if(active && String(active).startsWith('g')){
+        const conv = state.conversations[active] || { members:[] };
+        const members = conv.members.filter(m=>m!=='me');
+        const wrap = document.getElementById('aiGroupMembersList'); wrap.innerHTML='';
+        members.forEach(mid=>{
+          const contact = state.contacts.find(c=>c.id===mid) || { name:'成员', avatar: defaultAvatar(), role:'' };
+          const row = document.createElement('div'); row.style.display='flex'; row.style.gap='10px'; row.style.alignItems='flex-start'; row.style.marginBottom='10px';
+          row.innerHTML = `<div style="width:64px"><div style="width:56px;height:56px;border-radius:10px;overflow:hidden"><img src="${escapeAttr(contact.avatar||defaultAvatar())}" style="width:100%;height:100%;object-fit:cover"></div><input type="file" data-mid="${escapeAttr(mid)}" accept="image/*" style="margin-top:6px"></div><div style="flex:1"><div style="font-weight:700;margin-bottom:6px">${escapeHtml(contact.name)}</div><input type="text" data-mid="${escapeAttr(mid)}" placeholder="在群内显示的名字（可选）" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);margin-bottom:6px"><textarea data-mid="${escapeAttr(mid)}" placeholder="群内人设（仅作为生成提示）" style="width:100%;min-height:64px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)"></textarea></div>`;
+          wrap.appendChild(row);
+          const nameInput = row.querySelector('input[type=text]');
+          const textArea = row.querySelector('textarea');
+          nameInput.value = contact.name || '';
+          textArea.value = (conv.memberRoles && conv.memberRoles[mid]) ? conv.memberRoles[mid] : (contact.role || '');
+        });
+        document.getElementById('aiSingleWrap').style.display='none';
+        document.getElementById('aiGroupWrap').style.display='block';
+        document.getElementById('aiModalTitle').textContent = '群聊：成员设定';
+      }
+      showModal('aiModal');
+    }
+
+    async function saveAiSettings(){
+      const active = state.active;
+      if(active && String(active).startsWith('g')){
+        const conv = state.conversations[active] || {};
+        conv.memberRoles = conv.memberRoles || {};
+        const wrap = document.getElementById('aiGroupMembersList');
+        const fileInputs = wrap.querySelectorAll('input[type=file]');
+        const filePromises = Array.from(fileInputs).map(inp=>{
+          const f = inp.files && inp.files[0];
+          if(!f) return Promise.resolve({mid: inp.dataset.mid, data: null});
+          return fileToDataUrl(f).then(d=>({mid: inp.dataset.mid, data: d})).catch(()=>({mid: inp.dataset.mid, data:null}));
+        });
+        const results = await Promise.all(filePromises);
+        const textInputs = wrap.querySelectorAll('input[type=text]');
+        const textareas = wrap.querySelectorAll('textarea');
+        textInputs.forEach(inp=>{
+          const mid = inp.dataset.mid; const v = inp.value.trim();
+          if(v){
+            const c = state.contacts.find(x=>x.id===mid);
+            if(c) c.name = v;
+          }
+        });
+        textareas.forEach(ta=>{
+          const mid = ta.dataset.mid; const v = ta.value.trim();
+          if(mid) conv.memberRoles[mid] = v;
+        });
+        results.forEach(r=>{
+          if(r.data){
+            const c = state.contacts.find(x=>x.id===r.mid);
+            if(c) c.avatar = r.data;
+          }
+        });
+        state.conversations[active] = conv;
+        saveState();
+        renderContacts();
+        closeModal('aiModal');
+        showToast('群聊成员设定已保存');
+        return;
+      }
+
+      state.ai.name = document.getElementById('aiName').value.trim() || state.ai.name;
+      state.ai.gender = document.getElementById('aiGender').value;
+      state.ai.role = document.getElementById('aiRole').value.trim();
+      const sc = document.getElementById('aiStyleCatch').value.trim();
+      if(sc.includes('；')||sc.includes(';')||sc.includes(',')){ const parts=sc.split(/；|;|,/).map(s=>s.trim()).filter(Boolean); state.ai.style=parts[0]||state.ai.style; state.ai.catch=parts.slice(1).join('；')||state.ai.catch; } else { state.ai.style=sc||state.ai.style; state.ai.catch=sc||state.ai.catch; }
+      const f = document.getElementById('aiAvatarFile').files;
+      if(f && f[0]) state.ai.avatar = await fileToDataUrl(f[0]);
+      state.bubble.user = document.getElementById('userColor').value || state.bubble.user;
+      state.bubble.ai = document.getElementById('aiColor').value || state.bubble.ai;
+      let rc = parseInt(document.getElementById('aiReplyCount').value) || 1; rc = Math.max(1, Math.min(20, rc)); state.ai.replyCount = rc;
+      state.ai.actionsEnabled = !!document.getElementById('aiActionsEnabled').checked;
+
+      const aiContactIndex = state.contacts.findIndex(c=> String(c.id).startsWith('ai_'));
+      if(aiContactIndex >= 0){
+        const old = state.contacts[aiContactIndex];
+        const newObj = { id: old.id, name: state.ai.name || old.name, avatar: state.ai.avatar || old.avatar, role: state.ai.role || old.role };
+        state.contacts.splice(aiContactIndex, 1, newObj);
+      }
+      saveState();
+      closeModal('aiModal');
+      renderContacts();
+      showToast('已保存他的设定');
+    }
+
+    /* profile */
+    function openProfileModal(){ document.getElementById('meName').value = state.me.name || ''; document.getElementById('meRole').value = state.me.role || ''; document.getElementById('meAvatarUrl').value = ''; showModal('profileModal'); }
+    async function saveProfile(){
+      state.me.name = document.getElementById('meName').value.trim() || state.me.name;
+      state.me.role = document.getElementById('meRole').value.trim();
+      const f = document.getElementById('meAvatarFile').files;
+      if(f && f[0]) state.me.avatar = await fileToDataUrl(f[0]);
+      else if(document.getElementById('meAvatarUrl').value.trim()) state.me.avatar = document.getElementById('meAvatarUrl').value.trim();
+      saveState(); closeModal('profileModal'); showToast('已保存个人设置'); renderContacts();
+    }
+
+    /* contact/group */
+    function openContactModal(){
+      document.getElementById('contactName').value=''; document.getElementById('contactFile').value=''; document.getElementById('contactURL').value=''; document.getElementById('contactRole').value='';
+      showModal('contactModal');
+    }
+
+    async function saveContact(){
+      const name=document.getElementById('contactName').value.trim();
+      if(!name) return showToast('请输入名字');
+      let avatar='';
+      if(document.getElementById('contactFile').files && document.getElementById('contactFile').files[0]) avatar = await fileToDataUrl(document.getElementById('contactFile').files[0]);
+      else if(document.getElementById('contactURL').value.trim()) avatar = document.getElementById('contactURL').value.trim();
+      const role = document.getElementById('contactRole').value.trim();
+      const id = 'c' + Date.now() + '_' + Math.floor(Math.random()*999);
+      const newContact = { id, name, avatar: avatar || defaultAvatar(), role };
+      state.contacts.push(newContact);
+      state.conversations[id] = state.conversations[id] || { members:['me', id], messages:[] };
+      saveState();
+      renderContacts();
+      closeModal('contactModal');
+      showToast('联系人已保存');
+    }
+
+    function openGroupModal(){
+      const list = document.getElementById('groupContacts'); list.innerHTML=''; (state.contacts||[]).forEach(c=>{ const el=document.createElement('div'); el.style.textAlign='center'; el.style.padding='6px'; el.innerHTML = `<label style="display:flex;flex-direction:column;align-items:center;gap:6px"><input type="checkbox" value="${c.id}"><div style="font-size:13px">${escapeHtml(c.name)}</div></label>`; list.appendChild(el); });
+      document.getElementById('groupName').value=''; document.getElementById('groupMemberRoles').innerHTML=''; showModal('groupModal');
+      list.querySelectorAll('input[type=checkbox]').forEach(ch=>{
+        ch.addEventListener('change', ()=> renderGroupMemberRoles());
+      });
+    }
+
+    function renderGroupMemberRoles(){
+      const sel = Array.from(document.querySelectorAll('#groupContacts input[type=checkbox]:checked')).map(i=>i.value);
+      const wrap = document.getElementById('groupMemberRoles'); wrap.innerHTML='';
+      sel.forEach(id=>{
+        const c = state.contacts.find(x=>x.id===id);
+        const name = c ? c.name : id;
+        const avatar = (c && c.avatar) ? c.avatar : defaultAvatar();
+        const div = document.createElement('div'); div.style.display='flex'; div.style.gap='8px'; div.style.alignItems='center'; div.style.marginBottom='8px';
+        div.innerHTML = `<div style="width:44px;height:44px;border-radius:8px;overflow:hidden"><img src="${escapeAttr(avatar)}" style="width:100%;height:100%;object-fit:cover"></div><div style="flex:1"><div style="font-weight:700">${escapeHtml(name)}</div><input type="text" placeholder="群内人设（会在群内回复中作为提示使用）" data-id="${escapeAttr(id)}" style="width:100%;margin-top:6px;padding:6px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)"></div>`;
+        wrap.appendChild(div);
+      });
+    }
+
+    async function createGroup(){
+      const checked = Array.from(document.querySelectorAll('#groupContacts input[type=checkbox]:checked')).map(i=>i.value);
+      if(checked.length<1) return showToast('请选择至少一位成员');
+      if(checked.length+1>8) return showToast('最多 8 人');
+      const name=document.getElementById('groupName').value.trim() || ('群聊'+Math.floor(Math.random()*90+10));
+      const gid='g' + Date.now() + '_' + Math.floor(Math.random()*999);
+      const memberRoles = {};
+      Array.from(document.querySelectorAll('#groupMemberRoles input[type=text]')).forEach(inp=>{
+        const id = inp.dataset.id; if(id) memberRoles[id] = inp.value.trim();
+      });
+      state.conversations[gid] = { members:['me', ...checked], messages:[], name, memberRoles };
+      const groupContact = { id: gid, name, avatar: defaultAvatar(), role: '群聊' };
+      state.contacts.push(groupContact);
+      saveState(); renderContacts(); closeModal('groupModal'); showToast('群聊创建成功');
+    }
+
+    /* background */
+    function openBgModal(){ document.getElementById('bgFile').value=''; document.getElementById('bgUrl').value=''; showModal('bgModal'); }
+    async function setBackgroundFromModal(){
+      const f = document.getElementById('bgFile').files;
+      if(f && f[0]) state.background = await fileToDataUrl(f[0]);
+      else if(document.getElementById('bgUrl').value.trim()) state.background = document.getElementById('bgUrl').value.trim();
+      else { state.background = ''; }
+      await saveState(); closeModal('bgModal'); applyBackground(); showToast('已设置聊天卡片背景（仅白卡）');
+    }
+
+    function applyBackground(){
+      const panes = document.querySelectorAll('.pane');
+      panes.forEach(p=>{
+        if(state.background){
+          p.style.backgroundImage = `url('${escapeAttr(state.background)}')`;
+          p.style.backgroundSize = 'cover';
+          p.style.backgroundPosition = 'center';
+          p.style.backgroundRepeat = 'no-repeat';
+          p.style.backgroundColor = 'rgba(255,255,255,0.6)';
+        } else {
+          p.style.backgroundImage = '';
+          p.style.backgroundColor = 'rgba(255,255,255,0.98)';
+        }
+      });
+    }
+
+    function applyBubbleColors(){ document.documentElement.style.setProperty('--user-bubble', state.bubble.user || '#ffd6e6'); document.documentElement.style.setProperty('--ai-bubble', state.bubble.ai || '#d7c8ff'); }
+
+    /* utils */
+    function defaultAvatar(){ return 'data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect rx='36' width='100%' height='100%' fill='white'/><text x='50%' y='50%' font-size='110' text-anchor='middle' dominant-baseline='central'>🙂</text></svg>`); }
+    function escapeHtml(s){ if(!s) return ''; return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+    function escapeAttr(s){ return (s||'').replaceAll('"','&quot;').replaceAll("'",''); }
+    function fileToDataUrl(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload = ()=> res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); }); }
+    function showToast(msg, ms=1500){ toastEl.textContent = msg; toastEl.style.display = 'block'; toastEl.style.opacity = '1'; setTimeout(()=>{ toastEl.style.opacity = '0'; setTimeout(()=> toastEl.style.display='none', 250); }, ms); }
+
+    /* initial render */
+    renderContacts(); applyEmptyHint(); applyBubbleColors(); applyBackground(); renderFeed();
+    await saveState(); // ensure persisted into whichever storage is available
+    showContacts();
+    if(state.feedAuto) toggleAutoPost(true);
+
+    /* expose for debug */
+    window._NIE = { state, saveState, renderContacts, renderFeed, loadFeed, showToast };
+
+    /* storage warning if localStorage not available (but we still used IDB fallback above) */
+    if(!checkStorageAvailable()){
+      showToast('注意：localStorage 不可用，已启用 IndexedDB 后备以保持设置（建议通过 https 或 GitHub Pages 打开以获取最佳持久化体验）', 6000);
+    }
+
+    /* beforeunload 再保存一次（保险） */
+    window.addEventListener('beforeunload', ()=> {
+      try{ saveState(); }catch(e){}
+    });
+
+  } // end initUI
 
 }); // DOMContentLoaded
 </script>
