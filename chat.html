@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>NIEaiphone — 聊天（支持后端 & AI 发动态）</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg1:#f0e6fb; --bg2:#e6d8f6;
+    --card: rgba(255,255,255,0.36);
+    --accent1:#9b86e6; --accent2:#7a64d0;
+    --muted:#7b6c88; --text:#33283f;
+    /* bubble theme variables (default) */
+    --user-bubble: linear-gradient(180deg,#ffdedeff,#ffd6e6);
+    --ai-bubble: linear-gradient(180deg,#e9dbff,#d7c8ff);
+    --user-text: #3b1a2f;
+    --ai-text: #2b1b3a;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:"Quicksand","Nunito","Segoe UI",sans-serif;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text)}
+  a{color:inherit}
+
+  /* frame */
+  .frame{width:92%;max-width:420px;margin:12px auto;border-radius:20px;background:var(--card);backdrop-filter:blur(12px);padding:10px 12px 18px;box-shadow:0 18px 50px rgba(40,24,60,0.08)}
+  .topbar{display:flex;align-items:center;gap:10px;padding:6px}
+  .backBtn{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid rgba(0,0,0,0.04);cursor:pointer}
+  .titleWrap{flex:1}
+  .title{font-weight:700;font-size:16px;margin:0}
+  .subtitle{font-size:12px;color:var(--muted);margin-top:4px}
+  .actions{display:flex;gap:8px;align-items:center}
+
+  .tabs{display:flex;gap:10px;padding:10px 6px}
+  .tab{flex:1;padding:10px;border-radius:12px;text-align:center;background:transparent;border:1px solid rgba(0,0,0,0.03);cursor:pointer}
+  .tab.active{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:white;box-shadow:0 10px 26px rgba(125,106,200,0.18)}
+
+  .content{height:62vh;overflow:hidden;border-radius:12px;margin:8px 4px;padding:10px;background:rgba(255,255,255,0.9)}
+  .pane{height:100%;overflow:auto;padding-bottom:8px}
+
+  /* chat header & messages */
+  .chatHeader{display:flex;align-items:center;gap:12px;padding:8px;border-bottom:1px solid rgba(0,0,0,0.03)}
+  .avatar{width:48px;height:48px;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#fff}
+  .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+  .chatTitle{font-weight:700}
+  .chatMeta{font-size:12px;color:var(--muted)}
+
+  .messages{padding:12px;display:flex;flex-direction:column;gap:10px;background-size:cover}
+  .msgRow{display:flex;gap:8px;align-items:flex-end}
+  .msgRow.mine{justify-content:flex-end}
+  .bubble{max-width:78%;padding:10px 12px;border-radius:14px;font-size:14px;line-height:1.45;word-break:break-word}
+  .bubble.user{background:var(--user-bubble);color:var(--user-text);border-bottom-right-radius:6px}
+  .bubble.bot{background:var(--ai-bubble);color:var(--ai-text);border-bottom-left-radius:6px}
+  .msgAvatar{width:32px;height:32px;border-radius:8px;overflow:hidden}
+  .metaSmall{font-size:11px;color:var(--muted);margin-top:6px}
+
+  /* input area */
+  .composer{display:flex;gap:8px;padding:10px;border-top:1px solid rgba(0,0,0,0.03);align-items:end}
+  textarea{flex:1;min-height:44px;max-height:120px;padding:8px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);resize:none}
+  .sendBtn{padding:10px 14px;border-radius:10px;background:linear-gradient(135deg,var(--accent1),var(--accent2));color:white;border:none;cursor:pointer}
+  .smallBtn{padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:transparent;cursor:pointer}
+
+  /* feed */
+  .post{padding:12px;border-radius:12px;border:1px solid rgba(0,0,0,0.04);margin-bottom:12px;background:white}
+  .postHeader{display:flex;gap:8px;align-items:center}
+  .postImg{width:40px;height:40px;border-radius:10px;overflow:hidden}
+  .postBody{margin-top:8px}
+  .postMedia{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+  .postMedia img{max-width:48%;border-radius:10px}
+
+  /* modal */
+  .modalWrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(10,8,12,0.45);z-index:1200;padding:14px}
+  .modal{width:100%;max-width:640px;max-height:86vh;overflow:auto;background:white;border-radius:12px;padding:14px;box-shadow:0 30px 80px rgba(10,10,20,0.45)}
+  .formRow{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+  .formRow label{width:92px;font-size:13px;color:var(--muted)}
+  .formRow input[type=text], .formRow select, .formRow textarea{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+  .modalActions{display:flex;gap:8px;justify-content:flex-end;padding-top:8px}
+
+  /* color swatches */
+  .swatch{display:inline-block;width:36px;height:24px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);cursor:pointer;margin-right:8px}
+
+  @media (max-width:420px){
+    .frame{width:96%;padding:8px}
+    .content{height:64vh}
+    .modal{padding:12px}
+  }
+</style>
+</head>
+<body>
+  <div class="frame" role="application" aria-label="聊天应用">
+    <div class="topbar">
+      <button class="backBtn" id="backHome" title="返回小家">←</button>
+      <div class="titleWrap">
+        <div class="title">聊天</div>
+        <div class="subtitle" id="subInfo">一对一 / 群聊</div>
+      </div>
+      <div class="actions">
+        <button class="smallBtn" id="openFeed">朋友圈</button>
+        <button class="smallBtn" id="openPersona">AI 设置</button>
+        <button class="smallBtn" id="openBg">背景</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="chats">消息</div>
+      <div class="tab" data-tab="contacts">联系人</div>
+    </div>
+
+    <div class="content">
+      <!-- Chats pane -->
+      <div class="pane" id="paneChats">
+        <div class="chatHeader">
+          <div class="avatar" id="chatAvatar"><img src="" alt="avatar"></div>
+          <div>
+            <div class="chatTitle" id="chatTitle">与 AI 聊天</div>
+            <div class="chatMeta" id="chatMeta">单聊 • 人数：1</div>
+          </div>
+          <div style="flex:1"></div>
+          <button class="smallBtn" id="openGroup">群聊</button>
+        </div>
+
+        <div class="messages" id="messages"></div>
+
+        <div class="composer">
+          <textarea id="inputMsg" placeholder="输入消息，Enter 发送（Shift+Enter 换行）"></textarea>
+          <button class="sendBtn" id="sendBtn">发送</button>
+        </div>
+      </div>
+
+      <!-- Contacts pane -->
+      <div class="pane" id="paneContacts" style="display:none">
+        <div style="padding:10px">
+          <button class="smallBtn" id="createContact">+ 新建联系人</button>
+        </div>
+        <div id="contactsList" style="padding:10px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feed modal -->
+  <div class="modalWrap" id="feedModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="feedTitle">
+      <h3 id="feedTitle">朋友圈</h3>
+      <div style="display:flex;gap:8px;margin:8px 0 12px">
+        <input type="text" id="postText" placeholder="说点什么..." style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)">
+        <input type="file" id="postFile" accept="image/*" multiple>
+        <button class="btnPrimary" id="postBtn">发布</button>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button class="smallBtn" id="aiPostBtn">AI 发一条动态</button>
+        <button class="smallBtn" id="clearFeedBtn">清空</button>
+      </div>
+
+      <div id="feedList" style="max-height:56vh;overflow:auto"></div>
+
+      <div style="text-align:right;margin-top:10px">
+        <button class="btnGhost" id="closeFeed">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Persona modal (AI 设置 + bubble color + backend test) -->
+  <div class="modalWrap" id="personaModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="personaTitle">
+      <h3 id="personaTitle">AI 人设与偏好设置</h3>
+
+      <div class="formRow"><label>AI 名称</label><input type="text" id="aiName" placeholder="例如：小NIE"></div>
+      <div class="formRow"><label>性别</label>
+        <select id="aiGender"><option value="neutral">中性</option><option value="female">女</option><option value="male">男</option></select>
+      </div>
+      <div class="formRow"><label>身份 / 人设</label><input type="text" id="aiRole" placeholder="例如：温柔的学习助手"></div>
+      <div class="formRow"><label>表达风格</label>
+        <select id="aiStyle">
+          <option value="friendly">友好随和</option>
+          <option value="professional">专业严谨</option>
+          <option value="playful">俏皮可爱</option>
+          <option value="romantic">温柔浪漫</option>
+        </select>
+      </div>
+      <div class="formRow"><label>习惯用语</label><input type="text" id="aiCatch" placeholder="例如：常用问候或口头禅"></div>
+
+      <hr>
+
+      <h4>聊天气泡配色（选择一组）</h4>
+      <div style="margin:8px 0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <div><strong>预设主题：</strong></div>
+          <div class="swatch" data-theme="pinkwhite" title="粉白" style="background:linear-gradient(180deg,#ffeff3,#ffeef8)"></div>
+          <div class="swatch" data-theme="pinkpurple" title="粉紫" style="background:linear-gradient(180deg,#ffdfe8,#e6d5ff)"></div>
+          <div class="swatch" data-theme="purpleblue" title="紫蓝" style="background:linear-gradient(180deg,#e9dbff,#d7c8ff)"></div>
+          <div class="swatch" data-theme="mint" title="薄荷" style="background:linear-gradient(180deg,#e8fff2,#d9fff0)"></div>
+        </div>
+
+        <div style="font-size:13px;color:var(--muted)">选择后会同时为「你」与「AI」设置一组搭配，当然你也可以分别微调（高级）。</div>
+      </div>
+
+      <div style="margin-top:10px">
+        <div class="formRow"><label>用户气泡</label><input type="color" id="userColor" value="#ffd6e6"></div>
+        <div class="formRow"><label>AI 气泡</label><input type="color" id="aiColor" value="#d7c8ff"></div>
+      </div>
+
+      <hr>
+
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div style="flex:1">
+          <div style="font-size:13px;color:var(--muted)">后端 URL（用于真实生成）：</div>
+          <input type="text" id="backendUrl" placeholder="在 api.html 填写或直接在此处填写后端 URL" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);margin-top:8px">
+        </div>
+        <div style="width:130px">
+          <button class="smallBtn" id="testBackend">测试后端连接</button>
+        </div>
+      </div>
+
+      <div style="margin-top:8px;font-size:13px;color:var(--muted)">注意：不要在前端直接放置 API Key。后端代理应安全存放密钥并提供短期 token 或仅允许你的域。</div>
+
+      <div class="modalActions">
+        <button class="btnGhost" id="personaCancel">取消</button>
+        <button class="btnPrimary" id="personaSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Background modal -->
+  <div class="modalWrap" id="bgModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="bgTitle">
+      <h3 id="bgTitle">更换聊天背景 / 头像</h3>
+
+      <div class="formRow"><label>聊天背景</label><input type="file" id="bgFile" accept="image/*"></div>
+      <div class="formRow"><label>或背景 URL</label><input type="text" id="bgUrl" placeholder="图片 URL"></div>
+
+      <hr>
+      <div class="formRow"><label>我的头像</label><input type="file" id="avatarFile" accept="image/*"></div>
+      <div class="formRow"><label>AI 头像</label><input type="file" id="aiAvatarFile" accept="image/*"></div>
+
+      <div class="modalActions">
+        <button class="btnGhost" id="bgCancel">取消</button>
+        <button class="btnPrimary" id="bgSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Group modal -->
+  <div class="modalWrap" id="groupModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="groupTitle">
+      <h3 id="groupTitle">创建群聊（最多 8 人）</h3>
+      <div class="formRow"><label>群聊名称</label><input type="text" id="groupName" placeholder="例如：班级小群"></div>
+      <div style="font-size:13px;margin-bottom:8px;color:var(--muted)">勾选人数并填写名字（含你自己）。</div>
+      <div class="groupGrid" id="groupMembers"></div>
+
+      <div style="margin-top:10px;text-align:right">
+        <button class="btnGhost" id="groupCancel">取消</button>
+        <button class="btnPrimary" id="groupCreate">创建</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* =========================
+   Storage keys & defaults
+   ========================= */
+const CHAT_STATE_KEY = 'nie_chat_state_v2';
+const FEED_KEY = 'chat_posts_v1';
+const BACKEND_KEY = 'chat_backend_url';
+
+const defaultState = {
+  me: { name: '你', avatar: '' },
+  ai: { name: '小NIE', avatar: '', gender: 'neutral', role: '温柔的学习助手', style: 'friendly', catch: '嗨～' },
+  background: '',
+  contacts: [],
+  conversations: { one2ai: { members:['me','ai'], messages: [] } },
+  activeConv: 'one2ai',
+  bubbleTheme: { preset: 'pinkpurple', userColor: '#ffd6e6', aiColor: '#d7c8ff' } // defaults
+};
+
+/* helpers */
+function loadState(){ try{ const r = localStorage.getItem(CHAT_STATE_KEY); return r ? JSON.parse(r) : structuredClone(defaultState);}catch(e){console.error(e);return structuredClone(defaultState);} }
+function saveState(s){ localStorage.setItem(CHAT_STATE_KEY, JSON.stringify(s)); }
+
+/* initial */
+let state = loadState();
+/* ensure keys */
+if(!state.bubbleTheme) state.bubbleTheme = structuredClone(defaultState.bubbleTheme);
+
+/* UI refs */
+const paneChats = document.getElementById('paneChats');
+const paneContacts = document.getElementById('paneContacts');
+const messagesEl = document.getElementById('messages');
+const inputEl = document.getElementById('inputMsg');
+const sendBtn = document.getElementById('sendBtn');
+const chatTitle = document.getElementById('chatTitle');
+const chatMeta = document.getElementById('chatMeta');
+const chatAvatarImg = document.querySelector('#chatAvatar img');
+const subInfo = document.getElementById('subInfo');
+
+/* modal refs */
+const feedModal = document.getElementById('feedModal');
+const feedList = document.getElementById('feedList');
+const postBtn = document.getElementById('postBtn');
+const postText = document.getElementById('postText');
+const postFile = document.getElementById('postFile');
+const aiPostBtn = document.getElementById('aiPostBtn');
+const clearFeedBtn = document.getElementById('clearFeedBtn');
+
+const personaModal = document.getElementById('personaModal');
+const aiName = document.getElementById('aiName');
+const aiGender = document.getElementById('aiGender');
+const aiRole = document.getElementById('aiRole');
+const aiStyle = document.getElementById('aiStyle');
+const aiCatch = document.getElementById('aiCatch');
+const backendUrl = document.getElementById('backendUrl');
+const testBackend = document.getElementById('testBackend');
+const userColorInput = document.getElementById('userColor');
+const aiColorInput = document.getElementById('aiColor');
+
+const bgModal = document.getElementById('bgModal');
+const bgFile = document.getElementById('bgFile');
+const bgUrl = document.getElementById('bgUrl');
+const avatarFile = document.getElementById('avatarFile');
+const aiAvatarFile = document.getElementById('aiAvatarFile');
+
+const groupModal = document.getElementById('groupModal');
+const groupMembers = document.getElementById('groupMembers');
+const groupNameInput = document.getElementById('groupName');
+
+/* tabs */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=>{ document.querySelector('.tab.active').classList.remove('active'); t.classList.add('active'); if(t.dataset.tab==='chats'){ paneChats.style.display='block'; paneContacts.style.display='none'; } else { paneChats.style.display='none'; paneContacts.style.display='block'; } });
+});
+
+/* basic nav */
+document.getElementById('backHome').addEventListener('click', ()=> location.href='home.html');
+document.getElementById('openFeed').addEventListener('click', ()=> openFeed());
+document.getElementById('openPersona').addEventListener('click', ()=> openPersona());
+document.getElementById('openBg').addEventListener('click', ()=> openBg());
+document.getElementById('openGroup').addEventListener('click', ()=> openGroupBuilder());
+document.getElementById('closeFeed').addEventListener('click', ()=> closeModal(feedModal));
+
+/* contacts */
+document.getElementById('createContact').addEventListener('click', ()=> {
+  const id = 'c'+Date.now();
+  const name = prompt('新联系人名字：') || ('联系人'+(state.contacts.length+1));
+  const c = { id, name, avatar: '' };
+  state.contacts.push(c);
+  saveState(state);
+  renderContacts();
+});
+
+/* render helpers */
+function defaultAvatar(kind){
+  if(kind==='ai') return 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect rx='36' width='100%' height='100%' fill='white'/><text x='50%' y='50%' font-size='120' text-anchor='middle' dominant-baseline='central'>🤖</text></svg>`);
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect rx='36' width='100%' height='100%' fill='white'/><text x='50%' y='50%' font-size='110' text-anchor='middle' dominant-baseline='central'>🙂</text></svg>`);
+}
+
+/* apply bubble theme CSS variables */
+function applyBubbleTheme(){
+  const bt = state.bubbleTheme || defaultState.bubbleTheme;
+  // if user chooses colors, we convert to linear-gradient simple version
+  const u = bt.userColor || '#ffd6e6';
+  const a = bt.aiColor || '#d7c8ff';
+  document.documentElement.style.setProperty('--user-bubble', `linear-gradient(180deg, ${lighten(u,12)}, ${u})`);
+  document.documentElement.style.setProperty('--ai-bubble', `linear-gradient(180deg, ${lighten(a,10)}, ${a})`);
+  document.documentElement.style.setProperty('--user-text', readableTextColor(u));
+  document.documentElement.style.setProperty('--ai-text', readableTextColor(a));
+}
+function lighten(hex, pct){
+  // hex like #rrggbb, return lighter color by pct%
+  const c = hex.replace('#','');
+  const num = parseInt(c,16);
+  let r = (num>>16) + Math.round(255 * (pct/100));
+  let g = ((num>>8)&0xff) + Math.round(255 * (pct/100));
+  let b = (num & 0xff) + Math.round(255 * (pct/100));
+  r=Math.min(255,r);g=Math.min(255,g);b=Math.min(255,b);
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+function readableTextColor(bg){
+  // simple brightness test
+  const c = bg.replace('#','');
+  const r = parseInt(c.substring(0,2),16), g=parseInt(c.substring(2,4),16), b=parseInt(c.substring(4,6),16);
+  const yiq = (r*299 + g*587 + b*114)/1000;
+  return yiq >= 128 ? '#2b1b3a' : '#fff';
+}
+
+/* initial theme apply */
+applyBubbleTheme();
+
+/* header & messages render */
+function renderHeader(){
+  const conv = state.conversations[state.activeConv];
+  const memberCount = conv.members.length;
+  chatMeta.textContent = (memberCount>2?('群聊 • 人数：'+memberCount):'单聊 • 人数：'+memberCount);
+  subInfo.textContent = memberCount>2?('群聊模式'):('一对一 / 群聊');
+  if(conv.members.length===2 && conv.members.includes('ai')){
+    chatTitle.textContent = state.ai.name || '小NIE';
+    chatAvatarImg.src = state.ai.avatar || defaultAvatar('ai');
+  } else {
+    chatTitle.textContent = conv.name || '群聊';
+    const first = conv.members.find(m=>m!=='me');
+    if(first==='ai') chatAvatarImg.src = state.ai.avatar || defaultAvatar('ai');
+    else {
+      const c = state.contacts.find(x=>x.id===first);
+      chatAvatarImg.src = c?.avatar || defaultAvatar('contact');
+    }
+  }
+}
+
+function renderMessages(){
+  messagesEl.innerHTML = '';
+  const conv = state.conversations[state.activeConv];
+  if(!conv) return;
+  conv.messages.forEach(m=>{
+    const row = document.createElement('div');
+    row.className = 'msgRow ' + (m.from==='me' ? 'mine' : '');
+    const avatarWrap = document.createElement('div');
+    avatarWrap.className = 'msgAvatar';
+    const img = document.createElement('img');
+    img.src = (m.from==='me') ? (state.me.avatar||defaultAvatar('me')) : (m.from==='ai' ? (state.ai.avatar||defaultAvatar('ai')) : ( (m.from.startsWith('c') ? (state.contacts.find(c=>c.id===m.from)?.avatar||defaultAvatar('contact') : defaultAvatar('contact')) ) ));
+    img.style.width='100%'; img.style.height='100%'; img.style.objectFit='cover';
+    avatarWrap.appendChild(img);
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ' + (m.from==='me' ? 'user' : 'bot');
+    bubble.innerHTML = escapeHtml(m.text).replaceAll('\\n','<br>');
+    if(m.from==='me'){
+      row.appendChild(bubble);
+      row.appendChild(avatarWrap);
+    } else {
+      row.appendChild(avatarWrap);
+      row.appendChild(bubble);
+    }
+    messagesEl.appendChild(row);
+  });
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+/* message send */
+sendBtn.addEventListener('click', sendMessage);
+inputEl.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
+
+async function sendMessage(){
+  const text = inputEl.value.trim();
+  if(!text) return;
+  pushMessage({ from:'me', to: state.activeConv, text, ts: Date.now() });
+  inputEl.value = '';
+  renderMessages();
+
+  // show typing
+  pushMessage({ from:'ai', to: state.activeConv, text:'正在输入...', ts: Date.now(), temp:true });
+  renderMessages();
+
+  try{
+    const reply = await generateReply(text);
+    // remove temp
+    const conv = state.conversations[state.activeConv];
+    if(conv.messages.length && conv.messages[conv.messages.length-1].temp) conv.messages.pop();
+    pushMessage({ from:'ai', to: state.activeConv, text: reply.text, ts: Date.now(), note: reply.note });
+    saveState(state);
+    renderMessages();
+  }catch(err){
+    console.error(err);
+    const conv = state.conversations[state.activeConv];
+    if(conv.messages.length && conv.messages[conv.messages.length-1].temp) conv.messages.pop();
+    pushMessage({ from:'ai', to: state.activeConv, text: '出错：'+err.message, ts: Date.now() });
+    saveState(state);
+    renderMessages();
+  }
+}
+
+function pushMessage(msg){
+  const conv = state.conversations[state.activeConv];
+  conv.messages.push(msg);
+  saveState(state);
+}
+
+/* generateReply: calls backend if configured else local demo */
+async function generateReply(userText){
+  const persona = { name: state.ai.name, gender: state.ai.gender, role: state.ai.role, style: state.ai.style, catch: state.ai.catch };
+  const backend = localStorage.getItem(BACKEND_KEY) || document.getElementById('backendUrl').value.trim();
+  if(backend){
+    // call backend
+    const payload = { message: userText, persona, conversation: state.conversations[state.activeConv] || {} };
+    const res = await fetch(backend, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+    if(!res.ok) throw new Error('后端返回 '+res.status);
+    const j = await res.json();
+    return { text: j.reply || JSON.stringify(j), note: j.note || '' };
+  }
+  // local demo reply behavior (simple)
+  await delay(500 + Math.random()*600);
+  const low = userText.toLowerCase();
+  const prefix = state.ai.style==='playful' ? '嘿嘿，' : (state.ai.style==='professional' ? '' : (state.ai.style==='romantic' ? '亲爱的，' : '你好，'));
+  if(low.includes('你好')||low.includes('hi')) return { text: prefix + (state.ai.catch||'我是小NIE') + '，很高兴见到你~' };
+  if(low.includes('时间')) return { text: prefix + '现在是本地时间（演示），你可以把时间告诉我，我会记住。' };
+  if(low.includes('笑话')) return { text: prefix + '有个程序员走进咖啡馆，他说：我来调试。' };
+  return { text: prefix + '关于「'+userText+'」，我（'+(state.ai.role||'AI')+'）的看法：' + simpleParaphrase(userText) };
+}
+
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function escapeHtml(s){ if(!s) return ''; return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+function simpleParaphrase(s){ if(s.length>80) return s.slice(0,80)+'……'; return s.split('').reverse().join(''); }
+
+/* =========================
+   Feed (朋友圈)
+   ========================= */
+function openFeed(){ feedModal.style.display='flex'; feedModal.setAttribute('aria-hidden','false'); renderFeed(); }
+function closeModal(el){ el.style.display='none'; el.setAttribute('aria-hidden','true'); }
+function loadFeed(){ try{ return JSON.parse(localStorage.getItem(FEED_KEY)||'[]'); }catch(e){ return []; } }
+function saveFeed(list){ localStorage.setItem(FEED_KEY, JSON.stringify(list)); }
+function renderFeed(){
+  const list = loadFeed();
+  feedList.innerHTML = '';
+  for(let i=list.length-1;i>=0;i--){
+    const p = list[i];
+    const node = document.createElement('div'); node.className='post';
+    node.innerHTML = `<div class="postHeader"><div class="postImg"><img src="${escapeAttr(p.avatar)}" style="width:100%;height:100%;object-fit:cover"></div><div><div style="font-weight:700">${escapeHtml(p.name)}</div><div style="font-size:12px;color:${'var(--muted)'}">${new Date(p.ts).toLocaleString()}</div></div></div><div class="postBody">${escapeHtml(p.text||'')}</div>`;
+    if(p.media && p.media.length){
+      const mwrap = document.createElement('div'); mwrap.className='postMedia';
+      p.media.forEach(u=>{ const im=document.createElement('img'); im.src=u; mwrap.appendChild(im); });
+      node.appendChild(mwrap);
+    }
+    feedList.appendChild(node);
+  }
+}
+
+document.getElementById('postBtn').addEventListener('click', async ()=>{
+  const txt = postText.value.trim();
+  const files = [...postFile.files];
+  const media = [];
+  if(files.length){
+    for(const f of files) media.push(await fileToDataUrl(f));
+  }
+  const posts = loadFeed();
+  posts.push({ name: state.me.name||'你', avatar: state.me.avatar||defaultAvatar('me'), text: txt, media, ts: Date.now() });
+  saveFeed(posts);
+  postText.value=''; postFile.value='';
+  renderFeed();
+});
+
+/* AI 自动发动态（C） */
+aiPostBtn.addEventListener('click', async ()=>{
+  aiPostBtn.disabled = true; aiPostBtn.textContent = '生成中...';
+  try {
+    // if backend exists, request backend to generate a post using persona
+    const backend = localStorage.getItem(BACKEND_KEY) || document.getElementById('backendUrl').value.trim();
+    let content = '';
+    if(backend){
+      // ask backend to generate a post
+      const payload = { action: 'generate_post', persona: state.ai };
+      const res = await fetch(backend, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      if(res.ok){
+        const j = await res.json();
+        content = j.post || (j.reply || '（后端返回格式不含 post 字段）');
+      } else {
+        content = '（后端生成失败，使用本地生成）';
+      }
+    }
+    if(!content){
+      // local generator: use persona to craft a short post
+      content = localAIGeneratePost();
+    }
+    // save into feed as AI post
+    const posts = loadFeed();
+    posts.push({ name: state.ai.name || '小NIE', avatar: state.ai.avatar || defaultAvatar('ai'), text: content, media: [], ts: Date.now() });
+    saveFeed(posts);
+    renderFeed();
+    alert('AI 已发布一条动态到朋友圈');
+  } catch(err){
+    console.error(err); alert('AI 发动态失败：'+err.message);
+  } finally {
+    aiPostBtn.disabled = false; aiPostBtn.textContent = 'AI 发一条动态';
+  }
+});
+
+function localAIGeneratePost(){
+  const p = state.ai;
+  const greetings = p.style==='playful' ? ['嘿～','嘻嘻～','今天好开心！'] : (p.style==='professional'?['今日摘要：']:['今天心情不错～']);
+  const g = greetings[Math.floor(Math.random()*greetings.length)];
+  const lines = [
+    g + (p.catch ? (' ' + p.catch) : ''),
+    '今天我读到了一段有趣的文字，想和大家分享。', 
+    '如果你愿意，可以和我聊聊你的今天 😊'
+  ];
+  return lines.join('\n');
+}
+
+/* 清空 feed */
+clearFeedBtn.addEventListener('click', ()=>{ if(confirm('确认清空朋友圈？')){ saveFeed([]); renderFeed(); } });
+
+/* =========================
+   Persona modal logic (含 bubble color & backend test)
+   ========================= */
+function openPersona(){
+  personaModal.style.display='flex'; personaModal.setAttribute('aria-hidden','false');
+  aiName.value = state.ai.name || '';
+  aiGender.value = state.ai.gender || 'neutral';
+  aiRole.value = state.ai.role || '';
+  aiStyle.value = state.ai.style || 'friendly';
+  aiCatch.value = state.ai.catch || '';
+  backendUrl.value = localStorage.getItem(BACKEND_KEY) || '';
+  userColorInput.value = state.bubbleTheme.userColor || '#ffd6e6';
+  aiColorInput.value = state.bubbleTheme.aiColor || '#d7c8ff';
+}
+document.querySelectorAll('.swatch').forEach(s=>{
+  s.addEventListener('click', ()=>{
+    const t = s.dataset.theme;
+    if(t==='pinkwhite'){ state.bubbleTheme.userColor='#fff0f4'; state.bubbleTheme.aiColor='#fff7fb'; }
+    if(t==='pinkpurple'){ state.bubbleTheme.userColor='#ffd6e6'; state.bubbleTheme.aiColor='#e6d5ff'; }
+    if(t==='purpleblue'){ state.bubbleTheme.userColor='#f3ecff'; state.bubbleTheme.aiColor='#e9dbff'; }
+    if(t==='mint'){ state.bubbleTheme.userColor='#e8fff2'; state.bubbleTheme.aiColor='#d9fff0'; }
+    userColorInput.value = state.bubbleTheme.userColor;
+    aiColorInput.value = state.bubbleTheme.aiColor;
+    applyBubbleTheme();
+  });
+});
+
+testBackend.addEventListener('click', async ()=>{
+  const url = (backendUrl.value||localStorage.getItem(BACKEND_KEY||'')).trim();
+  if(!url){ alert('请先在此处或 API 页面填写后端 URL'); return; }
+  testBackend.disabled = true; testBackend.textContent='测试中...';
+  try{
+    const resp = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ping:true }) });
+    if(!resp.ok) throw new Error('状态 '+resp.status);
+    const j = await resp.json();
+    alert('后端响应 OK：' + (j.msg || j.status || JSON.stringify(j)));
+    // save to localStorage
+    localStorage.setItem(BACKEND_KEY, url);
+  }catch(e){ alert('连接失败：' + e.message); }
+  testBackend.disabled = false; testBackend.textContent='测试后端连接';
+});
+
+document.getElementById('personaCancel').addEventListener('click', ()=> closeModal(personaModal));
+document.getElementById('personaSave').addEventListener('click', ()=> {
+  state.ai.name = aiName.value || state.ai.name;
+  state.ai.gender = aiGender.value || state.ai.gender;
+  state.ai.role = aiRole.value || state.ai.role;
+  state.ai.style = aiStyle.value || state.ai.style;
+  state.ai.catch = aiCatch.value || state.ai.catch;
+  // bubble colors
+  state.bubbleTheme.userColor = userColorInput.value || state.bubbleTheme.userColor;
+  state.bubbleTheme.aiColor = aiColorInput.value || state.bubbleTheme.aiColor;
+  // backend url save
+  if(backendUrl.value && backendUrl.value.trim()) localStorage.setItem(BACKEND_KEY, backendUrl.value.trim());
+  applyBubbleTheme();
+  saveState(state);
+  closeModal(personaModal);
+  renderHeader(); renderMessages();
+});
+
+/* =========================
+   Background & avatar logic
+   ========================= */
+function openBg(){ bgModal.style.display='flex'; bgModal.setAttribute('aria-hidden','false'); }
+async function saveBg(){
+  if(bgFile.files && bgFile.files[0]) state.background = await fileToDataUrl(bgFile.files[0]);
+  else if(bgUrl.value && bgUrl.value.trim()) state.background = bgUrl.value.trim();
+  if(avatarFile.files && avatarFile.files[0]) state.me.avatar = await fileToDataUrl(avatarFile.files[0]);
+  if(aiAvatarFile.files && aiAvatarFile.files[0]) state.ai.avatar = await fileToDataUrl(aiAvatarFile.files[0]);
+  saveState(state); applyBackground(); renderHeader(); renderMessages(); closeModal(bgModal);
+}
+document.getElementById('bgCancel').addEventListener('click', ()=> closeModal(bgModal));
+document.getElementById('bgSave').addEventListener('click', ()=> saveBg());
+
+function applyBackground(){ const frame = document.querySelector('.frame'); if(state.background) frame.style.backgroundImage = `url('${state.background}')`, frame.style.backgroundSize='cover'; else frame.style.backgroundImage=''; }
+
+function fileToDataUrl(file){ return new Promise((resolve,reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=e=>reject(e); r.readAsDataURL(file); }); }
+
+/* =========================
+   Contacts & groups
+   ========================= */
+function renderContacts(){
+  const el = document.getElementById('contactsList'); el.innerHTML='';
+  state.contacts.forEach(c=>{
+    const row = document.createElement('div'); row.style.display='flex'; row.style.alignItems='center'; row.style.gap='12px'; row.style.padding='8px 0';
+    row.innerHTML = `<div style="width:48px;height:48px;border-radius:10px;overflow:hidden"><img src="${escapeAttr(c.avatar||defaultAvatar('contact'))}" style="width:100%;height:100%;object-fit:cover"></div><div style="flex:1"><div style="font-weight:700">${escapeHtml(c.name)}</div><div style="font-size:12px;color:var(--muted)">联系人 ID: ${escapeHtml(c.id)}</div></div><div><button class="smallBtn">聊一聊</button></div>`;
+    row.querySelector('button').addEventListener('click', ()=> openConversationWith(c.id));
+    el.appendChild(row);
+  });
+}
+function openConversationWith(contactId){
+  const convKey = 'conv_'+contactId;
+  if(!state.conversations[convKey]) state.conversations[convKey] = { members: ['me', contactId], messages: [], name: state.contacts.find(c=>c.id===contactId).name };
+  state.activeConv = convKey;
+  saveState(state); renderHeader(); renderMessages();
+  document.querySelector('.tab[data-tab="chats"]').click();
+}
+
+/* group builder */
+function openGroupBuilder(){ groupMembers.innerHTML=''; for(let i=0;i<8;i++){ const div=document.createElement('div'); div.style.padding='8px'; div.style.border='1px dashed rgba(0,0,0,0.05)'; div.style.borderRadius='8px'; div.innerHTML = `<div style="font-size:13px;margin-bottom:6px">成员 ${i+1} 名字</div><input type="text" data-idx="${i}" placeholder="${i===0? '你 (保留)': '例如：好友'+(i)}" style="width:100%;padding:8px;border-radius:6px;border:1px solid rgba(0,0,0,0.06)">`; groupMembers.appendChild(div); } groupModal.style.display='flex'; }
+document.getElementById('groupCancel').addEventListener('click', ()=> closeModal(groupModal));
+document.getElementById('groupCreate').addEventListener('click', ()=> createGroup());
+function createGroup(){
+  const inputs = groupMembers.querySelectorAll('input'); const names=[]; for(const inp of inputs){ const v=inp.value.trim(); if(v) names.push(v); }
+  if(names.length<2){ alert('群聊至少需要 2 人（含你）'); return; } if(names.length>8){ alert('最多支持 8 人'); return; }
+  const gid='g'+Date.now(); const members=[]; for(let i=0;i<names.length;i++){ const nm=names[i]; if(i===0){ members.push('me'); continue; } if(nm.toLowerCase().includes('ai')||nm.includes('NIE')){ members.push('ai'); continue; } const cid='c'+Date.now()+'_'+i; const c={id:cid,name:nm,avatar:''}; state.contacts.push(c); members.push(cid); }
+  const conv={ members, messages: [], name: groupNameInput.value.trim() || ('群聊 '+(Object.keys(state.conversations).length+1)) };
+  state.conversations[gid]=conv; state.activeConv=gid; saveState(state); closeModal(groupModal); renderContacts(); renderHeader(); renderMessages();
+}
+
+/* =========================
+   Backend & utils
+   ========================= */
+async function testBackendUrl(url){
+  // small helper - send ping
+  try{
+    const res = await fetch(url, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ ping:true }) });
+    return await res.json();
+  }catch(e){ throw e; }
+}
+
+/* test backend button handled earlier */
+
+function escapeAttr(s){ return (s||'').replaceAll('"','&quot;'); }
+
+/* small helpers for colors already above: lighten & readableTextColor */
+
+// initial render
+applyBackground(); renderContacts(); renderHeader(); renderMessages(); renderFeed();
+
+/* persist on unload */
+window.addEventListener('beforeunload', ()=> saveState(state) );
+
+</script>
+</body>
+</html>
