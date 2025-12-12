@@ -2,28 +2,31 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <title>聊天 — NIEaiphone</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --page-bg1:#f4e8fb; --page-bg2:#eedffb;
-  --card-bg: rgba(255,255,255,0.95);
+  --card-bg: rgba(255,255,255,0.97);
   --accent1:#9b86e6; --accent2:#7a64d0;
   --muted:#7b6c88; --text:#2f2436;
   --user-color:#ffd6e6; --ai-color:#d7c8ff;
+  --frame-pad:12px;
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;font-family:"Quicksand",system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--page-bg1),var(--page-bg2));color:var(--text);-webkit-font-smoothing:antialiased}
-.app{width:94%;max-width:420px;margin:12px auto;border-radius:20px;background:var(--card-bg);padding:12px;box-shadow:0 18px 50px rgba(40,24,60,0.06);overflow:hidden}
+.app{width:96%;max-width:480px;margin:8px auto;border-radius:20px;background:var(--card-bg);padding:var(--frame-pad);box-shadow:0 18px 50px rgba(40,24,60,0.06);overflow:hidden;min-height:86vh;display:flex;flex-direction:column}
 .header{display:flex;align-items:center;gap:10px}
-.back{width:44px;height:44px;border-radius:12px;border:1px solid rgba(0,0,0,0.04);display:flex;align-items:center;justify-content:center;cursor:pointer;background:white}
+.back{width:44px;height:44px;border-radius:12px;border:1px solid rgba(0,0,0,0.04);display:flex;align-items:center;justify-content:center;cursor:pointer;background:white;flex-shrink:0}
 .h-title{flex:1;font-weight:700;font-size:18px}
 .top-actions{display:flex;gap:8px}
-.action{padding:8px 12px;border-radius:12px;background:white;border:1px solid rgba(0,0,0,0.04);cursor:pointer;font-weight:600;min-width:76px;text-align:center;box-shadow:0 6px 18px rgba(20,12,50,0.03)}
+.action{padding:8px 12px;border-radius:12px;background:white;border:1px solid rgba(0,0,0,0.04);cursor:pointer;font-weight:600;min-width:72px;text-align:center;box-shadow:0 6px 18px rgba(20,12,50,0.03)}
 .action.primary{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#fff;border:none;box-shadow:0 14px 30px rgba(122,100,208,0.15)}
-.main{margin-top:10px}
-.pane{background:rgba(255,255,255,0.98);border-radius:14px;padding:12px;min-height:60vh;max-height:76vh;overflow:auto;position:relative}
+.main{margin-top:10px;display:flex;flex-direction:column;flex:1;min-height:0}
+
+/* pane (scroll areas) */
+.pane{background:rgba(255,255,255,0.98);border-radius:14px;padding:12px;flex:1;overflow:auto;position:relative;min-height:0}
 
 /* contacts */
 .contactsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-top:6px}
@@ -31,22 +34,22 @@ html,body{height:100%;margin:0;font-family:"Quicksand",system-ui,-apple-system,S
 .contactCard:hover{transform:translateY(-6px);box-shadow:0 22px 40px rgba(30,14,60,0.06)}
 .iconWrap{width:68px;height:68px;border-radius:14px;background:linear-gradient(180deg,#fff,#faf8ff);display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 8px 22px rgba(20,10,40,0.04)}
 .iconWrap img{width:60px;height:60px;object-fit:cover;border-radius:10px}
-.contactName{font-size:13px;font-weight:700;color:var(--text)}
+.contactName{font-size:13px;font-weight:700;color:var(--text);text-align:center}
 
-/* empty */
+/* empty hint */
 .empty{padding:18px;border-radius:10px;border:1px dashed rgba(0,0,0,0.04);text-align:center;color:var(--muted);margin-top:8px}
 
-/* chat pane */
+/* chat */
 .chatHeader{display:flex;align-items:center;gap:12px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,0.04);margin-bottom:8px}
-.chatAvatar{width:52px;height:52px;border-radius:12px;overflow:hidden}
+.chatAvatar{width:52px;height:52px;border-radius:12px;overflow:hidden;flex-shrink:0}
 .chatAvatar img{width:100%;height:100%;object-fit:cover}
-.chatInfo{flex:1}
-.chatTitle{font-weight:700}
-.chatSub{font-size:12px;color:var(--muted)}
+.chatInfo{flex:1;min-width:0}
+.chatTitle{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chatSub{font-size:12px;color:var(--muted);margin-top:4px}
 .chatActions{display:flex;gap:8px}
 
-/* messages */
-.messages{padding:12px;display:flex;flex-direction:column;gap:12px;min-height:36vh}
+/* messages container - use flexible area */
+.messages{padding:8px;display:flex;flex-direction:column;gap:12px;min-height:0;flex:1;overflow:auto}
 .msgRow{display:flex;gap:10px;align-items:flex-end;transition:transform .26s cubic-bezier(.2,.9,.4,1),opacity .26s}
 .msgRow.enter{transform:translateY(6px);opacity:0}
 .msgRow.enter.show{transform:translateY(0);opacity:1}
@@ -54,8 +57,8 @@ html,body{height:100%;margin:0;font-family:"Quicksand",system-ui,-apple-system,S
 .msgAvatar{width:36px;height:36px;border-radius:8px;overflow:hidden}
 .msgAvatar img{width:100%;height:100%;object-fit:cover}
 
-/* bubble styles improved */
-.bubble{max-width:78%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5;box-shadow:0 10px 30px rgba(34,18,60,0.06)}
+/* bubble */
+.bubble{max-width:78%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.45;box-shadow:0 10px 30px rgba(34,18,60,0.06)}
 .bubble.user{background:linear-gradient(180deg,#fff0f5,var(--user-color));color:#3b1a2f;border-bottom-right-radius:6px}
 .bubble.ai{background:linear-gradient(180deg,#f3eeff,var(--ai-color));color:#2b1b3a;border-bottom-left-radius:6px}
 
@@ -72,23 +75,29 @@ html,body{height:100%;margin:0;font-family:"Quicksand",system-ui,-apple-system,S
 textarea{flex:1;min-height:48px;max-height:120px;padding:10px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);resize:none}
 .send{padding:10px 14px;border-radius:12px;background:linear-gradient(135deg,var(--accent1),var(--accent2));color:white;border:none;cursor:pointer}
 
-/* feed bottom button */
-.feedBottom{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#fff;padding:10px 18px;border-radius:999px;box-shadow:0 12px 30px rgba(122,100,208,0.18);cursor:pointer;border:none;z-index:60}
+/* feed panel */
+.feedList{display:flex;flex-direction:column;gap:10px}
+.feedItem{padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.03);background:#fff}
+
+/* bottom floating user settings */
+.bottomBar{display:flex;gap:8px;align-items:center;justify-content:center;padding-top:10px}
+.userBtn{padding:8px 12px;border-radius:999px;background:white;border:1px solid rgba(0,0,0,0.04);cursor:pointer;font-weight:700}
 
 /* modal */
-.modalWrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.36);z-index:120; padding:12px}
-.modal{width:100%;max-width:520px;background:#fff;border-radius:12px;padding:14px;box-shadow:0 30px 80px rgba(10,10,20,0.45);max-height:86vh;overflow:auto}
+.modalWrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.36);z-index:220;padding:12px}
+.modal{width:100%;max-width:540px;background:#fff;border-radius:12px;padding:14px;box-shadow:0 30px 80px rgba(10,10,20,0.45);max-height:86vh;overflow:auto}
 .formRow{display:flex;gap:8px;align-items:center;margin-bottom:10px}
-.formRow label{width:90px;color:var(--muted);font-size:13px}
-.formRow input[type=text], .formRow input[type=file], .formRow select{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+.formRow label{width:94px;color:var(--muted);font-size:13px}
+.formRow input[type=text], .formRow input[type=file], .formRow select, .formRow textarea{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
 .modalActions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
-
-/* small */
 .hidden{display:none}
+
+/* touch friendliness */
+button, .action, .back{ -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+
 @media (max-width:420px){
   .contactsGrid{grid-template-columns:repeat(3,1fr);gap:10px}
   .iconWrap{width:56px;height:56px}
-  .feedBottom{left:50%}
 }
 </style>
 </head>
@@ -96,7 +105,7 @@ textarea{flex:1;min-height:48px;max-height:120px;padding:10px;border-radius:12px
   <div class="app" role="application" aria-label="NIE 聊天应用">
     <div class="header">
       <button class="back" id="btnBack">←</button>
-      <div class="h-title">聊天</div>
+      <div class="h-title" id="titleMain">聊天</div>
       <div class="top-actions">
         <button class="action" id="btnFeed">朋友圈</button>
         <button class="action" id="btnAdd">添加联系人</button>
@@ -105,19 +114,18 @@ textarea{flex:1;min-height:48px;max-height:120px;padding:10px;border-radius:12px
     </div>
 
     <div class="main">
+      <!-- CONTACTS PANE -->
       <div id="contactsPane" class="pane">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <div style="font-weight:700">联系人</div>
-          <div style="font-size:13px;color:var(--muted)">点击联系人进入聊天</div>
+          <div style="font-size:13px;color:var(--muted)">点击进入聊天</div>
         </div>
-
         <div id="contactsGrid" class="contactsGrid"></div>
-
-        <div id="emptyHint" class="empty hidden">当前没有联系人。点击“添加联系人”开始创建，或用“创建群聊”快速生成一个示例群。</div>
+        <div id="emptyHint" class="empty hidden">当前没有联系人，点击“添加联系人”开始。</div>
       </div>
 
-      <!-- chat pane -->
-      <div id="chatPane" class="pane hidden">
+      <!-- CHAT PANE -->
+      <div id="chatPane" class="pane hidden" role="region" aria-live="polite">
         <div class="chatHeader">
           <div class="chatAvatar" id="chatAvatar"><img src="" alt=""></div>
           <div class="chatInfo">
@@ -126,6 +134,7 @@ textarea{flex:1;min-height:48px;max-height:120px;padding:10px;border-radius:12px
           </div>
           <div class="chatActions">
             <button class="action" id="openAi">AI 设置</button>
+            <button class="action" id="openProfile">我的设置</button>
             <button class="action" id="backContacts">返回</button>
           </div>
         </div>
@@ -138,12 +147,13 @@ textarea{flex:1;min-height:48px;max-height:120px;padding:10px;border-radius:12px
         </div>
       </div>
 
-      <!-- feed pane -->
+      <!-- FEED PANE -->
       <div id="feedPane" class="pane hidden">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <div style="font-weight:700">朋友圈</div>
           <div style="font-size:13px;color:var(--muted)">AI 可发动态 · 支持点赞/评论（本地保存）</div>
         </div>
+
         <div style="margin-bottom:10px">
           <textarea id="postText" placeholder="在朋友圈说点什么..." style="width:100%;height:64px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);padding:8px"></textarea>
           <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
@@ -152,14 +162,19 @@ textarea{flex:1;min-height:48px;max-height:120px;padding:10px;border-radius:12px
             <button class="action" id="closeFeedBtn">关闭</button>
           </div>
         </div>
-        <div id="feedList"></div>
-      </div>
 
+        <div id="feedList" class="feedList"></div>
+      </div>
+    </div>
+
+    <div class="bottomBar">
+      <button class="userBtn" id="openProfileBtn">我的设置</button>
+      <button class="userBtn" id="changeBgBtn">更换背景</button>
     </div>
   </div>
 
-  <!-- modals -->
-  <div class="modalWrap" id="contactModal"><div class="modal">
+  <!-- Modals -->
+  <div class="modalWrap" id="contactModal"><div class="modal" role="dialog">
     <h3>添加联系人</h3>
     <div class="formRow"><label>名字</label><input type="text" id="contactName" placeholder="名字"></div>
     <div class="formRow"><label>头像文件</label><input type="file" id="contactFile" accept="image/*"></div>
@@ -167,7 +182,7 @@ textarea{flex:1;min-height:48px;max-height:120px;padding:10px;border-radius:12px
     <div class="modalActions"><button class="action" id="contactCancel">取消</button><button class="action primary" id="contactSave">保存</button></div>
   </div></div>
 
-  <div class="modalWrap" id="groupModal"><div class="modal">
+  <div class="modalWrap" id="groupModal"><div class="modal" role="dialog">
     <h3>创建群聊（最多 8 人）</h3>
     <div class="formRow"><label>群名</label><input type="text" id="groupName" placeholder="群名称"></div>
     <div class="formRow"><label>群头像</label><input type="file" id="groupFile" accept="image/*"></div>
@@ -176,292 +191,372 @@ textarea{flex:1;min-height:48px;max-height:120px;padding:10px;border-radius:12px
     <div class="modalActions"><button class="action" id="groupCancel">取消</button><button class="action primary" id="groupCreate">创建</button></div>
   </div></div>
 
+  <div class="modalWrap" id="aiModal"><div class="modal" role="dialog">
+    <h3>AI 设置</h3>
+    <div class="formRow"><label>AI 名称</label><input type="text" id="aiName"></div>
+    <div class="formRow"><label>性别</label><select id="aiGender"><option value="neutral">中性</option><option value="female">女</option><option value="male">男</option></select></div>
+    <div class="formRow"><label>人设</label><input type="text" id="aiRole"></div>
+    <div class="formRow"><label>风格</label><select id="aiStyle"><option value="friendly">友好</option><option value="playful">俏皮</option><option value="professional">专业</option><option value="romantic">温柔</option></select></div>
+    <div class="formRow"><label>习惯语</label><input type="text" id="aiCatch"></div>
+    <div class="formRow"><label>AI 头像</label><input type="file" id="aiAvatarFile" accept="image/*"></div>
+    <div class="formRow"><label>用户气泡</label><input type="color" id="userColor" value="#ffd6e6"></div>
+    <div class="formRow"><label>AI 气泡</label><input type="color" id="aiColor" value="#d7c8ff"></div>
+    <div class="formRow"><label>后端 URL</label><input type="text" id="backendUrl" placeholder="后端代理 URL（可选）"></div>
+    <div class="modalActions"><button class="action" id="aiCancel">取消</button><button class="action primary" id="aiSave">保存</button></div>
+  </div></div>
+
+  <div class="modalWrap" id="profileModal"><div class="modal" role="dialog">
+    <h3>我的设置</h3>
+    <div class="formRow"><label>我的名字</label><input type="text" id="meName"></div>
+    <div class="formRow"><label>我的头像</label><input type="file" id="meAvatarFile" accept="image/*"></div>
+    <div class="formRow"><label>或头像 URL</label><input type="text" id="meAvatarUrl" placeholder="图片 URL"></div>
+    <div class="formRow"><label>我的人设</label><input type="text" id="meRole"></div>
+    <div class="modalActions"><button class="action" id="profileCancel">取消</button><button class="action primary" id="profileSave">保存</button></div>
+  </div></div>
+
 <script>
-/* ---- state & helpers ---- */
-const STATE_KEY = 'nie_simple_v2';
+/* ===========================
+   App state (localStorage)
+   =========================== */
+const STATE_KEY = 'nie_full_v1';
 const FEED_KEY = 'nie_feed_v1';
 const DEFAULT = {
-  me: { name: '你', avatar: '' },
-  ai: { name: '小NIE', avatar: '' },
+  me: { name:'你', avatar:'', role:'' },
+  ai: { name:'小NIE', avatar:'', gender:'neutral', role:'温柔的助手', style:'friendly', catch:'' },
+  bubble:{ user:'#ffd6e6', ai:'#d7c8ff' },
+  background: '',
   contacts: [ { id:'ai', name:'与 AI 聊天', avatar:'' } ],
-  conversations: { 'ai': { members:['me','ai'], messages:[] } }
+  conversations: { 'ai': { members:['me','ai'], messages:[] }},
+  active: null
 };
 let state = loadState();
 
-function loadState(){ try{ const s=localStorage.getItem(STATE_KEY); if(!s){ localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT);} return JSON.parse(s);}catch(e){console.error(e); localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT);} }
-function saveState(){ localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
+function loadState(){ try{ const s = localStorage.getItem(STATE_KEY); if(!s){ localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT); } return JSON.parse(s); }catch(e){ console.error(e); localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT);} }
+function saveState(){ localStorage.setItem(STATE_KEY, JSON.stringify(state)); applyBubbleColors(); applyBackground(); }
+
 function loadFeed(){ try{ return JSON.parse(localStorage.getItem(FEED_KEY)||'[]'); }catch(e){return [];} }
 function saveFeed(f){ localStorage.setItem(FEED_KEY, JSON.stringify(f)); }
 
-/* ---- DOM refs ---- */
+/* -------------------------
+   DOM refs
+   ------------------------- */
 const contactsGrid = document.getElementById('contactsGrid');
+const emptyHint = document.getElementById('emptyHint');
 const contactsPane = document.getElementById('contactsPane');
 const chatPane = document.getElementById('chatPane');
 const feedPane = document.getElementById('feedPane');
-const emptyHint = document.getElementById('emptyHint');
-const btnAdd = document.getElementById('btnAdd');
-const btnGroup = document.getElementById('btnGroup');
-const btnFeed = document.getElementById('btnFeed');
-const btnBack = document.getElementById('btnBack');
 
-/* chat refs */
-const chatAvatar = document.getElementById('chatAvatar').querySelector('img');
+const chatAvatar = document.querySelector('#chatAvatar img');
 const chatTitle = document.getElementById('chatTitle');
 const chatSub = document.getElementById('chatSub');
 const messagesEl = document.getElementById('messages');
 const txtInput = document.getElementById('txtInput');
-const sendBtn = document.getElementById('sendBtn');
 
-/* modals & feed */
 const contactModal = document.getElementById('contactModal');
-const contactName = document.getElementById('contactName');
-const contactFile = document.getElementById('contactFile');
-const contactURL = document.getElementById('contactURL');
-const contactCancel = document.getElementById('contactCancel');
-const contactSave = document.getElementById('contactSave');
-
 const groupModal = document.getElementById('groupModal');
-const groupContacts = document.getElementById('groupContacts');
-const groupName = document.getElementById('groupName');
-const groupFile = document.getElementById('groupFile');
-const groupCancel = document.getElementById('groupCancel');
-const groupCreate = document.getElementById('groupCreate');
+const aiModal = document.getElementById('aiModal');
+const profileModal = document.getElementById('profileModal');
 
-const postText = document.getElementById('postText');
-const publishBtn = document.getElementById('publishBtn');
-const aiPostBtn = document.getElementById('aiPostBtn');
-const feedList = document.getElementById('feedList');
-const closeFeedBtn = document.getElementById('closeFeedBtn');
+/* buttons */
+document.getElementById('btnAdd').addEventListener('click', ()=> openContactModal());
+document.getElementById('contactCancel').addEventListener('click', ()=> closeModal(contactModal));
+document.getElementById('contactSave').addEventListener('click', ()=> saveContact());
+document.getElementById('btnGroup').addEventListener('click', ()=> openGroupModal());
+document.getElementById('groupCancel').addEventListener('click', ()=> closeModal(groupModal));
+document.getElementById('groupCreate').addEventListener('click', ()=> createGroup());
+document.getElementById('btnFeed').addEventListener('click', ()=> openFeed());
+document.getElementById('closeFeedBtn').addEventListener('click', ()=> closeFeed());
+document.getElementById('publishBtn').addEventListener('click', ()=> publishPost());
+document.getElementById('aiPostBtn').addEventListener('click', ()=> aiPublish());
+document.getElementById('btnBack').addEventListener('click', ()=> { /* optional back action */ });
 
-/* ---- events ---- */
-btnAdd.addEventListener('click', ()=> openContactModal());
-contactCancel.addEventListener('click', ()=> closeModal(contactModal));
-contactSave.addEventListener('click', ()=> saveContact());
-btnGroup.addEventListener('click', ()=> openGroupModal());
-groupCancel.addEventListener('click', ()=> closeModal(groupModal));
-groupCreate.addEventListener('click', ()=> createGroup());
-btnFeed.addEventListener('click', ()=> openFeed());
-btnBack.addEventListener('click', ()=> location.href='home.html');
-publishBtn.addEventListener('click', ()=> publishPost());
-aiPostBtn.addEventListener('click', ()=> aiPublish());
-closeFeedBtn.addEventListener('click', ()=> closeFeed());
+document.getElementById('openAi').addEventListener('click', ()=> openAiModal());
+document.getElementById('aiCancel').addEventListener('click', ()=> closeModal(aiModal));
+document.getElementById('aiSave').addEventListener('click', ()=> saveAiSettings());
 
-sendBtn.addEventListener('click', ()=> sendMsg());
-txtInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMsg(); } });
+document.getElementById('openProfile').addEventListener('click', ()=> openProfileModal());
+document.getElementById('openProfileBtn').addEventListener('click', ()=> openProfileModal());
+document.getElementById('profileCancel').addEventListener('click', ()=> closeModal(profileModal));
+document.getElementById('profileSave').addEventListener('click', ()=> saveProfile());
 
-/* ---- initial render ---- */
-renderContacts();
-applyEmptyHint();
-renderFeed();
+document.getElementById('backContacts').addEventListener('click', ()=> { contactsPane.classList.remove('hidden'); chatPane.classList.add('hidden'); feedPane.classList.add('hidden'); state.active=null; saveState(); });
+document.getElementById('sendBtn').addEventListener('click', ()=> sendMsg());
+txtInput.addEventListener('keydown', (e)=> { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMsg(); } });
 
-/* ----- functions ----- */
+document.getElementById('changeBgBtn').addEventListener('click', ()=> changeBackgroundPrompt());
+
+/* initial */
+applyBubbleColors(); applyBackground(); renderContacts(); renderFeed(); applyEmptyHint();
+
+/* ===========================
+   Rendering / UI logic
+   =========================== */
+
 function renderContacts(){
   contactsGrid.innerHTML = '';
-  (state.contacts || []).forEach(c=>{
-    const el = document.createElement('div'); el.className='contactCard'; el.dataset.id = c.id;
+  (state.contacts||[]).forEach(c=>{
+    const el = document.createElement('div'); el.className='contactCard'; el.dataset.id=c.id;
     const av = c.avatar || defaultAvatar();
-    el.innerHTML = `<div class="iconWrap"><img src="${av}" alt=""></div><div class="contactName">${escapeHtml(c.name)}</div>`;
+    el.innerHTML = `<div class="iconWrap"><img src="${escapeAttr(av)}" alt=""></div><div class="contactName">${escapeHtml(c.name)}</div>`;
     el.addEventListener('click', ()=> openConversation(c.id));
     contactsGrid.appendChild(el);
   });
 }
+
 function applyEmptyHint(){ if(!state.contacts || state.contacts.length===0) emptyHint.classList.remove('hidden'); else emptyHint.classList.add('hidden'); }
 
-function defaultAvatar(){ return 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect rx='36' width='100%' height='100%' fill='white'/><text x='50%' y='50%' font-size='110' text-anchor='middle' dominant-baseline='central'>🙂</text></svg>`); }
-
-function escapeHtml(s){ if(!s) return ''; return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
-
-/* open chat */
 function openConversation(id){
   state.active = id;
-  // ensure conversation exists
   state.conversations[id] = state.conversations[id] || { members: id==='ai' ? ['me','ai'] : ['me', id], messages: [] };
-  // render header
-  const target = state.contacts.find(c=>c.id===id) || (id==='ai' ? { name: state.ai.name || 'AI', avatar: state.ai.avatar || defaultAvatar() } : { name:'群聊', avatar: defaultAvatar() });
+  const target = (state.contacts||[]).find(x=>x.id===id) || (id==='ai' ? { name: state.ai.name, avatar: state.ai.avatar||defaultAvatar() } : { name:'群聊', avatar: defaultAvatar() });
   chatTitle.textContent = target.name;
-  chatSub.textContent = (state.conversations[id].members?.length>1 ? '群聊 · 人数：' + state.conversations[id].members.length : '单聊 · 人数：1');
+  const members = state.conversations[id].members || [];
+  chatSub.textContent = members.length>1 ? `群聊 · 人数：${members.length}` : '单聊 · 人数：1';
   chatAvatar.src = target.avatar || defaultAvatar();
-  // show chat pane
   contactsPane.classList.add('hidden'); chatPane.classList.remove('hidden'); feedPane.classList.add('hidden');
   renderMessages();
 }
 
-/* back to contacts */
-document.getElementById('backContacts').addEventListener('click', ()=> { contactsPane.classList.remove('hidden'); chatPane.classList.add('hidden'); feedPane.classList.add('hidden'); state.active = null; });
-
-/* messages render */
 function renderMessages(){
   messagesEl.innerHTML = '';
-  const conv = state.conversations[state.active] || { messages: [] };
+  const conv = state.conversations[state.active] || { messages:[] };
   conv.messages.forEach(m=>{
-    const row = document.createElement('div'); row.className = 'msgRow' + (m.from==='me' ? ' mine' : '');
-    const avat = document.createElement('div'); avat.className = 'msgAvatar'; const img=document.createElement('img');
-    if(m.from==='me') img.src = state.me.avatar || defaultAvatar(); else if(m.from==='ai') img.src = state.ai.avatar || defaultAvatar(); else { const c = state.contacts.find(x=>x.id===m.from); img.src = c ? (c.avatar||defaultAvatar()) : defaultAvatar(); }
+    const row = document.createElement('div'); row.className='msgRow' + (m.from==='me' ? ' mine' : '');
+    const avat = document.createElement('div'); avat.className='msgAvatar'; const img=document.createElement('img');
+    if(m.from==='me') img.src = state.me.avatar || defaultAvatar();
+    else if(m.from==='ai') img.src = state.ai.avatar || defaultAvatar();
+    else { const c = state.contacts.find(x=>x.id===m.from); img.src = c ? (c.avatar||defaultAvatar()) : defaultAvatar(); }
     img.style.width='100%'; img.style.height='100%'; img.style.objectFit='cover'; avat.appendChild(img);
     const bubble = document.createElement('div'); bubble.className='bubble ' + (m.from==='me' ? 'user' : 'ai');
-    if(m.temp){ bubble.innerHTML = '<span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>'; }
+    if(m.temp) bubble.innerHTML = '<span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>';
     else bubble.innerHTML = escapeHtml(m.text).replaceAll('\\n','<br>');
     if(m.from==='me'){ row.appendChild(bubble); row.appendChild(avat); } else { row.appendChild(avat); row.appendChild(bubble); }
-    messagesEl.appendChild(row);
-    row.classList.add('enter'); setTimeout(()=>row.classList.add('show'), 10);
+    messagesEl.appendChild(row); row.classList.add('enter'); setTimeout(()=>row.classList.add('show'), 10);
   });
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
-/* send */
+/* ===========================
+   Sending & reply
+   =========================== */
 async function sendMsg(){
-  const text = txtInput.value.trim(); if(!text) return;
+  const txt = txtInput.value.trim(); if(!txt) return;
   const id = state.active || 'ai';
-  pushMessage(id, { from:'me', text, ts: Date.now() });
+  pushMessage(id, { from:'me', text:txt, ts:Date.now() });
   txtInput.value=''; renderMessages();
-  pushMessage(id, { from:'ai', text:'', temp:true, ts: Date.now() }); renderMessages();
+  pushMessage(id, { from:'ai', text:'', temp:true, ts:Date.now() }); renderMessages();
   try{
-    const reply = await generateReply(text, id);
-    // remove temp
-    const conv = state.conversations[id]; if(conv.messages.length && conv.messages[conv.messages.length-1].temp) conv.messages.pop();
-    pushMessage(id, { from:'ai', text: reply, ts: Date.now() });
+    const reply = await requestReply(txt, id);
+    const conv = state.conversations[id];
+    if(conv.messages.length && conv.messages[conv.messages.length-1].temp) conv.messages.pop();
+    pushMessage(id, { from:'ai', text: reply || '(无回复)', ts:Date.now() });
     saveState(); renderMessages();
   } catch(err){
-    console.error(err); const conv = state.conversations[id]; if(conv.messages.length && conv.messages[conv.messages.length-1].temp) conv.messages.pop();
-    pushMessage(id, { from:'ai', text:'出错：' + (err.message||'未知'), ts: Date.now() }); saveState(); renderMessages();
+    console.error(err);
+    const conv = state.conversations[id];
+    if(conv.messages.length && conv.messages[conv.messages.length-1].temp) conv.messages.pop();
+    pushMessage(id, { from:'ai', text:'出错：'+(err.message||'未知'), ts:Date.now() }); saveState(); renderMessages();
   }
 }
-function pushMessage(convId, msg){
-  state.conversations[convId] = state.conversations[convId] || { members:['me','ai'], messages:[] };
-  state.conversations[convId].messages.push(msg); saveState();
+
+function pushMessage(convId,msg){ state.conversations[convId] = state.conversations[convId] || { members:['me','ai'], messages:[] }; state.conversations[convId].messages.push(msg); saveState(); }
+
+/* request reply — if backend set, call it; otherwise local demo */
+async function requestReply(userText, convId){
+  const backend = localStorage.getItem('chat_backend_url') || (document.getElementById('backendUrl') && document.getElementById('backendUrl').value.trim());
+  const persona = {...state.ai};
+  if(backend){
+    const payload = { action:'generate_reply', message:userText, persona, conversation: state.conversations[convId] || {} };
+    const res = await fetch(backend, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    if(!res.ok) throw new Error('后端返回 ' + res.status);
+    const j = await res.json();
+    return j.reply || (j.choices && j.choices[0]?.message?.content) || JSON.stringify(j);
+  }
+  // local demo
+  await new Promise(r=>setTimeout(r, 400 + Math.random()*700));
+  const low = userText.toLowerCase();
+  const pref = state.ai.style==='playful' ? '嘿嘿，' : state.ai.style==='professional' ? '' : '你好～';
+  if(/你好|hi|嗨/.test(low)) return pref + (state.ai.catch || state.ai.name || '小NIE') + '，我在～';
+  if(/笑话/.test(low)) return pref + '有个程序员走进咖啡馆，他说：我来调试。';
+  return pref + '（演示）关于「' + userText + '」我想说：' + userText.split('').reverse().join('').slice(0,120);
 }
 
-/* simple local reply (demo) */
-async function generateReply(user, convId){
-  await new Promise(r=>setTimeout(r, 500 + Math.random()*700));
-  if(/你好|嗨|hi/.test(user)) return (state.ai?.name||'小NIE') + '：你好～';
-  if(/笑话/.test(user)) return '有一个程序员走进咖啡馆，说：我来调试。';
-  return '（演示回复）' + user.split('').reverse().join('').slice(0,140);
+/* ===========================
+   FEED (朋友圈)
+   =========================== */
+function renderFeed(){
+  const list = loadFeed(); const root = document.getElementById('feedList'); root.innerHTML = '';
+  for(let i=list.length-1;i>=0;i--){
+    const p = list[i];
+    const node = document.createElement('div'); node.className='feedItem';
+    node.innerHTML = `<div style="display:flex;gap:10px;align-items:center"><div style="width:44px;height:44px;border-radius:10px;overflow:hidden"><img src="${escapeAttr(p.avatar||defaultAvatar())}" style="width:100%;height:100%;object-fit:cover"></div><div><div style="font-weight:700">${escapeHtml(p.name)}</div><div style="font-size:12px;color:var(--muted)">${new Date(p.ts).toLocaleString()}</div></div></div><div style="margin-top:8px">${escapeHtml(p.text)}</div><div style="margin-top:8px;display:flex;gap:8px"><button class="action" data-id="${p.id}" data-act="like">赞 (${p.likes?.length||0})</button><button class="action" data-id="${p.id}" data-act="comment">评论 (${p.comments?.length||0})</button></div>`;
+    if(p.comments && p.comments.length){
+      const cwrap = document.createElement('div'); cwrap.style.marginTop='8px';
+      p.comments.forEach(c=> cwrap.innerHTML += `<div style="font-size:13px;border-top:1px dashed rgba(0,0,0,0.03);padding:6px 0"><strong>${escapeHtml(c.name)}</strong>：${escapeHtml(c.text)}<div style="font-size:11px;color:var(--muted)">${new Date(c.ts).toLocaleString()}</div></div>`);
+      node.appendChild(cwrap);
+    }
+    root.appendChild(node);
+  }
+  // bind actions
+  root.querySelectorAll('button').forEach(b=>{
+    b.onclick = (e)=>{ const id=b.dataset.id, act=b.dataset.act; if(act==='like') toggleLike(id); else openCommentPrompt(id); };
+  });
 }
 
-/* ---- add contact modal ---- */
-function openContactModal(){ contactName.value=''; contactFile.value=''; contactURL.value=''; showModal(contactModal); }
+function publishPost(){
+  const t = document.getElementById('postText').value.trim(); if(!t) return alert('请输入内容');
+  const list = loadFeed(); list.push({ id:'p'+Date.now(), name: state.me.name || '你', avatar: state.me.avatar||defaultAvatar(), text:t, likes:[], comments:[], ts:Date.now() });
+  saveFeed(list); document.getElementById('postText').value=''; renderFeed(); alert('发布成功');
+}
+function aiPublish(){
+  const list = loadFeed(); list.push({ id:'p'+Date.now(), name: state.ai.name || '小NIE', avatar: state.ai.avatar||defaultAvatar(), text:'AI：今天也想和你说点心里话～', likes:[], comments:[], ts:Date.now() });
+  saveFeed(list); renderFeed(); alert('AI 已发布');
+}
+function toggleLike(id){
+  const list = loadFeed(); const p = list.find(x=>x.id===id); if(!p) return;
+  const me = state.me.name || '你'; p.likes = p.likes||[]; const ix = p.likes.indexOf(me); if(ix>=0) p.likes.splice(ix,1); else p.likes.push(me); saveFeed(list); renderFeed();
+}
+function openCommentPrompt(id){
+  const text = prompt('输入评论：'); if(!text) return;
+  const list = loadFeed(); const p = list.find(x=>x.id===id); if(!p) return;
+  p.comments = p.comments||[]; p.comments.push({ name:state.me.name||'你', text, ts:Date.now() }); saveFeed(list); renderFeed();
+}
+
+function openFeed(){ contactsPane.classList.add('hidden'); chatPane.classList.add('hidden'); feedPane.classList.remove('hidden'); renderFeed(); }
+function closeFeed(){ feedPane.classList.add('hidden'); contactsPane.classList.remove('hidden'); chatPane.classList.add('hidden'); }
+
+/* ===========================
+   AI modal & profile modal
+   =========================== */
+function openAiModal(){
+  document.getElementById('aiName').value = state.ai.name || '';
+  document.getElementById('aiGender').value = state.ai.gender || 'neutral';
+  document.getElementById('aiRole').value = state.ai.role || '';
+  document.getElementById('aiStyle').value = state.ai.style || 'friendly';
+  document.getElementById('aiCatch').value = state.ai.catch || '';
+  document.getElementById('userColor').value = state.bubble.user || '#ffd6e6';
+  document.getElementById('aiColor').value = state.bubble.ai || '#d7c8ff';
+  document.getElementById('backendUrl').value = localStorage.getItem('chat_backend_url') || '';
+  showModal(aiModal);
+}
+async function saveAiSettings(){
+  state.ai.name = document.getElementById('aiName').value.trim() || state.ai.name;
+  state.ai.gender = document.getElementById('aiGender').value;
+  state.ai.role = document.getElementById('aiRole').value.trim();
+  state.ai.style = document.getElementById('aiStyle').value;
+  state.ai.catch = document.getElementById('aiCatch').value.trim();
+  // avatar file
+  const f = document.getElementById('aiAvatarFile').files;
+  if(f && f[0]) state.ai.avatar = await fileToDataUrl(f[0]);
+  // bubble colors
+  state.bubble.user = document.getElementById('userColor').value || state.bubble.user;
+  state.bubble.ai = document.getElementById('aiColor').value || state.bubble.ai;
+  // backend
+  const be = document.getElementById('backendUrl').value.trim();
+  if(be) localStorage.setItem('chat_backend_url', be);
+  saveState(); closeModal(aiModal); alert('AI 设置已保存');
+}
+
+/* profile modal */
+function openProfileModal(){
+  document.getElementById('meName').value = state.me.name || '';
+  document.getElementById('meRole').value = state.me.role || '';
+  document.getElementById('meAvatarUrl').value = ''; // optional
+  showModal(profileModal);
+}
+async function saveProfile(){
+  state.me.name = document.getElementById('meName').value.trim() || state.me.name;
+  state.me.role = document.getElementById('meRole').value.trim();
+  const f = document.getElementById('meAvatarFile').files;
+  if(f && f[0]) state.me.avatar = await fileToDataUrl(f[0]);
+  else if(document.getElementById('meAvatarUrl').value.trim()) state.me.avatar = document.getElementById('meAvatarUrl').value.trim();
+  saveState(); closeModal(profileModal); alert('我的设置已保存');
+}
+
+/* ===========================
+   Contacts / group / import
+   =========================== */
+function openContactModal(){ document.getElementById('contactName').value=''; document.getElementById('contactFile').value=''; document.getElementById('contactURL').value=''; showModal(contactModal); }
 async function saveContact(){
-  const name = contactName.value.trim(); if(!name) return alert('请输入名字');
+  const name = document.getElementById('contactName').value.trim(); if(!name) return alert('请输入名字');
   let avatar = '';
-  if(contactFile.files && contactFile.files[0]) avatar = await fileToDataUrl(contactFile.files[0]);
-  else if(contactURL.value.trim()) avatar = contactURL.value.trim();
+  if(document.getElementById('contactFile').files && document.getElementById('contactFile').files[0]) avatar = await fileToDataUrl(document.getElementById('contactFile').files[0]);
+  else if(document.getElementById('contactURL').value.trim()) avatar = document.getElementById('contactURL').value.trim();
   const id = 'c' + Date.now();
   state.contacts.push({ id, name, avatar }); saveState(); renderContacts(); applyEmptyHint(); closeModal(contactModal);
 }
 
-/* ---- group modal ---- */
 function openGroupModal(){
-  groupContacts.innerHTML='';
-  // list existing contacts
-  const list = state.contacts || [];
-  list.forEach(c=>{
-    const div = document.createElement('div'); div.style.padding='8px'; div.style.border='1px solid rgba(0,0,0,0.04)'; div.style.borderRadius='8px'; div.style.textAlign='center';
-    div.innerHTML = `<label style="display:flex;flex-direction:column;align-items:center;gap:6px"><input type="checkbox" value="${c.id}"><div style="font-size:13px">${escapeHtml(c.name)}</div></label>`;
-    groupContacts.appendChild(div);
+  const list = document.getElementById('groupContacts'); list.innerHTML = '';
+  (state.contacts||[]).forEach(c=>{
+    const el = document.createElement('div'); el.style.textAlign='center'; el.style.padding='6px'; el.innerHTML = `<label style="display:flex;flex-direction:column;align-items:center;gap:6px"><input type="checkbox" value="${c.id}"><div style="font-size:13px">${escapeHtml(c.name)}</div></label>`;
+    list.appendChild(el);
   });
-  groupName.value=''; groupFile.value=''; showModal(groupModal);
+  document.getElementById('groupName').value = ''; document.getElementById('groupFile').value = '';
+  showModal(groupModal);
 }
 async function createGroup(){
-  const checked = Array.from(groupContacts.querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value);
+  const checked = Array.from(document.querySelectorAll('#groupContacts input[type=checkbox]:checked')).map(i=>i.value);
   if(checked.length < 1) return alert('请选择至少一位成员');
-  if(checked.length + 1 > 8) return alert('最多支持 8 人');
-  const name = groupName.value.trim() || ('群聊 ' + (Math.floor(Math.random()*90)+10));
-  let avatar = '';
-  if(groupFile.files && groupFile.files[0]) avatar = await fileToDataUrl(groupFile.files[0]);
+  if(checked.length + 1 > 8) return alert('最多 8 人');
+  const name = document.getElementById('groupName').value.trim() || ('群聊'+Math.floor(Math.random()*90+10));
+  let avatar=''; if(document.getElementById('groupFile').files && document.getElementById('groupFile').files[0]) avatar = await fileToDataUrl(document.getElementById('groupFile').files[0]);
   const gid = 'g' + Date.now();
-  state.conversations[gid] = { members: ['me', ...checked], messages: [], name };
-  state.contacts.push({ id: gid, name, avatar: avatar || defaultAvatar() });
-  saveState(); renderContacts(); applyEmptyHint(); closeModal(groupModal);
-  alert('群聊已创建：' + name);
+  state.conversations[gid] = { members:['me', ...checked], messages:[], name };
+  state.contacts.push({ id:gid, name, avatar: avatar || defaultAvatar() });
+  saveState(); renderContacts(); applyEmptyHint(); closeModal(groupModal); alert('群聊创建成功');
 }
 
-/* ---- feed functions ---- */
-function openFeed(){ contactsPane.classList.add('hidden'); chatPane.classList.add('hidden'); feedPane.classList.remove('hidden'); renderFeed(); }
-function closeFeed(){ feedPane.classList.add('hidden'); contactsPane.classList.remove('hidden'); chatPane.classList.add('hidden'); }
-
-async function publishPost(){
-  const t = postText.value.trim(); if(!t) return alert('请输入内容');
-  const posts = loadFeed();
-  posts.push({ id:'p'+Date.now(), name: state.me.name, avatar: state.me.avatar||defaultAvatar(), text:t, likes:[], comments:[], ts:Date.now() });
-  saveFeed(posts); postText.value=''; renderFeed(); alert('发布成功');
+/* ===========================
+   Background & avatars helpers
+   =========================== */
+function changeBackgroundPrompt(){
+  const url = prompt('输入聊天背景图片 URL（留空可取消）');
+  if(!url) return;
+  state.background = url.trim(); saveState(); applyBackground(); alert('已设置背景（本地）');
 }
-async function aiPublish(){
-  const posts = loadFeed();
-  posts.push({ id:'p'+Date.now(), name: state.ai.name||'AI', avatar: state.ai.avatar||defaultAvatar(), text: 'AI：今天也想和你说点心里话～', likes:[], comments:[], ts:Date.now() });
-  saveFeed(posts); renderFeed(); alert('AI 已发布一条动态');
+function applyBackground(){
+  const app = document.querySelector('.app');
+  if(state.background) app.style.backgroundImage = `url('${escapeAttr(state.background)}')`, app.style.backgroundSize='cover';
+  else app.style.backgroundImage = '';
 }
-function renderFeed(){
-  const list = loadFeed(); feedList.innerHTML = '';
-  for(let i=list.length-1;i>=0;i--){
-    const p = list[i];
-    const node = document.createElement('div'); node.style.padding='12px'; node.style.borderBottom='1px solid rgba(0,0,0,0.03)';
-    node.innerHTML = `<div style="display:flex;gap:10px;align-items:center"><div style="width:44px;height:44px;border-radius:10px;overflow:hidden"><img src="${p.avatar||defaultAvatar()}" style="width:100%;height:100%;object-fit:cover"></div><div><div style="font-weight:700">${escapeHtml(p.name)}</div><div style="font-size:12px;color:var(--muted)">${new Date(p.ts).toLocaleString()}</div></div></div><div style="margin-top:8px">${escapeHtml(p.text)}</div><div style="margin-top:8px;display:flex;gap:8px"><button class="action" data-id="${p.id}" data-action="like">赞 (${p.likes?.length||0})</button><button class="action" data-id="${p.id}" data-action="comment">评论 (${p.comments?.length||0})</button></div>`;
-    feedList.appendChild(node);
-  }
-  // bind actions
-  feedList.querySelectorAll('button').forEach(b=>{
-    b.addEventListener('click', (e)=>{
-      const id = b.dataset.id; const act = b.dataset.action;
-      if(act==='like') toggleLike(id); else openComment(id);
-    });
-  });
-}
-function toggleLike(id){
-  const list = loadFeed(); const p = list.find(x=>x.id===id); if(!p) return;
-  const me = state.me.name || '你'; p.likes = p.likes || [];
-  const ix = p.likes.indexOf(me); if(ix>=0) p.likes.splice(ix,1); else p.likes.push(me);
-  saveFeed(list); renderFeed();
-}
-function openComment(id){
-  const txt = prompt('输入评论：'); if(!txt) return;
-  const list = loadFeed(); const p = list.find(x=>x.id===id); if(!p) return;
-  p.comments = p.comments || []; p.comments.push({ name: state.me.name || '你', text: txt, ts: Date.now() });
-  saveFeed(list); renderFeed();
+function applyBubbleColors(){
+  document.documentElement.style.setProperty('--user-color', state.bubble.user || '#ffd6e6');
+  document.documentElement.style.setProperty('--ai-color', state.bubble.ai || '#d7c8ff');
 }
 
-/* ---- misc helpers ---- */
-function showModal(el){ el.style.display='flex'; el.setAttribute('aria-hidden','false'); }
-function closeModal(el){ el.style.display='none'; el.setAttribute('aria-hidden','true'); }
-async function fileToDataUrl(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror= rej; fr.readAsDataURL(file); }); }
+/* ===========================
+   Utilities
+   =========================== */
+function defaultAvatar(){ return 'data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect rx='36' width='100%' height='100%' fill='white'/><text x='50%' y='50%' font-size='110' text-anchor='middle' dominant-baseline='central'>🙂</text></svg>`); }
+function escapeHtml(s){ if(!s) return ''; return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+function escapeAttr(s){ return (s||'').replaceAll('"','&quot;'); }
+function showModal(el){ el.style.display = 'flex'; el.setAttribute('aria-hidden','false'); }
+function closeModal(el){ el.style.display = 'none'; el.setAttribute('aria-hidden','true'); }
+function fileToDataUrl(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload = ()=> res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); }); }
 
-/* ---- contact save & utils ----- */
-async function saveContact(){
-  const name = contactName.value.trim(); if(!name) return alert('请输入名字');
-  let avatar = '';
-  if(contactFile.files && contactFile.files[0]) avatar = await fileToDataUrl(contactFile.files[0]);
-  else if(contactURL.value.trim()) avatar = contactURL.value.trim();
-  const id = 'c'+Date.now();
-  state.contacts.push({ id, name, avatar }); saveState(); renderContacts(); applyEmptyHint(); closeModal(contactModal);
-}
-
-/* file to data url used above */
-async function fileToDataUrl(file){ return new Promise((resolve,reject)=>{ const fr=new FileReader(); fr.onload = ()=> resolve(fr.result); fr.onerror = reject; fr.readAsDataURL(file); }); }
-
-/* feed persistence */
+/* ===========================
+   Persistence for feed & state
+   =========================== */
 function loadFeed(){ try{ return JSON.parse(localStorage.getItem(FEED_KEY)||'[]'); }catch(e){return [];} }
 function saveFeed(list){ localStorage.setItem(FEED_KEY, JSON.stringify(list)); }
+function saveState(){ localStorage.setItem(STATE_KEY, JSON.stringify(state)); applyBubbleColors(); applyBackground(); }
 
-/* export simple for debug (not shown in UI) */
-function exportState(){
-  const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'nie_state.json'; a.click();
-  URL.revokeObjectURL(url);
-}
+/* ===========================
+   Helpers used earlier but defined below to avoid duplication
+   =========================== */
+function saveState(){ localStorage.setItem(STATE_KEY, JSON.stringify(state)); applyBubbleColors(); applyBackground(); }
 
-/* utility functions */
-function escapeHtml(s){ if(!s) return ''; return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
-function defaultAvatar(){ return 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect rx='36' width='100%' height='100%' fill='white'/><text x='50%' y='50%' font-size='110' text-anchor='middle' dominant-baseline='central'>🙂</text></svg>`); }
-
-/* prevent overlay issues on mobile */
-document.body.addEventListener('touchstart', ()=>{}, {passive:true});
-
-/* ensure initial data exists */
-if(!state.contacts || state.contacts.length===0) state.contacts = DEFAULT.contacts;
+/* initial save to ensure keys */
+if(!state.contacts) state.contacts = DEFAULT.contacts;
 if(!state.conversations) state.conversations = DEFAULT.conversations;
-saveState(); renderContacts(); applyEmptyHint(); renderFeed();
+saveState();
 
+/* expose for debug */
+window._NIE = { state, saveState, loadFeed, saveFeed, renderContacts, renderFeed };
+
+/* fix mobile touch overlay oddities */
+document.body.addEventListener('touchstart', ()=>{}, {passive:true});
 </script>
 </body>
 </html>
