@@ -3,81 +3,81 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI 小手机模拟器 - 首页</title>
+  <title>NIEaiphone</title>
 
   <style>
     body {
       margin: 0;
       font-family: "Segoe UI", Inter, sans-serif;
-      background: linear-gradient(135deg, #0c111b, #1c2333);
-      color: #eef2ff;
+      background: linear-gradient(145deg, #d9c4e8, #c8b6e2, #bba7db);
+      background-size: 200% 200%;
+      animation: gradientMove 8s ease infinite;
+      color: #4a3f58;
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
     .container {
+      width: 90%;
+      max-width: 400px;
+      padding: 38px 28px 45px;
+      background: rgba(255, 255, 255, 0.46);
+      border-radius: 24px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(14px);
       text-align: center;
-      padding: 40px 20px;
-      max-width: 420px;
+      animation: fadeIn 0.7s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     h1 {
-      font-size: 28px;
-      margin-bottom: 10px;
-      font-weight: 600;
-    }
-
-    p {
-      font-size: 15px;
-      line-height: 1.6;
-      margin-bottom: 30px;
-      color: #cfd6e6;
+      font-size: 32px;
+      margin-bottom: 24px;
+      color: #3c2f4b;
+      font-weight: 700;
+      letter-spacing: 1px;
     }
 
     .btn {
       display: block;
       width: 100%;
-      padding: 12px 0;
-      background: #4f46e5;
-      border-radius: 10px;
+      padding: 16px 0;
+      background: #7f6ac8;
+      border-radius: 14px;
       text-decoration: none;
       color: white;
-      font-size: 16px;
-      margin: 8px 0;
-      transition: 0.2s;
+      font-size: 17px;
+      font-weight: 600;
+      margin-top: 10px;
+      box-shadow: 0 6px 20px rgba(127, 106, 200, 0.4);
+      transition: 0.25s;
     }
 
     .btn:hover {
-      opacity: 0.85;
-    }
-
-    .btn.ghost {
-      background: transparent;
-      border: 1px solid #4f46e5;
-      color: #cdd3f7;
-    }
-
-    footer {
-      margin-top: 20px;
-      font-size: 12px;
-      color: #7c869b;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 26px rgba(127, 106, 200, 0.5);
     }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <h1>AI 小手机模拟器</h1>
-    <p>一个可扩展的网页模拟器，将来你可以加入聊天界面、API 设置、手机 UI、美化样式等。</p>
+    <h1>NIEaiphone</h1>
 
-    <a class="btn" href="chat.html">进入聊天界面（未来会添加）</a>
-    <a class="btn ghost" href="api.html">API 设置页面（未来扩展）</a>
-
-    <footer>
-      GitHub Pages 可直接部署本页面
-    </footer>
+    <!-- 主入口按钮 -->
+    <a class="btn" href="home.html">回到你的小家</a>
   </div>
 </body>
 </html>
