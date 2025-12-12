@@ -2,320 +2,396 @@
 
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Chat — NIE (群组支持)</title>
-<style>
-  :root{--bg:#f3eaf8;--card:#fff;--accent:#8a5cf0;--muted:#888}
-  body{margin:0;font-family:system-ui, "PingFang SC", "Microsoft Yahei";background:var(--bg);-webkit-font-smoothing:antialiased}
-  .wrap{max-width:420px;margin:12px auto;padding:12px;border-radius:24px;background:linear-gradient(#fff,#fff);box-shadow:0 6px 20px rgba(0,0,0,.06);min-height:88vh}
-  .topbar{display:flex;gap:8px;align-items:center;margin-bottom:12px}
-  .tabs{display:flex;gap:10px;margin-left:8px}
-  .tab{background:#fff;padding:8px 12px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.06);font-weight:600}
-  .contacts{margin-bottom:12px}
-  .contact-item{display:inline-block;width:96px;padding:12px;background:var(--card);border-radius:12px;text-align:center;margin-right:12px;box-shadow:0 6px 20px rgba(0,0,0,.04);cursor:pointer}
-  .contact-item img{width:64px;height:64px;border-radius:12px;object-fit:cover}
-  .section{background:var(--card);padding:12px;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.04);margin-bottom:12px}
-  .chat-header{display:flex;align-items:center;gap:12px}
-  .avatar{width:48px;height:48px;border-radius:12px;background:#eee;display:flex;align-items:center;justify-content:center}
-  .title{font-weight:700}
-  .controls{margin-left:auto;display:flex;gap:8px}
-  .btn{padding:8px 12px;border-radius:999px;background:#fff;border:none;box-shadow:0 3px 8px rgba(0,0,0,.04);cursor:pointer}
-  .msgs{padding:12px;min-height:300px;max-height:60vh;overflow:auto;background-size:160px 160px}
-  .msg-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}
-  .msg-row.me{justify-content:flex-end}
-  .bubble{background:linear-gradient(#e9dfff,#d9c9ff);padding:12px;border-radius:16px;max-width:72%}
-  .bubble.me{background:linear-gradient(#ffdfee,#ffcfe8)}
-  .input-row{display:flex;gap:8px;align-items:center;margin-top:8px}
-  textarea{flex:1;padding:12px;border-radius:12px;border:1px solid #eee;height:52px;resize:none}
-  .send{background:linear-gradient(135deg,var(--accent),#b88df7);color:#fff;padding:10px 14px;border-radius:14px;border:none;cursor:pointer}
-  .footer-buttons{display:flex;gap:12px;justify-content:center;margin-top:16px}
-  .small{font-size:13px;color:var(--muted)}
-  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center}
-  .modal{background:var(--card);padding:18px;border-radius:14px;width:92%;max-width:480px;max-height:80vh;overflow:auto}
-  .row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
-  label{width:100px;color:var(--muted)}
-  input[type="text"], input[type="number"], textarea.settings{flex:1;padding:8px;border-radius:8px;border:1px solid #eee}
-  input[type=file]{display:block}
-  .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
-  .chip{display:inline-block;padding:6px 10px;border-radius:999px;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.04);cursor:pointer}
-  .member-card{display:flex;gap:8px;align-items:center;padding:8px;border-radius:10px;background:#faf7ff;margin-bottom:8px}
-  .member-card img{width:56px;height:56px;border-radius:10px;object-fit:cover}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NIEai — Chat (merged)</title>
+  <style>
+    /* 基础布局（轻量化，贴合你现有风格） */
+    :root{--bg:#f3e9f6;--card:#fff;--accent:#8e6fe6;--muted:#9b8fa7}
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,"Helvetica Neue","PingFang SC","Hiragino Sans GB",Arial}
+    body{background:var(--bg);display:flex;align-items:center;justify-content:center;padding:18px}
+    .phone{width:390px;max-width:94vw;height:820px;background:linear-gradient(#f6eefc,#efe6fb);border-radius:28px;box-shadow:0 12px 30px rgba(0,0,0,.12),inset 0 6px 12px rgba(255,255,255,.4);padding:14px;box-sizing:border-box;position:relative}
+    header.top{display:flex;gap:10px;align-items:center}
+    .back{width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 12px rgba(0,0,0,.05);}
+    h1.title{margin:0;font-size:20px;color:#3b2f45}
+    .tabs{display:flex;gap:10px;margin-left:8px}
+    .tab{background:white;padding:10px 14px;border-radius:14px;box-shadow:0 6px 12px rgba(0,0,0,.03);font-weight:600}/* 主体卡片 */
+.card{background:var(--card);border-radius:18px;padding:14px;margin-top:12px;box-shadow:0 12px 30px rgba(0,0,0,.04);height:calc(100% - 120px);overflow:auto}
+.contacts{display:flex;gap:14px;flex-wrap:wrap}
+.contact{width:96px;height:110px;background:rgba(250,250,250,.9);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,.03);cursor:pointer}
+.contact img.avatar{width:70px;height:70px;border-radius:12px;object-fit:cover}
+.contact span.name{margin-top:8px;font-weight:700}
+
+/* 聊天区 */
+.chatHeader{display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid #f0ecf6}
+.chatHeader .avatar{width:40px;height:40px;border-radius:10px;object-fit:cover}
+.chatHeader .title{font-weight:700}
+.chatHeader .controls{margin-left:auto;display:flex;gap:10px}
+.btn{background:rgba(255,255,255,.95);padding:8px 12px;border-radius:12px;box-shadow:0 6px 12px rgba(0,0,0,.03);cursor:pointer}
+
+/* 消息区 */
+.messages{padding:12px 6px;margin-top:6px;min-height:360px}
+.msg{display:flex;gap:8px;margin-bottom:12px;align-items:flex-end}
+.msg.me{flex-direction:row-reverse}
+.bubble{max-width:74%;padding:12px 14px;border-radius:14px;background:linear-gradient(#e9dffd,#d8ccfb);box-shadow:0 10px 20px rgba(142,111,230,.06);}
+.bubble.me{background:linear-gradient(#ffddee,#ffdfef);}
+.msg .avatar-sm{width:28px;height:28px;border-radius:8px}
+
+/* 固定底部输入 */
+.compose{position:sticky;bottom:10px;display:flex;gap:10px;align-items:center;padding-top:8px}
+.input{flex:1;background:#fff;border-radius:12px;padding:12px;border:1px solid #efebf6;min-height:48px}
+.send{width:66px;height:44px;background:linear-gradient(135deg,var(--accent),#b892f5);border-radius:12px;color:#fff;border:none;cursor:pointer}
+
+/* 朋友圈 */
+.feed{margin-top:18px}
+.post{background:#fff;border-radius:12px;padding:12px;margin-top:10px;box-shadow:0 6px 12px rgba(0,0,0,.03)}
+.small{font-size:12px;color:var(--muted)}
+
+/* 模态 */
+.modal-bg{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center}
+.modal{background:#fff;border-radius:14px;padding:16px;width:92%;max-width:520px}
+label{display:block;margin-top:8px;color:#40364a}
+input[type=text],textarea,select{width:100%;padding:10px;border-radius:10px;border:1px solid #efe9f5;margin-top:6px}
+.row{display:flex;gap:8px;align-items:center}
+.color-swatch{width:40px;height:28px;border-radius:8px;border:2px solid #eee;cursor:pointer}
+
+/* 保证按钮可点 */
+button[disabled]{opacity:.5;pointer-events:none}
+
+/* 让输入固定在底部可见 */
+.messages-wrap{padding-bottom:88px}
+
+/* 小屏优化 */
+@media (max-width:420px){.phone{width:92vw}}
+
+  </style>
 </head>
-<body><div class="wrap" id="wrap">
-  <div class="topbar">
-    <div class="tab">←</div>
-    <div class="tab">聊天</div>
-    <div class="tabs">
-      <div class="tab">朋友圈</div>
-      <div class="tab">添加联系人</div>
-      <div class="tab" id="createGroupBtn">创建群聊</div>
-    </div>
-  </div>  <div class="section contacts" id="contactsContainer">
-    <h3>联系人 / 群组</h3>
-    <div id="contactsList"></div>
-  </div>  <div class="section">
-    <div class="chat-header">
-      <div class="avatar" id="currentAvatar">🙂</div>
+<body>
+  <div class="phone" id="app">
+    <div class="top header">
+      <div class="back" id="backHome">←</div>
+      <h1 class="title">聊天</h1>
+      <div class="tabs" style="margin-left:auto">
+        <div class="tab" id="tabFriends">朋友圈</div>
+        <div class="tab" id="tabAdd">添加联系人</div>
+        <div class="tab" id="tabCreate">创建群聊</div>
+      </div>
+    </div><div class="card" id="mainCard">
+  <!-- 联系人网格 -->
+  <div id="contactsView">
+    <h3>联系人 <span class="small" style="float:right">点击进入聊天</span></h3>
+    <div class="contacts" id="contactsGrid"></div>
+  </div>
+
+  <!-- 聊天/对话视图 -->
+  <div id="chatView" style="display:none">
+    <div class="chatHeader">
+      <img src="" class="avatar" id="chatAvatar">
       <div>
-        <div class="title" id="currentName">对话</div>
-        <div class="small" id="currentSub">点击进入聊天</div>
+        <div class="title" id="chatName">对话</div>
+        <div class="small" id="chatSub">点击他的设置调整</div>
       </div>
       <div class="controls">
-        <button class="btn" id="openHisSetting">他的设定</button>
-        <button class="btn" id="btnReturn">返回</button>
+        <div class="btn" id="hisSettings">他的设定</div>
+        <div class="btn" id="btnBackToContacts">返回</div>
       </div>
-    </div><div class="msgs" id="msgs"></div>
+    </div>
 
-<div class="input-row">
-  <textarea id="inputBox" placeholder="输入消息， Enter 发送 (Shift+Enter 换行)"></textarea>
-  <button class="send" id="sendBtn">发送</button>
+    <div class="messages messages-wrap" id="messages"></div>
+
+    <div class="compose">
+      <div class="input" contenteditable="true" id="composer" aria-label="输入消息，Enter 发送 (Shift+Enter 换行)">输入消息， Enter 发送 (Shift+Enter 换行)</div>
+      <button class="send" id="sendBtn">发送</button>
+    </div>
+  </div>
+
+  <!-- 朋友圈 -->
+  <div id="feedView" style="display:none">
+    <div class="feed">
+      <h3>朋友圈 <span class="small">AI 可发动态 · 支持点赞/评论（本地保存）</span></h3>
+      <div>
+        <textarea id="feedInput" placeholder="在朋友圈说点什么..." style="width:100%;height:80px;padding:10px;border-radius:12px;border:1px solid #efe9f5"></textarea>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn" id="feedPublish">发布</button>
+          <button class="btn" id="feedAI">AI 发一条</button>
+          <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="feedAuto"> AI 自动发</label>
+          <button class="btn" id="feedClose">关闭</button>
+        </div>
+      </div>
+      <div id="feedList"></div>
+    </div>
+  </div>
+
+  <!-- 底部固定设置按钮 -->
+  <div style="display:flex;gap:12px;justify-content:center;margin-top:14px">
+    <div class="btn" id="mySettings">我的设置</div>
+    <div class="btn" id="changeBg">更换背景</div>
+  </div>
+
 </div>
 
-  </div>  <div class="section">
-    <h3>朋友圈 <span class="small">AI 可发动态 · 支持点赞/评论（本地保存）</span></h3>
-    <textarea id="momentsInput" placeholder="在朋友圈说点什么..." style="width:100%;height:80px;padding:12px;border-radius:12px;border:1px solid #eee"></textarea>
-    <div style="margin-top:8px">
-      <button class="chip" id="postBtn">发布</button>
-      <button class="chip" id="aiPostBtn">AI 发一条</button>
-      <label style="margin-left:8px"><input type="checkbox" id="aiAutoPost"> AI 自动发</label>
-      <button class="chip" id="closeMoments">关闭</button>
-    </div>
-    <div id="momentsList" style="margin-top:12px"></div>
-  </div>  <div style="height:24px"></div>
-  <div class="footer-buttons">
-    <button class="btn" id="openMySetting">我的设置</button>
-    <button class="btn" id="changeBg">更换背景</button>
-  </div>
-</div><!-- 模态：他的设定 --><div class="modal-bg" id="modalBg">
-  <div class="modal">
-    <h3>他的设置</h3>
-    <div class="row"><label>AI 名称</label><input type="text" id="setName"></div>
-    <div class="row"><label>性别</label>
-      <select id="setGender" style="flex:1;padding:8px;border-radius:8px;border:1px solid #eee">
-        <option>中性</option><option>女</option><option>男</option>
-      </select>
-    </div>
-    <div class="row"><label>人设</label><textarea class="settings" id="setPersona" rows="3" placeholder="写下 AI 的人设（作为生成提示）"></textarea></div>
-    <div class="row"><label>风格/习惯</label><textarea class="settings" id="setStyle" rows="2" placeholder="AI 风格或习惯用语"></textarea></div>
-    <div class="row"><label>AI 头像</label><input type="file" id="setAvatarFile" accept="image/*"></div>
-    <div class="row"><label>回复条数</label><input type="number" id="setReplyCount" min="1" max="20" value="5"></div>
-    <div class="row"><label>动作/心理</label><input type="checkbox" id="setActionDesc"> 开启后回复带动作/心理</div><div class="actions">
-  <button class="btn" id="modalCancel">取消</button>
-  <button class="btn" id="modalSave">保存</button>
-</div>
+  </div>  <!-- 模态：他的设定/我的设置/更换背景/群成员设置 -->  <div class="modal-bg" id="modalBg">
+    <div class="modal" id="modalContent"></div>
+  </div>  <script>
+  // --- 简易 IndexedDB 管理 ---
+  const DB_NAME = 'nie_chat_db_v1';
+  const STORE_CONTACTS = 'contacts';
+  const STORE_GROUPS = 'groups';
+  const STORE_FEEDS = 'feeds';
+  const STORE_SETTINGS = 'settings';
 
-  </div>
-</div><!-- 模态：创建/编辑 群聊 --><div class="modal-bg" id="groupModalBg">
-  <div class="modal">
-    <h3 id="groupModalTitle">创建群聊</h3>
-    <div class="row"><label>群聊名</label><input type="text" id="groupName"></div>
-    <div id="groupMembersContainer"></div>
-    <div style="display:flex;gap:8px;margin-top:8px;margin-bottom:8px">
-      <button class="chip" id="addMemberBtn">添加成员</button>
-      <button class="chip" id="removeLastMemberBtn">删除最后一个成员</button>
-    </div>
-    <div class="actions">
-      <button class="btn" id="groupCancel">取消</button>
-      <button class="btn" id="groupSave">保存群聊</button>
-    </div>
-  </div>
-</div><script>
-/* IndexedDB setup */
-const dbName = 'nie-db';
-const dbVersion = 2; // bump for groups
-let db;
-function openDB(){
-  return new Promise((res,rej)=>{
-    const req = indexedDB.open(dbName, dbVersion);
-    req.onupgradeneeded = e=>{
-      const d = e.target.result;
-      if(!d.objectStoreNames.contains('settings')) d.createObjectStore('settings',{keyPath:'key'});
-      if(!d.objectStoreNames.contains('avatars')) d.createObjectStore('avatars',{keyPath:'id'});
-      if(!d.objectStoreNames.contains('backgrounds')) d.createObjectStore('backgrounds',{keyPath:'id'});
-      if(!d.objectStoreNames.contains('contacts')) d.createObjectStore('contacts',{keyPath:'id'});
-      if(!d.objectStoreNames.contains('conversations')) d.createObjectStore('conversations',{keyPath:'id'});
-      if(!d.objectStoreNames.contains('moments')) d.createObjectStore('moments',{keyPath:'id'});
-      if(!d.objectStoreNames.contains('groups')) d.createObjectStore('groups',{keyPath:'id'});
-    };
-    req.onsuccess = e=>{ db = e.target.result; res(db); };
-    req.onerror = e=>rej(e);
+  let db;
+  function openDB(){
+    return new Promise((resolve,reject)=>{
+      const req = indexedDB.open(DB_NAME,1);
+      req.onupgradeneeded = e => {
+        db = e.target.result;
+        if(!db.objectStoreNames.contains(STORE_CONTACTS)) db.createObjectStore(STORE_CONTACTS,{keyPath:'id'});
+        if(!db.objectStoreNames.contains(STORE_GROUPS)) db.createObjectStore(STORE_GROUPS,{keyPath:'id'});
+        if(!db.objectStoreNames.contains(STORE_FEEDS)) db.createObjectStore(STORE_FEEDS,{keyPath:'id'});
+        if(!db.objectStoreNames.contains(STORE_SETTINGS)) db.createObjectStore(STORE_SETTINGS,{keyPath:'key'});
+      };
+      req.onsuccess = e => { db = e.target.result; resolve(db); };
+      req.onerror = e => reject(e);
+    });
+  }
+
+  function dbPut(store, val){
+    return new Promise((res,rej)=>{
+      const tx = db.transaction(store,'readwrite');
+      tx.objectStore(store).put(val);
+      tx.oncomplete = ()=>res(true);
+      tx.onerror = e=>rej(e);
+    });
+  }
+  function dbGetAll(store){
+    return new Promise((res,rej)=>{
+      const tx = db.transaction(store,'readonly');
+      const req = tx.objectStore(store).getAll();
+      req.onsuccess = ()=>res(req.result||[]);
+      req.onerror = e=>rej(e);
+    });
+  }
+  function dbGet(store,key){
+    return new Promise((res,rej)=>{
+      const tx = db.transaction(store,'readonly');
+      const req = tx.objectStore(store).get(key);
+      req.onsuccess = ()=>res(req.result);
+      req.onerror = e=>rej(e);
+    });
+  }
+
+  // --- 工具 ---
+  function uid(prefix='id'){return prefix + '_' + Math.random().toString(36).slice(2,9)}
+  function readFileAsDataURL(file){
+    return new Promise((res,rej)=>{
+      const fr = new FileReader(); fr.onload = ()=>res(fr.result); fr.onerror = rej; fr.readAsDataURL(file);
+    })
+  }
+
+  // --- 应用状态/渲染 ---
+  let state = {contacts:[],groups:[],feeds:[],current:null,settings:{}};
+
+  async function loadState(){
+    state.contacts = await dbGetAll(STORE_CONTACTS);
+    state.groups = await dbGetAll(STORE_GROUPS);
+    state.feeds = await dbGetAll(STORE_FEEDS);
+    const s = await dbGet(STORE_SETTINGS,'ui');
+    state.settings = s? s.value : {replyMax:5,actionDesc:true};
+    renderContacts();
+    renderFeeds();
+  }
+
+  function renderContacts(){
+    const el = document.getElementById('contactsGrid'); el.innerHTML='';
+    if(!state.contacts.length){
+      // add a default contact if none
+      const def = {id:'contact_default',name:'小NIE',avatar:'',persona:'友好',replyCount:5,action:true}
+      dbPut(STORE_CONTACTS,def).then(()=>loadState())
+      return;
+    }
+    state.contacts.forEach(c=>{
+      const d = document.createElement('div'); d.className='contact'; d.dataset.id=c.id;
+      const img = document.createElement('img'); img.className='avatar'; img.src = c.avatar||'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"><rect rx="12" ry="12' fill="%23f6f0fb"/></svg>';
+      img.onerror = ()=>{img.src=''; img.style.background='linear-gradient(#fff,#f6f0fb)'}
+      const name = document.createElement('span'); name.className='name'; name.textContent = c.name||'未命名';
+      d.appendChild(img); d.appendChild(name);
+      d.addEventListener('click',()=>openChat(c.id));
+      el.appendChild(d);
+    })
+  }
+
+  function renderFeeds(){
+    const list = document.getElementById('feedList'); list.innerHTML='';
+    state.feeds.sort((a,b)=>b.ts-a.ts).forEach(p=>{
+      const card = document.createElement('div'); card.className='post';
+      const who = document.createElement('div'); who.innerHTML = `<strong>${p.name||'你'}</strong> <div class='small'>${new Date(p.ts).toLocaleString()}</div>`;
+      const txt = document.createElement('div'); txt.style.marginTop='8px'; txt.textContent = p.text;
+      const actions = document.createElement('div'); actions.style.marginTop='10px'; actions.innerHTML=`<button class='btn' data-id='${p.id}' data-act='like'>赞 (${p.likes||0})</button> <button class='btn' data-id='${p.id}' data-act='comment'>评论 (${(p.comments||[]).length})</button>`;
+      actions.querySelectorAll('button').forEach(b=>{
+        b.addEventListener('click',e=>{
+          const id = b.dataset.id; const act=b.dataset.act; if(act==='like') toggleLike(id); else commentPost(id);
+        })
+      })
+      card.appendChild(who); card.appendChild(txt); card.appendChild(actions); list.appendChild(card);
+    })
+  }
+
+  async function toggleLike(id){
+    const feeds = state.feeds; const i = feeds.findIndex(x=>x.id===id); if(i===-1) return;
+    feeds[i].likes = (feeds[i].likes||0) + 1; await dbPut(STORE_FEEDS,feeds[i]); renderFeeds();
+  }
+
+  async function commentPost(id){
+    const text = prompt('输入评论:'); if(!text) return;
+    const feeds = state.feeds; const p = feeds.find(x=>x.id===id); p.comments = p.comments||[]; p.comments.push({id:uid('c'),text,ts:Date.now()}); await dbPut(STORE_FEEDS,p); loadState();
+  }
+
+  // --- 打开聊天 ---
+  async function openChat(id){
+    const contact = state.contacts.find(x=>x.id===id);
+    if(!contact) return;
+    state.current = contact;
+    document.getElementById('contactsView').style.display='none';
+    document.getElementById('feedView').style.display='none';
+    document.getElementById('chatView').style.display='block';
+    document.getElementById('chatAvatar').src = contact.avatar || '';
+    document.getElementById('chatName').textContent = contact.name || '对话';
+    renderMessages();
+  }
+
+  async function renderMessages(){
+    const box = document.getElementById('messages'); box.innerHTML='';
+    // load messages from contact object (stored in contact.messages)
+    const msgs = state.current.messages||[];
+    msgs.forEach(m=>{
+      const div = document.createElement('div'); div.className='msg '+(m.from==='me'?'me':'');
+      const av = document.createElement('img'); av.className='avatar-sm'; av.src = m.from==='me' ? (state.settings.myAvatar||'') : (state.current.avatar||'');
+      const bub = document.createElement('div'); bub.className='bubble '+(m.from==='me'?'me':''); bub.textContent = m.text;
+      div.appendChild(av); div.appendChild(bub); box.appendChild(div);
+    })
+    box.scrollTop = box.scrollHeight;
+  }
+
+  // --- 发送并生成 AI 回复（受 'replyCount' 限制） ---
+  async function sendMessage(text){
+    if(!state.current) return;
+    state.current.messages = state.current.messages||[];
+    state.current.messages.push({id:uid('m'),from:'me',text,ts:Date.now()});
+    await dbPut(STORE_CONTACTS,state.current);
+    renderMessages();
+    // 生成 AI 回复（模拟，不重复）
+    const max = Math.max(1, Math.min(20, state.current.replyCount || state.settings.replyMax || 5));
+    // create up to max replies, each delayed slightly
+    const replies = generateReplies(text, state.current, max);
+    for(let i=0;i<replies.length;i++){
+      await new Promise(r=>setTimeout(r,300 + i*350));
+      state.current.messages.push({id:uid('m'),from:'bot',text:replies[i],ts:Date.now()});
+      await dbPut(STORE_CONTACTS,state.current);
+      renderMessages();
+    }
+  }
+
+  function generateReplies(userText, contact, max){
+    // 简单去重复：基础回复是基于人设/风格模板
+    const base = contact.persona || '友好';
+    const templates = [
+      `${contact.name || '他'}：我听到了，你说的是「${userText}」`,
+      `（微笑）关于「${userText}」我想说：我明白了。`,
+      `我很想和你聊这个：${userText}`
+    ];
+    // 如果 action 描述开启，则在前面加动作
+    const out = [];
+    for(let i=0;i<max;i++){
+      const t = templates[i % templates.length];
+      let reply = t.replace(/\u3000/g,' ');
+      if((contact.action===true) || state.settings.actionDesc) reply = `（他轻轻一笑） ${reply}`; // only one sample action
+      // 去重：不要和最近几条一样
+      const existing = (contact.messages||[]).slice(-10).map(m=>m.text);
+      if(existing.includes(reply)) continue;
+      out.push(reply);
+      if(out.length>= (contact.replyCount||state.settings.replyMax||3)) break;
+    }
+    return out;
+  }
+
+  // --- 事件绑定 ---
+  document.getElementById('tabFriends').addEventListener('click',()=>{document.getElementById('contactsView').style.display='none'; document.getElementById('chatView').style.display='none'; document.getElementById('feedView').style.display='block';});
+  document.getElementById('tabAdd').addEventListener('click',()=>{openAddContact();});
+  document.getElementById('tabCreate').addEventListener('click',()=>{openCreateGroup();});
+  document.getElementById('backHome').addEventListener('click',()=>{ location.href='home.html'; });
+  document.getElementById('btnBackToContacts').addEventListener('click',()=>{ document.getElementById('chatView').style.display='none'; document.getElementById('contactsView').style.display='block'; });
+
+  document.getElementById('sendBtn').addEventListener('click',()=>{
+    const txt = composerText(); if(!txt) return; sendMessage(txt); clearComposer();
   });
+  // enter 发送（shift+enter 换行）
+  const composer = document.getElementById('composer');
+  composer.addEventListener('keydown',(e)=>{
+    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); const t = composerText(); if(t) { sendMessage(t); clearComposer(); } }
+  });
+  function composerText(){ const v = composer.textContent || ''; if(!v.trim() || v.trim()==='输入消息， Enter 发送 (Shift+Enter 换行)') return ''; return v.trim(); }
+  function clearComposer(){ composer.textContent=''; }
+
+  // 我的设置 / 更换背景
+  document.getElementById('mySettings').addEventListener('click',()=>openMySettings());
+  document.getElementById('changeBg').addEventListener('click',()=>openChangeBg());
+
+  // 朋友圈按钮
+  document.getElementById('feedPublish').addEventListener('click',async()=>{
+    const txt = document.getElementById('feedInput').value.trim(); if(!txt) return; const p={id:uid('f'),name:'你',text:txt,ts:Date.now(),likes:0,comments:[]}; await dbPut(STORE_FEEDS,p); loadState(); document.getElementById('feedInput').value='';
+  });
+  document.getElementById('feedAI').addEventListener('click',async()=>{
+    // AI 发一条：使用默认联系人名
+    const contact = state.contacts[0]||{name:'小NIE'}; const p={id:uid('f'),name:contact.name,text:'今天也想和你说点心里话～',ts:Date.now(),likes:0,comments:[]}; await dbPut(STORE_FEEDS,p); loadState();
+  });
+  document.getElementById('feedAuto').addEventListener('change',()=>{
+    // not implementing auto timer now
+  });
+
+  // 他的设定按钮（在 chatView）
+  document.getElementById('hisSettings').addEventListener('click',()=>{ openHisSettings(state.current); });
+
+  // 打开模态
+  const modalBg = document.getElementById('modalBg');
+  function showModal(html){ modalBg.style.display='flex'; document.getElementById('modalContent').innerHTML = html; bindModalActions(); }
+  function closeModal(){ modalBg.style.display='none'; document.getElementById('modalContent').innerHTML=''; }
+  modalBg.addEventListener('click',(e)=>{ if(e.target===modalBg) closeModal(); });
+
+  // --- 打开添加联系人 ---
+  function openAddContact(){
+    const html = `
+      <h3>添加联系人</h3>
+      <label>名字 <input type='text' id='new_name'></label>
+      <label>人设（提示，保存后不会直接发送） <textarea id='new_persona'></textarea></label><label>头像 <input type='file' id='new_avatar' accept='image/*'></label>
+  <div style='margin-top:12px;display:flex;gap:8px;justify-content:flex-end'><button class='btn' id='new_cancel'>取消</button><button class='btn' id='new_save'>保存</button></div>
+`;
+showModal(html);
+document.getElementById('new_cancel').addEventListener('click',closeModal);
+document.getElementById('new_save').addEventListener('click',async ()=>{
+  const name = document.getElementById('new_name').value.trim()||'未命名';
+  const persona = document.getElementById('new_persona').value.trim()||'友好';
+  const file = document.getElementById('new_avatar').files[0];
+  let data=''; if(file){ data = await readFileAsDataURL(file); }
+  const newc = {id:uid('c'),name,avatar:data,persona,replyCount:state.settings.replyMax||5,action:true,messages:[]};
+  await dbPut(STORE_CONTACTS,newc); closeModal(); loadState();
+});
+
 }
-function idbPut(store, value){ return new Promise((res,rej)=>{ const tx = db.transaction(store,'readwrite'); const s = tx.objectStore(store); const r = s.put(value); r.onsuccess = ()=>res(r.result); r.onerror = e=>rej(e); }); }
-function idbGet(store, key){ return new Promise((res,rej)=>{ const tx = db.transaction(store,'readonly'); const s = tx.objectStore(store); const r = s.get(key); r.onsuccess = ()=>res(r.result); r.onerror = e=>rej(e); }); }
-function idbGetAll(store){ return new Promise((res,rej)=>{ const tx = db.transaction(store,'readonly'); const s = tx.objectStore(store); const r = s.getAll(); r.onsuccess = ()=>res(r.result); r.onerror = e=>rej(e); }); }
 
-/* helper file->dataURL */
-function fileToDataURL(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(file); }); }
+// --- 打开创建群聊 --- function openCreateGroup(){ const html = <h3>创建群聊</h3> <label>群名 <input type='text' id='grp_name' value='群聊${Date.now()%1000}'></label> <div id='grp_members'></div> <div style='margin-top:8px'><button class='btn' id='addMember'>添加成员</button></div> <div style='margin-top:12px;display:flex;gap:8px;justify-content:flex-end'><button class='btn' id='grp_cancel'>取消</button><button class='btn' id='grp_save'>保存</button></div>; showModal(html); document.getElementById('grp_cancel').addEventListener('click',closeModal); document.getElementById('addMember').addEventListener('click',()=> addMemberRow()); document.getElementById('grp_save').addEventListener('click',async ()=>{ const name = document.getElementById('grp_name').value.trim()||'群聊'; const members = []; document.querySelectorAll('.member-row').forEach(row=>{ const nm = row.querySelector('.m-name').value.trim()||'未命名'; const persona = row.querySelector('.m-persona').value.trim()||'友好'; members.push({id:uid('m'),name:nm,avatar:'',persona,replyCount:parseInt(row.querySelector('.m-reply').value)||3,action:row.querySelector('.m-action').checked}); }); const grp = {id:uid('g'),name, members, messages:[]}; await dbPut(STORE_GROUPS,grp); closeModal(); loadState(); }); // start with two members by default addMemberRow(); addMemberRow(); } function addMemberRow(){ const container = document.getElementById('grp_members'); const div = document.createElement('div'); div.className='member-row'; div.innerHTML = <label>名字 <input class='m-name' type='text'></label> <label>人设 <textarea class='m-persona'></textarea></label> <label>回复条数 <input class='m-reply' type='number' min='1' max='20' value='3'></label> <label><input class='m-action' type='checkbox' checked> 动作/心理描述</label> <hr>; container.appendChild(div); }
 
-/* Elements */
-const contactsListEl = document.getElementById('contactsList');
-const msgsEl = document.getElementById('msgs');
-const currentAvatarEl = document.getElementById('currentAvatar');
-const currentNameEl = document.getElementById('currentName');
-const currentSubEl = document.getElementById('currentSub');
-const inputBox = document.getElementById('inputBox');
-const sendBtn = document.getElementById('sendBtn');
+// --- 他的设定（单人/群聊） --- async function openHisSettings(contact){ if(!contact){ alert('请先选择联系人'); return; } const html = <h3>他的设定</h3> <label>AI 名称<input type='text' id='set_name' value='${contact.name.replace(/'/g,'\'')}'></label> <label>性别<select id='set_sex'><option>中性</option><option>女</option><option>男</option></select></label> <label>人设（仅作生成提示）<textarea id='set_persona'>${contact.persona||''}</textarea></label> <label>风格/习惯<textarea id='set_style'>${contact.style||''}</textarea></label> <label>AI 头像 <input type='file' id='set_avatar' accept='image/*'></label> <label>回复条数 <input type='number' id='set_reply' min='1' max='20' value='${contact.replyCount||5}'></label> <label><input type='checkbox' id='set_action' ${contact.action? 'checked' : ''}> 开启动作/心理描述（开启后回复会带动作）</label> <div style='margin-top:12px;display:flex;gap:8px;justify-content:flex-end'><button class='btn' id='set_cancel'>取消</button><button class='btn' id='set_save'>保存</button></div> ; showModal(html); document.getElementById('set_cancel').addEventListener('click',closeModal); document.getElementById('set_save').addEventListener('click',async ()=>{ const name = document.getElementById('set_name').value.trim()||contact.name; const persona = document.getElementById('set_persona').value.trim(); const style = document.getElementById('set_style').value.trim(); const replyCount = parseInt(document.getElementById('set_reply').value) || 3; const action = document.getElementById('set_action').checked; const file = document.getElementById('set_avatar').files[0]; let avatarData = contact.avatar||''; if(file){ avatarData = await readFileAsDataURL(file); } const updated = Object.assign({}, contact, {name,persona,style,replyCount,action,avatar:avatarData}); await dbPut(STORE_CONTACTS, updated); closeModal(); loadState(); // ensure if currently open chat is this contact, update it if(state.current && state.current.id === updated.id){ state.current = updated; document.getElementById('chatAvatar').src = updated.avatar||''; document.getElementById('chatName').textContent = updated.name; } }); }
 
-const modalBg = document.getElementById('modalBg');
-const setName = document.getElementById('setName');
-const setGender = document.getElementById('setGender');
-const setPersona = document.getElementById('setPersona');
-const setStyle = document.getElementById('setStyle');
-const setAvatarFile = document.getElementById('setAvatarFile');
-const setReplyCount = document.getElementById('setReplyCount');
-const setActionDesc = document.getElementById('setActionDesc');
+// 我的设置 - 存储全局头像、昵称、默认reply等 function openMySettings(){ const html = <h3>我的设置</h3> <label>我的昵称 <input type='text' id='my_name' value='${state.settings.myName||'你'}'></label> <label>我的头像 <input type='file' id='my_avatar' accept='image/*'></label> <label>默认回复条数 <input type='number' id='my_reply' min='1' max='20' value='${state.settings.replyMax||5}'></label> <label><input type='checkbox' id='my_action' ${state.settings.actionDesc? 'checked':''}> 默认动作/心理描述</label> <div style='margin-top:12px;display:flex;gap:8px;justify-content:flex-end'><button class='btn' id='my_cancel'>取消</button><button class='btn' id='my_save'>保存</button></div>; showModal(html); document.getElementById('my_cancel').addEventListener('click',closeModal); document.getElementById('my_save').addEventListener('click',async ()=>{ const name = document.getElementById('my_name').value.trim()||'你'; const replyMax = parseInt(document.getElementById('my_reply').value)||5; const actionDesc = document.getElementById('my_action').checked; const file = document.getElementById('my_avatar').files[0]; let avatarData = state.settings.myAvatar||''; if(file) avatarData = await readFileAsDataURL(file); state.settings = Object.assign({}, state.settings, {myName:name,myAvatar:avatarData,replyMax,actionDesc}); await dbPut(STORE_SETTINGS,{key:'ui',value:state.settings}); closeModal(); loadState(); // update any open chat if(state.current){ document.getElementById('chatAvatar').src = state.current.avatar||''; } }); }
 
-const groupModalBg = document.getElementById('groupModalBg');
-const groupMembersContainer = document.getElementById('groupMembersContainer');
-const groupNameInput = document.getElementById('groupName');
+// 更换聊天背景（只改变聊天区白色卡片底色图像） function openChangeBg(){ const html = <h3>更换聊天背景（仅白色消息区）</h3> <label>上传本地图片（jpg/png）<input type='file' id='bg_file' accept='image/*'></label> <div style='margin-top:12px;display:flex;gap:8px;justify-content:flex-end'><button class='btn' id='bg_cancel'>取消</button><button class='btn' id='bg_save'>保存</button></div>; showModal(html); document.getElementById('bg_cancel').addEventListener('click',closeModal); document.getElementById('bg_save').addEventListener('click',async ()=>{ const file = document.getElementById('bg_file').files[0]; if(!file){ closeModal(); return; } const data = await readFileAsDataURL(file); state.settings.bg = data; await dbPut(STORE_SETTINGS,{key:'ui',value:state.settings}); closeModal(); applyBg(); }); } function applyBg(){ const rootCard = document.querySelector('.card'); if(state.settings.bg){ rootCard.style.backgroundImage = url(${state.settings.bg}); rootCard.style.backgroundSize='cover'; } else{ rootCard.style.backgroundImage=''; } }
 
-let openConversationId = null; // contactId or groupId
-let openConversationIsGroup = false;
+// 绑定模态内的按钮事件委托 (有时需要) function bindModalActions(){ // no-op for now }
 
-/* events */
-document.getElementById('openHisSetting').addEventListener('click', ()=> modalBg.style.display='flex');
-document.getElementById('modalCancel').addEventListener('click', ()=> modalBg.style.display='none');
+// 初始启动 (async ()=>{ await openDB(); await loadState(); applyBg(); // restore if there's any current open chat id in settings const cur = (await dbGet(STORE_SETTINGS,'current'))?.value; if(cur){ const c = (await dbGetAll(STORE_CONTACTS)).find(x=>x.id===cur); if(c) openChat(c.id); } })();
 
-// Open my setting — load currentAI settings
-document.getElementById('openMySetting').addEventListener('click', async ()=>{
-  const s = await idbGet('settings','currentAI');
-  if(s){ setName.value=s.name||''; setGender.value=s.gender||'中性'; setPersona.value=s.persona||''; setStyle.value=s.style||''; setReplyCount.value=s.replyCount||4; setActionDesc.checked=!!s.actionDesc; }
-  else { setName.value='小NIE'; setGender.value='中性'; setPersona.value=''; setStyle.value=''; setReplyCount.value=4; setActionDesc.checked=true; }
-  modalBg.style.display='flex';
-});
-
-// 保存他的设置（currentAI）
-document.getElementById('modalSave').addEventListener('click', async ()=>{
-  const name = setName.value || '未命名';
-  const gender = setGender.value;
-  const persona = setPersona.value;
-  const style = setStyle.value;
-  const replyCount = parseInt(setReplyCount.value) || 4;
-  const actionDesc = setActionDesc.checked;
-  await idbPut('settings', { key:'currentAI', name, gender, persona, style, replyCount, actionDesc });
-  if(setAvatarFile.files && setAvatarFile.files[0]){
-    const data = await fileToDataURL(setAvatarFile.files[0]);
-    await idbPut('avatars', { id:'currentAI', data });
-  }
-  alert('已保存他的设置');
-  modalBg.style.display='none';
-  await applySettingsToUI();
-});
-
-// change background
-document.getElementById('changeBg').addEventListener('click', async ()=>{
-  const input = document.createElement('input'); input.type='file'; input.accept='image/*';
-  input.onchange = async ()=>{
-    if(input.files[0]){
-      const d = await fileToDataURL(input.files[0]);
-      await idbPut('backgrounds',{ id:'chatBg', data:d });
-      await applySettingsToUI();
-      alert('已保存聊天背景');
-    }
-  };
-  input.click();
-});
-
-// send
-sendBtn.addEventListener('click', ()=> handleSend());
-inputBox.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); handleSend(); } });
-
-/* create group modal open */
-document.getElementById('createGroupBtn').addEventListener('click', ()=> openGroupModal());
-
-document.getElementById('groupCancel').addEventListener('click', ()=> groupModalBg.style.display='none');
-
-// dynamic member add/remove
-document.getElementById('addMemberBtn').addEventListener('click', ()=> addMemberCard());
-document.getElementById('removeLastMemberBtn').addEventListener('click', ()=> removeLastMemberCard());
-
-// save group
-document.getElementById('groupSave').addEventListener('click', async ()=>{
-  const gname = groupNameInput.value.trim() || ('群聊_' + Date.now());
-  const cards = groupMembersContainer.querySelectorAll('.member-card');
-  if(cards.length===0) return alert('请添加至少一个成员');
-  const members = [];
-  for(let i=0;i<cards.length;i++){
-    const root = cards[i];
-    const name = root.querySelector('.m-name').value.trim() || ('成员'+(i+1));
-    const persona = root.querySelector('.m-persona').value || '';
-    const style = root.querySelector('.m-style').value || '';
-    const fileInput = root.querySelector('.m-file');
-    let avatarId = 'group_' + Date.now() + '_m_' + i; // temp id
-    // create unique member id per group: group_<timestamp>_m_<i>
-    // but we want stable id to save avatar; we'll create after generate group id
-    members.push({ name, persona, style, avatarFile: (fileInput && fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null });
-  }
-
-  // create group id
-  const gid = 'group_' + Date.now();
-  // persist avatars and member entries
-  for(let i=0;i<members.length;i++){
-    const mem = members[i];
-    const mid = gid + '_m_' + i;
-    let avatarData = null;
-    if(mem.avatarFile){ avatarData = await fileToDataURL(mem.avatarFile); await idbPut('avatars', { id: mid, data: avatarData }); }
-    else {
-      // default small placeholder SVG
-      const placeholder = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="100%" height="100%" fill="#efe6ff"/></svg>');
-      await idbPut('avatars',{ id: mid, data: placeholder });
-    }
-    // Replace avatar reference with id
-    members[i] = { id: mid, name: mem.name, persona: mem.persona, style: mem.style };
-  }
-
-  const groupObj = { id: gid, name: gname, members };
-  await idbPut('groups', groupObj);
-
-  // Add a contacts entry so it shows in contacts list
-  await idbPut('contacts', { id: gid, name: gname, avatarId: (members[0] && members[0].id) ? members[0].id : 'group_default' });
-
-  alert('已保存群聊：' + gname);
-  groupModalBg.style.display='none';
-  await renderContacts();
-});
-
-/* group modal helpers */
-function clearGroupModal(){ groupMembersContainer.innerHTML=''; groupNameInput.value=''; document.getElementById('groupModalTitle').textContent='创建群聊'; }
-function addMemberCard(defaults){
-  const idx = groupMembersContainer.querySelectorAll('.member-card').length;
-  const root = document.createElement('div'); root.className='member-card';
-  root.innerHTML = `
-    <img src="data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"64\" height=\"64\"><rect width=\"100%\" height=\"100%\" fill=\"#f7d9f7\"/></svg>')}" />
-    <div style="flex:1">
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><input class="m-name" type="text" placeholder="成员名" style="flex:1;padding:8px;border-radius:8px;border:1px solid #eee"/></div>
-      <div style="margin-bottom:6px"><textarea class="m-persona" placeholder="群内人设（仅作为生成提示）" rows="2" style="width:100%;padding:8px;border-radius:8px;border:1px solid #eee"></textarea></div><div style="margin-bottom:6px"><textarea class="m-style" placeholder="风格/习惯" rows="1" style="width:100%;padding:8px;border-radius:8px;border:1px solid #eee"></textarea></div>
-  <div style="display:flex;gap:8px;align-items:center"><input class="m-file" type="file" accept="image/*"/></div>
-</div>
-
-`; // when user chooses file show preview const fileInput = root.querySelector('.m-file'); const img = root.querySelector('img'); fileInput.addEventListener('change', async ()=>{ if(fileInput.files && fileInput.files[0]){ const data = await fileToDataURL(fileInput.files[0]); img.src = data; } }); groupMembersContainer.appendChild(root); // initialize blanks (important: do NOT copy previous values) const nameInput = root.querySelector('.m-name'); nameInput.value = ''; const personaInput = root.querySelector('.m-persona'); personaInput.value = ''; const styleInput = root.querySelector('.m-style'); styleInput.value = ''; } function removeLastMemberCard(){ const cards = groupMembersContainer.querySelectorAll('.member-card'); if(cards.length>0) cards[cards.length-1].remove(); } function openGroupModal(editGroup){ clearGroupModal(); if(editGroup){ document.getElementById('groupModalTitle').textContent='编辑群聊'; groupNameInput.value = editGroup.name || ''; editGroup.members.forEach(m=>{ addMemberCard(); const card = groupMembersContainer.lastChild; card.querySelector('.m-name').value = m.name || ''; card.querySelector('.m-persona').value = m.persona || ''; card.querySelector('.m-style').value = m.style || ''; // load avatar if exists idbGet('avatars', m.id).then(a=>{ if(a && a.data) card.querySelector('img').src = a.data; }); }); } else { // new group: start with 2 empty members by default addMemberCard(); addMemberCard(); } groupModalBg.style.display='flex'; }
-
-/* render contacts (including groups) */ async function renderContacts(){ const contacts = await idbGetAll('contacts'); const groups = await idbGetAll('groups'); contactsListEl.innerHTML=''; // contacts first if(contacts && contacts.length>0){ for(const c of contacts){ const div = document.createElement('div'); div.className='contact-item'; const img = document.createElement('img'); idbGet('avatars', c.avatarId).then(a=>{ if(a && a.data) img.src = a.data; else img.src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"></svg>'; }); const name = document.createElement('div'); name.textContent = c.name; div.appendChild(img); div.appendChild(name); div.addEventListener('click', ()=> openChatWith(c.id, c.name, false)); contactsListEl.appendChild(div); } } // groups as separate cards if(groups && groups.length>0){ for(const g of groups){ const div = document.createElement('div'); div.className='contact-item'; const img = document.createElement('img'); // use first member avatar as group avatar const firstMemberId = g.members && g.members[0] ? g.members[0].id : null; if(firstMemberId){ idbGet('avatars', firstMemberId).then(a=>{ if(a && a.data) img.src = a.data; else img.src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"></svg>'; }); } else img.src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"></svg>'; const name = document.createElement('div'); name.textContent = g.name; div.appendChild(img); div.appendChild(name); div.addEventListener('click', ()=> openChatWith(g.id, g.name, true)); contactsListEl.appendChild(div); } } }
-
-/* open chat */ async function openChatWith(id, name, isGroup){ openConversationId = id; openConversationIsGroup = isGroup; currentNameEl.textContent = name; currentSubEl.textContent = isGroup ? '群聊' : '点击进入聊天'; // avatar: if isGroup, show first member avatar if(isGroup){ const g = await idbGet('groups', id); if(g && g.members && g.members[0]){ const a = await idbGet('avatars', g.members[0].id); if(a && a.data){ currentAvatarEl.innerHTML = ''; const im=document.createElement('img'); im.src=a.data; im.style.width='100%'; im.style.height='100%'; im.style.borderRadius='12px'; currentAvatarEl.appendChild(im); } else currentAvatarEl.textContent='🙂'; } else currentAvatarEl.textContent='🙂'; } else{ const c = await idbGet('contacts', id); if(c){ const a = await idbGet('avatars', c.avatarId); if(a && a.data){ currentAvatarEl.innerHTML=''; const im=document.createElement('img'); im.src=a.data; im.style.width='100%'; im.style.height='100%'; im.style.borderRadius='12px'; currentAvatarEl.appendChild(im); } else currentAvatarEl.textContent='🙂'; } } // load conversation messages msgsEl.innerHTML=''; const conv = await idbGet('conversations', id); if(conv && conv.messages){ conv.messages.forEach(m=> appendMessageToDom(m)); } }
-
-function appendMessageToDom(m){ const row = document.createElement('div'); row.className='msg-row ' + (m.from==='me' ? 'me' : ''); const av = document.createElement('div'); av.className='avatar'; av.style.flex='0 0 34px'; av.textContent='🙂'; if(m.avatarData){ const im = document.createElement('img'); im.src=m.avatarData; im.style.width='34px'; im.style.height='34px'; im.style.borderRadius='8px'; av.innerHTML=''; av.appendChild(im); } const b = document.createElement('div'); b.className='bubble ' + (m.from==='me' ? 'me' : ''); b.textContent = m.text; if(m.from==='me'){ row.appendChild(b); row.appendChild(av); } else { row.appendChild(av); row.appendChild(b); } msgsEl.appendChild(row); msgsEl.scrollTop = msgsEl.scrollHeight; }
-
-/* send logic */ async function handleSend(){ const text = inputBox.value.trim(); if(!text) return; const contactId = openConversationId || await guessOpenContactId(); const avatarObj = await idbGet('avatars','me'); const message = { id:'msg_'+Date.now(), from:'me', text, avatarData: avatarObj ? avatarObj.data : null, ts: new Date().toISOString() }; const conv = (await idbGet('conversations', contactId)) || { id:contactId, messages:[] }; conv.messages.push(message); await idbPut('conversations', conv); appendMessageToDom(message); inputBox.value=''; setTimeout(()=> aiAutoReply(contactId, text), 500 + Math.random()*600); }
-
-async function guessOpenContactId(){ const contacts = await idbGetAll('contacts'); if(contacts && contacts.length>0) return contacts[0].id; const demo = { id:'contact_demo', name:'小NIE', avatarId:'demo' }; await idbPut('contacts', demo); return demo.id; }
-
-/* AI reply: if group, rotate through members; replyCount = per-group-member? We'll interpret replyCount as total replies (not repeats). */ async function aiAutoReply(conversationId, userText){ // determine if conversation is a group const group = await idbGet('groups', conversationId); if(group){ // group chat const settings = await idbGet('settings','currentAI') || { actionDesc:true }; // global replyCount setting applies, but for group we will distribute among members in round-robin const global = settings.replyCount || 3; // ensure no duplicate exact replies: we will craft each reply uniquely const members = group.members || []; if(members.length===0) return; // choose starting index randomly to vary who replies first let start = Math.floor(Math.random()members.length); const replies = []; for(let i=0;i<global;i++){ const mem = members[(start + i) % members.length]; // compose reply using member.persona and style const persona = mem.persona || ''; const style = mem.style || ''; let text = ''; if(settings.actionDesc) text += （他轻轻一笑） ; if(persona) text += persona.split('\n')[0] + '：'; // generate variation text += userText; if(style) text += '（风格：' + style + '）'; if(i>0) text += ' ' + '嗯'.repeat((i%3)+1); replies.push({ memberId: mem.id, text }); } // persist replies with small delays, using member avatars for(let i=0;i<replies.length;i++){ await new Promise(r=>setTimeout(r, 300 + i200)); const r = replies[i]; const avat = await idbGet('avatars', r.memberId); const message = { id:'ai_'+Date.now()+'_'+i, from:'ai', text: r.text, avatarData: avat?avat.data:null, ts: new Date().toISOString() }; const conv = (await idbGet('conversations', conversationId)) || { id:conversationId, messages:[] }; conv.messages.push(message); await idbPut('conversations', conv); appendMessageToDom(message); } return; }
-
-// otherwise normal 1-on-1 AI reply using currentAI settings const s = await idbGet('settings','currentAI') || { persona:'', style:'友好', replyCount:3, actionDesc:true, name:'小NIE' }; const replies = []; const max = Math.min(Math.max(1, s.replyCount || 1), 20); for(let i=0;i<max;i++){ let t = ''; if(s.actionDesc) t = （他微笑） ; if(s.persona) t += (s.persona.split('\n')[0] || '') + '：'; t += userText; if(i>0) t += ' ' + '嗯'.repeat((i%3)+1); replies.push(t); } for(let i=0;i<replies.length;i++){ await new Promise(r=>setTimeout(r, 300 + i*200)); const avatarObj = await idbGet('avatars','currentAI'); const message = { id:'ai_'+Date.now() + '_' + i, from:'ai', text: replies[i], avatarData: avatarObj ? avatarObj.data : null, ts:new Date().toISOString() }; const conv = (await idbGet('conversations', conversationId)) || { id:conversationId, messages:[] }; conv.messages.push(message); await idbPut('conversations', conv); appendMessageToDom(message); } }
-
-/* moments logic (same as before) */ document.getElementById('postBtn').addEventListener('click', async ()=>{ const text = document.getElementById('momentsInput').value.trim(); if(!text) return alert('请输入内容'); const id = 'm_' + Date.now(); const item = { id, author:'你', avatarId:'me', text, ts: new Date().toISOString(), likes:[], comments:[] }; await idbPut('moments', item); document.getElementById('momentsInput').value=''; renderMoments(); }); document.getElementById('aiPostBtn').addEventListener('click', async ()=>{ const s = await idbGet('settings','currentAI'); const text = s && s.persona ? (s.persona.split('\n')[0] || '今天也想和你说点心里话~') : '今天也想和你说点心里话~'; const id = 'm_' + Date.now(); const item = { id, author: (s&&s.name)||'小NIE', avatarId:'currentAI', text, ts: new Date().toISOString(), likes:[], comments:[] }; await idbPut('moments', item); renderMoments(); });
-
-async function renderMoments(){ const list = await idbGetAll('moments'); const container = document.getElementById('momentsList'); container.innerHTML=''; list.sort((a,b)=> new Date(b.ts)-new Date(a.ts)); for(const it of list){ const card = document.createElement('div'); card.className='section'; card.style.marginBottom='8px'; const authorLine = document.createElement('div'); authorLine.innerHTML = <strong>${it.author}</strong> <span class="small" style="margin-left:8px">${new Date(it.ts).toLocaleString()}</span>; const text = document.createElement('div'); text.style.marginTop='8px'; text.textContent = it.text; const actions = document.createElement('div'); actions.style.marginTop='8px'; const likeBtn = document.createElement('button'); likeBtn.className='chip'; likeBtn.textContent = '赞 (' + (it.likes?it.likes.length:0) + ')'; likeBtn.addEventListener('click', async ()=>{ it.likes = it.likes || []; if(it.likes.includes('你')) it.likes = it.likes.filter(x=>x!=='你'); else it.likes.push('你'); await idbPut('moments', it); renderMoments(); }); const cBtn = document.createElement('button'); cBtn.className='chip'; cBtn.textContent = '评论 (' + (it.comments?it.comments.length:0) + ')'; cBtn.addEventListener('click', ()=>{ const comment = prompt('输入评论：'); if(comment){ it.comments = it.comments || []; it.comments.push({ who:'你', text: comment, ts:new Date().toISOString() }); idbPut('moments', it).then(()=>renderMoments()); } }); actions.appendChild(likeBtn); actions.appendChild(cBtn); card.appendChild(authorLine); card.appendChild(text); card.appendChild(actions); if(it.comments && it.comments.length>0){ const cdiv = document.createElement('div'); cdiv.style.marginTop='8px'; it.comments.forEach(c=>{ const p = document.createElement('div'); p.className='small'; p.textContent = ${c.who}: ${c.text}; cdiv.appendChild(p); }); card.appendChild(cdiv); } container.appendChild(card); } }
-
-/* apply settings to UI (avatars, background) */ async function applySettingsToUI(){ const s = await idbGet('settings','currentAI'); const av = await idbGet('avatars','currentAI'); const bg = await idbGet('backgrounds','chatBg'); if(av && av.data){ currentAvatarEl.innerHTML=''; const im=document.createElement('img'); im.src=av.data; im.style.width='100%'; im.style.height='100%'; im.style.borderRadius='12px'; currentAvatarEl.appendChild(im); } else currentAvatarEl.textContent='🙂'; if(bg && bg.data){ msgsEl.style.backgroundImage = url(${bg.data}); msgsEl.style.backgroundRepeat='repeat'; msgsEl.style.backgroundSize='160px 160px'; } else msgsEl.style.backgroundImage=''; }
-
-/* initialization */ async function init(){ await openDB(); // ensure placeholders const meAv = await idbGet('avatars','me'); if(!meAv){ const placeholder='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="100%" height="100%" fill="#f7d9f7"/></svg>'); await idbPut('avatars',{ id:'me', data:placeholder }); } const aiAv = await idbGet('avatars','currentAI'); if(!aiAv){ const placeholder='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="100%" height="100%" fill="#e8e0ff"/></svg>'); await idbPut('avatars',{ id:'currentAI', data:placeholder }); } const s = await idbGet('settings','currentAI'); if(!s) await idbPut('settings',{ key:'currentAI', name:'小NIE', gender:'中性', persona:'', style:'友好', replyCount:4, actionDesc:true }); // ensure demo contact const contacts = await idbGetAll('contacts'); if(!contacts || contacts.length===0){ await idbPut('contacts',{ id:'contact_demo', name:'小NIE', avatarId:'me' }); } await renderContacts(); await renderMoments(); await applySettingsToUI(); } init();
-
-/* Expose helpers for debug */ window._nie = { openDB, idbGet, idbPut, idbGetAll }; </script>
+// expose for debugging window._nie = {dbGetAll,dbPut,state,openChat}; </script>
 
 </body>
 </html>
