@@ -14,7 +14,7 @@
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;font-family:"Quicksand",system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text);-webkit-font-smoothing:antialiased}
-.app{width:96%;max-width:480px;margin:8px auto;border-radius:20px;background:var(--card);padding:14px;box-shadow:0 18px 50px rgba(40,24,60,0.06);overflow:hidden;min-height:86vh;display:flex;flex-direction:column}
+.app{width:96%;max-width:480px;margin:8px auto;border-radius:20px;background:transparent;padding:14px;box-shadow:0 18px 50px rgba(40,24,60,0.06);overflow:hidden;min-height:86vh;display:flex;flex-direction:column}
 .header{display:flex;align-items:center;gap:10px}
 .back{width:44px;height:44px;border-radius:12px;border:1px solid rgba(0,0,0,0.04);display:flex;align-items:center;justify-content:center;cursor:pointer;background:white;flex-shrink:0}
 .h-title{flex:1;font-weight:700;font-size:18px}
@@ -22,7 +22,7 @@ html,body{height:100%;margin:0;font-family:"Quicksand",system-ui,-apple-system,S
 .action{padding:8px 12px;border-radius:12px;background:white;border:1px solid rgba(0,0,0,0.04);cursor:pointer;font-weight:600;min-width:72px;text-align:center;box-shadow:0 6px 18px rgba(20,12,50,0.03)}
 .action.primary{background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#fff;border:none;box-shadow:0 14px 30px rgba(122,100,208,0.15)}
 .main{margin-top:10px;display:flex;flex-direction:column;flex:1;min-height:0}
-.pane{background:rgba(255,255,255,0.98);border-radius:14px;padding:12px;flex:1;overflow:auto;position:relative;min-height:0}
+.pane{background:rgba(255,255,255,0.98);border-radius:14px;padding:12px;flex:1;overflow:auto;position:relative;min-height:0;transition:background .28s,background-image .28s,box-shadow .28s}
 
 /* hidden helper (fix for previous bug) */
 .hidden{display:none !important}
@@ -493,10 +493,28 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(f && f[0]) state.background = await fileToDataUrl(f[0]);
     else if(document.getElementById('bgUrl').value.trim()) state.background = document.getElementById('bgUrl').value.trim();
     else { state.background = ''; }
-    saveState(); closeModal('bgModal'); alert('已设置聊天背景（本地）'); applyBackground();
+    saveState(); closeModal('bgModal'); alert('已设置聊天卡片背景'); applyBackground();
   }
 
-  function applyBackground(){ const app = document.querySelector('.app'); if(state.background) app.style.backgroundImage = `url('${escapeAttr(state.background)}')`, app.style.backgroundSize='cover'; else app.style.backgroundImage=''; }
+  /* !! IMPORTANT FIXED: apply background to .pane (inner white card), not outer .app */
+  function applyBackground(){
+    const panes = document.querySelectorAll('.pane');
+    panes.forEach(p=>{
+      if(state.background){
+        // use background image on the white card
+        p.style.backgroundImage = `url('${escapeAttr(state.background)}')`;
+        p.style.backgroundSize = 'cover';
+        p.style.backgroundPosition = 'center';
+        p.style.backgroundRepeat = 'no-repeat';
+        // make card semi-opaque so text is readable (optional)
+        p.style.backgroundColor = 'rgba(255,255,255,0.6)';
+      } else {
+        p.style.backgroundImage = '';
+        p.style.backgroundColor = 'rgba(255,255,255,0.98)';
+      }
+    });
+  }
+
   function applyBubbleColors(){ document.documentElement.style.setProperty('--user-bubble', state.bubble.user || '#ffd6e6'); document.documentElement.style.setProperty('--ai-bubble', state.bubble.ai || '#d7c8ff'); }
 
   /* utils */
@@ -514,6 +532,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   /* helper for debug if needed */
   window._NIE = { state, saveState, renderContacts, renderFeed, loadFeed };
+
+  /* renderContacts/others defined earlier in file scope when needed (kept above) */
 
 }); // DOMContentLoaded
 </script>
