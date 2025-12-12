@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<title>NIEaiphone — 聊天 & 朋友圈（修正版）</title>
+<title>NIEaiphone — 聊天 & 朋友圈（修正版 V3）</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -83,6 +83,9 @@ textarea{flex:1;min-height:48px;max-height:140px;padding:10px;border-radius:12px
 .commentModal .modal{max-width:420px;border-radius:18px;padding:18px}
 .commentModal h3{margin:0 0 8px 0}
 .commentModal textarea{width:100%;height:96px;border-radius:10px;padding:10px;border:1px solid rgba(0,0,0,0.06);font-size:14px}
+
+/* toast */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#fff;padding:10px 16px;border-radius:18px;box-shadow:0 10px 30px rgba(30,18,80,0.18);z-index:999;display:none;pointer-events:none}
 
 /* small screens */
 @media (max-width:420px){
@@ -165,7 +168,7 @@ textarea{flex:1;min-height:48px;max-height:140px;padding:10px;border-radius:12px
     </div>
   </div>
 
-  <!-- Modals -->
+  <!-- Modals (同上，略微精简) -->
   <div class="modalWrap" id="contactModal"><div class="modal" role="dialog">
     <h3>添加联系人</h3>
     <div class="formRow"><label>名字</label><input type="text" id="contactName" placeholder="名字"></div>
@@ -180,6 +183,7 @@ textarea{flex:1;min-height:48px;max-height:140px;padding:10px;border-radius:12px
     <div class="formRow"><label>群名</label><input type="text" id="groupName" placeholder="群名称"></div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:8px">从联系人中选择成员</div>
     <div id="groupContacts" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px"></div>
+    <div id="groupMemberRoles" style="margin-top:8px;margin-bottom:8px"></div>
     <div class="modalActions"><button class="action" id="groupCancel">取消</button><button class="action primary" id="groupCreate">创建</button></div>
   </div></div>
 
@@ -187,7 +191,7 @@ textarea{flex:1;min-height:48px;max-height:140px;padding:10px;border-radius:12px
     <h3>他的设定</h3>
     <div class="formRow"><label>AI 名称</label><input type="text" id="aiName"></div>
     <div class="formRow"><label>性别</label><select id="aiGender"><option value="neutral">中性</option><option value="female">女</option><option value="male">男</option></select></div>
-    <div class="formRow"><label>人设</label><textarea id="aiRole" placeholder="写下 AI 的人设（可以多行）"></textarea></div>
+    <div class="formRow"><label>人设（仅作为生成提示，不会被直接发出）</label><textarea id="aiRole" placeholder="写下 AI 的人设（可以多行）"></textarea></div>
     <div class="formRow"><label>风格/习惯</label><textarea id="aiStyleCatch" placeholder="例如：俏皮；常用语：嗯哼、好哒..."></textarea></div>
     <div class="formRow"><label>AI 头像</label><input type="file" id="aiAvatarFile" accept="image/*"></div>
     <div class="formRow"><label>回复条数</label><input type="number" id="aiReplyCount" min="1" max="20" value="1" style="width:120px"></div>
@@ -209,7 +213,7 @@ textarea{flex:1;min-height:48px;max-height:140px;padding:10px;border-radius:12px
     <div class="formRow"><label>我的名字</label><input type="text" id="meName"></div>
     <div class="formRow"><label>我的头像</label><input type="file" id="meAvatarFile" accept="image/*"></div>
     <div class="formRow"><label>或头像 URL</label><input type="text" id="meAvatarUrl" placeholder="图片 URL"></div>
-    <div class="formRow"><label>我的人设</label><textarea id="meRole" placeholder="写下你希望 AI 知道的你，例如：爱听故事、喜欢安静..."></textarea></div>
+    <div class="formRow"><label>我的人设</label><textarea id="meRole"></textarea></div>
     <div class="modalActions"><button class="action" id="profileCancel">取消</button><button class="action primary" id="profileSave">保存</button></div>
   </div></div>
 
@@ -220,14 +224,16 @@ textarea{flex:1;min-height:48px;max-height:140px;padding:10px;border-radius:12px
     <div class="modalActions"><button class="action" id="bgCancel">取消</button><button class="action primary" id="bgSet">设置</button></div>
   </div></div>
 
+  <div class="toast" id="toast"></div>
+
 <script>
 document.addEventListener('DOMContentLoaded', ()=>{
 
-  const STATE_KEY = 'nie_full_v5';
-  const FEED_KEY = 'nie_feed_v3';
+  const STATE_KEY = 'nie_full_v6_fix';
+  const FEED_KEY = 'nie_feed_v4';
   const DEFAULT = {
     me:{name:'你',avatar:'',role:''},
-    ai:{name:'小NIE',avatar:'',gender:'neutral',role:'温柔的助手',style:'友好',catch:'',replyCount:1,actionsEnabled:false},
+    ai:{name:'小NIE',avatar:'',gender:'neutral',role:'',style:'友好',catch:'',replyCount:1,actionsEnabled:false},
     bubble:{user:'#ffd6e6',ai:'#d7c8ff'},
     background:'',
     contacts:[],
@@ -252,6 +258,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const chatSub = document.getElementById('chatSub');
   const messagesEl = document.getElementById('messages');
   const txtInput = document.getElementById('txtInput');
+  const toastEl = document.getElementById('toast');
 
   /* bind */
   document.getElementById('btnAdd').addEventListener('click', ()=> openContactModal());
@@ -290,14 +297,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('autoPostSwitch').addEventListener('change', (e)=> toggleAutoPost(e.target.checked));
 
   /* state load/save */
-  function loadState(){ try{ const raw = localStorage.getItem(STATE_KEY); if(!raw){ localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT); } const parsed = JSON.parse(raw); if(!parsed || typeof parsed !== 'object'){ localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT); } const merged = {...DEFAULT, ...parsed}; merged.me = {...DEFAULT.me, ...(parsed.me||{})}; merged.ai = {...DEFAULT.ai, ...(parsed.ai||{})}; merged.bubble = {...DEFAULT.bubble, ...(parsed.bubble||{})}; merged.contacts = Array.isArray(parsed.contacts) ? parsed.contacts : DEFAULT.contacts.slice(); merged.conversations = parsed.conversations && typeof parsed.conversations === 'object' ? parsed.conversations : {}; return merged; }catch(e){ console.error(e); localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT); } }
+  function loadState(){ try{ const raw = localStorage.getItem(STATE_KEY); if(!raw){ localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT); } const parsed = JSON.parse(raw); const merged = {...DEFAULT, ...parsed}; merged.me = {...DEFAULT.me, ...(parsed.me||{})}; merged.ai = {...DEFAULT.ai, ...(parsed.ai||{})}; merged.bubble = {...DEFAULT.bubble, ...(parsed.bubble||{})}; merged.contacts = Array.isArray(parsed.contacts) ? parsed.contacts : DEFAULT.contacts.slice(); merged.conversations = parsed.conversations && typeof parsed.conversations === 'object' ? parsed.conversations : {}; return merged; }catch(e){ console.error(e); localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT); } }
   function saveState(){ try{ localStorage.setItem(STATE_KEY, JSON.stringify(state)); applyBubbleColors(); applyBackground(); }catch(e){ console.error(e); } }
 
-  /* ensure at least one AI contact if empty */
+  /* toast util - 用于替换 alert()，贴合你的 UI */
+  function showToast(msg, ms=1500){ toastEl.textContent = msg; toastEl.style.display = 'block'; toastEl.style.opacity = '1'; setTimeout(()=>{ toastEl.style.opacity = '0'; setTimeout(()=> toastEl.style.display='none', 250); }, ms); }
+
+  /* 如果 contacts 为空，加入一个 AI 默认联系人（但注意不与后续 add 联系人混淆） */
   if(!Array.isArray(state.contacts) || state.contacts.length === 0){
     const id = 'ai_' + Date.now();
     const avatar = state.ai.avatar || defaultAvatar();
-    state.contacts = [ { id, name: state.ai.name || '小NIE', avatar, role: state.ai.role || '' } ];
+    // FIX: 使用独立新对象，不复用引用
+    state.contacts = [ { id, name: state.ai.name || '小NIE', avatar: avatar, role: state.ai.role || '' } ];
     state.conversations[id] = state.conversations[id] || { members:['me', id], messages:[] };
     saveState();
   }
@@ -328,19 +339,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   async function sendMsg(){
     const raw = txtInput.value.trim(); if(!raw) return;
-    const id = state.active || (state.contacts[0] && state.contacts[0].id); if(!id) return alert('请先添加联系人');
+    const id = state.active || (state.contacts[0] && state.contacts[0].id); if(!id) return showToast('请先添加联系人');
     pushMessage(id, { from:'me', text:raw, ts:Date.now() });
     txtInput.value=''; renderMessages();
 
-    // if group -> simulate group replies from each non-me member
     const conv = state.conversations[id] || { members:[] };
-    if(String(id).startsWith('g')){ // group
-      // add a visual "typing" placeholder (optional)
-      // For each member except me, produce one reply async
+    // group handling
+    if(String(id).startsWith('g')){
       const members = conv.members.filter(m=>m!=='me');
       for(const memberId of members){
-        // tiny delay to look natural
-        await new Promise(r=>setTimeout(r, 300 + Math.random()*400));
+        await new Promise(r=>setTimeout(r, 300 + Math.random()*600));
         const replies = await requestReplyGroup(raw, id, memberId);
         replies.forEach(r=> pushMessage(id, { from: memberId, text: r, ts: Date.now() }));
         renderMessages();
@@ -348,20 +356,17 @@ document.addEventListener('DOMContentLoaded', ()=>{
       return;
     }
 
-    // single chat
-    pushMessage(id, { from:'ai', text:'…', ts:Date.now(), temp:true });
+    // single chat: show temp and then replace with generated replies
+    pushMessage(id, { from:'ai', text:'...', ts:Date.now(), temp:true });
     renderMessages();
     const replies = await requestReply(raw, id);
-    // remove temp
     const convArr = state.conversations[id];
     if(convArr && convArr.messages.length && convArr.messages[convArr.messages.length-1].temp) convArr.messages.pop();
     replies.forEach(r=> pushMessage(id, { from:'ai', text:r, ts:Date.now() }));
     renderMessages();
   }
 
-  /* requestReply: if backend configured, call it; otherwise generate local replies.
-     Important: removed the old "(演示)..." prefix — local replies now are short and directly related.
-  */
+  /* requestReply: same逻辑（不回显整段人设） */
   async function requestReply(userText, convId){
     const backend = localStorage.getItem('chat_backend_url');
     const persona = {...state.ai};
@@ -369,40 +374,52 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const actionsEnabled = !!persona.actionsEnabled;
     if(backend){
       try{
-        const res = await fetch(backend, {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({message:userText,persona})});
+        const payload = {message:userText, persona:{ name: persona.name, gender: persona.gender, role_desc: persona.role, style: persona.style, catch: persona.catch }};
+        const res = await fetch(backend, {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify(payload)});
         if(!res.ok) throw new Error('后端返回 '+res.status);
         const j = await res.json();
         let text = j.reply || j.text || (j.choices && j.choices[0]?.message?.content) || JSON.stringify(j);
-        let parts = (text+'').split(/\n{1,}|\.\s+/).map(s=>s.trim()).filter(Boolean);
-        while(parts.length < replyCount) parts.push(parts[parts.length-1]||text);
-        if(actionsEnabled) parts = parts.map(p=>`（动作）${p}`);
+        let parts = splitReplyParts(text, replyCount);
+        if(actionsEnabled) parts = parts.map(p=>`（他笑了笑）${p}`);
         return parts.slice(0,replyCount);
-      }catch(e){ console.warn('backend err',e); }
+      }catch(e){ console.warn('backend err',e); showToast('后端请求失败，使用本地生成'); }
     }
-    // local fallback: produce concise reply based on userText & persona
-    await new Promise(r=>setTimeout(r, 300 + Math.random()*400));
-    const personaHint = persona.role ? `${persona.role}：` : '';
-    let base = '';
-    if(/^(你好|嗨|hi|hello)/i.test(userText)) base = `${personaHint}你好～`;
-    else if(userText.length < 8) base = `${personaHint}${userText}`;
-    else base = `${personaHint}我看到了你说的「${userText.slice(0,40)}」`;
-    let parts = base.split(/[,，。；\n]+/).filter(Boolean);
-    if(parts.length===0) parts=[base];
-    while(parts.length < replyCount) parts.push(parts[parts.length-1]);
-    if(actionsEnabled) parts = parts.map(p=>`（他笑了笑）${p}`);
-    return parts.slice(0,replyCount);
+
+    // fallback 本地生成（和之前一致）
+    await new Promise(r=>setTimeout(r, 350 + Math.random()*400));
+    const baseCandidates = [];
+    if(/^(你好|hi|嗨|hello)/i.test(userText)) baseCandidates.push('你好～很高兴见到你');
+    if(userText.length < 8) baseCandidates.push(`你说的「${userText}」我听到了`);
+    if(userText.length >= 8) baseCandidates.push(`我注意到你提到「${userText.slice(0,40)}」`);
+    if(baseCandidates.length===0) baseCandidates.push('我知道了');
+    const styleNotes = (persona.catch || persona.style || '').split(/[；;，,]/).map(s=>s.trim()).filter(Boolean);
+    const pickStyle = styleNotes.length ? `（风格：${styleNotes[0]}）` : '';
+    const parts = [];
+    for(let i=0;i<replyCount;i++){
+      const j = baseCandidates[i % baseCandidates.length];
+      const p = pickStyle ? `${j} ${pickStyle}` : j;
+      parts.push(p);
+    }
+    if(actionsEnabled) return parts.map(p=>`（他轻轻一笑）${p}`);
+    return parts;
   }
 
-  /* group reply generator: generate reply for a specific memberId.
-     It will use the member's contact.role if present to craft reply shape.
-  */
+  function splitReplyParts(text, count){
+    let parts = (text+'').split(/\n{1,}|\.\s+/).map(s=>s.trim()).filter(Boolean);
+    if(parts.length===0) parts = [String(text).slice(0,200)];
+    while(parts.length < count) parts.push(parts[parts.length-1]||parts[0]);
+    return parts.slice(0,count);
+  }
+
+  /* group reply generator */
   async function requestReplyGroup(userText, convId, memberId){
     const member = state.contacts.find(c=>c.id===memberId);
-    const roleHint = member && member.role ? `${member.role}：` : '';
-    // try backend? For simplicity group uses local generation to show multiple people reply.
-    await new Promise(r=>setTimeout(r, 200 + Math.random()*600));
-    const base = roleHint + (userText.length < 20 ? userText : `关于「${userText.slice(0,30)}」我觉得...`);
-    // return an array of one short reply
+    const conv = state.conversations[convId] || {};
+    const memberRoles = conv.memberRoles || {};
+    const useRole = memberRoles[memberId] || (member && member.role) || '';
+    await new Promise(r=>setTimeout(r, 200 + Math.random()*400));
+    const short = userText.length < 18 ? userText : userText.slice(0,30);
+    const base = useRole ? `${short}` : `${short}`;
     return [ base ];
   }
 
@@ -413,10 +430,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const root = document.getElementById('feedList'); root.innerHTML=''; const list = loadFeed();
     for(let i=list.length-1;i>=0;i--){
       const p = list[i];
-      // if post has ownerId and owner exists, sync avatar+name live
       if(p.ownerId){
         const owner = state.contacts.find(c=>c.id===p.ownerId);
-        if(owner){ p.name = owner.name; p.avatar = owner.avatar; } // sync
+        if(owner){ p.name = owner.name; p.avatar = owner.avatar; }
       }
       const el = document.createElement('div'); el.className='feedItem';
       el.innerHTML = `<div class="feedMeta"><div style="width:44px;height:44px;border-radius:10px;overflow:hidden;background:#fff"><img src="${escapeAttr(p.avatar||defaultAvatar())}" style="width:100%;height:100%;object-fit:cover"></div><div style="flex:1"><div style="font-weight:700">${escapeHtml(p.name)}</div><div style="font-size:12px;color:var(--muted)">${new Date(p.ts).toLocaleString()}</div></div></div><div style="margin-top:8px">${escapeHtml(p.text)}</div><div class="postActions"><button class="action" data-id="${p.id}" data-act="like">赞 (${p.likes?.length||0})</button><button class="action" data-id="${p.id}" data-act="comment">评论 (${p.comments?.length||0})</button></div>`;
@@ -431,7 +447,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
       }
       root.appendChild(el);
     }
-    // bind buttons
     root.querySelectorAll('button').forEach(b=> b.addEventListener('click', (ev)=>{
       const id = ev.currentTarget.dataset.id, act = ev.currentTarget.dataset.act;
       if(act==='like') toggleLike(id);
@@ -440,18 +455,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   function publishPost(){
-    const t = document.getElementById('postText').value.trim(); if(!t) return alert('请输入内容');
-    // user post: ownerId null -> use me
+    const t = document.getElementById('postText').value.trim(); if(!t) return showToast('请输入内容');
     const list = loadFeed();
     list.push({ id:'p'+Date.now(), ownerId: null, name: state.me.name||'你', avatar: state.me.avatar||defaultAvatar(), text:t, likes:[], comments:[], ts:Date.now() });
-    saveFeed(list); document.getElementById('postText').value=''; renderFeed();
+    saveFeed(list); document.getElementById('postText').value=''; renderFeed(); showToast('已发布');
   }
   function aiPublish(){
-    // AI posts; find ai contact (first ai_ id) to sync avatar and ownerId
     const aiContact = state.contacts.find(c=>String(c.id).startsWith('ai_'));
     const list = loadFeed();
     list.push({ id:'p'+Date.now(), ownerId: aiContact ? aiContact.id : null, name: aiContact ? aiContact.name : state.ai.name, avatar: aiContact ? aiContact.avatar : state.ai.avatar||defaultAvatar(), text: (state.ai.catch||'今天也想和你说点心里话～'), likes:[], comments:[], ts:Date.now() });
-    saveFeed(list); renderFeed();
+    saveFeed(list); renderFeed(); showToast('AI 已发一条');
   }
   function toggleLike(id){
     const list = loadFeed(); const p = list.find(x=>x.id===id); if(!p) return;
@@ -468,8 +481,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     showModal('commentModal');
   }
   function commentConfirm(){
-    const text = document.getElementById('commentText').value.trim(); if(!text) return alert('请输入评论'); const list = loadFeed(); const p = list.find(x=>x.id===commentTarget); if(!p) return closeModal('commentModal');
-    p.comments = p.comments || []; p.comments.push({ name: state.me.name||'你', text, ts:Date.now() }); saveFeed(list); renderFeed(); closeModal('commentModal');
+    const text = document.getElementById('commentText').value.trim(); if(!text) return showToast('请输入评论');
+    const list = loadFeed(); const p = list.find(x=>x.id===commentTarget); if(!p) return closeModal('commentModal');
+    p.comments = p.comments || []; p.comments.push({ name: state.me.name||'你', text, ts:Date.now() }); saveFeed(list); renderFeed(); closeModal('commentModal'); showToast('已评论');
   }
 
   function openFeed(){ contactsPane.classList.add('hidden'); chatPane.classList.add('hidden'); feedPane.classList.remove('hidden'); renderFeed(); document.getElementById('autoPostSwitch').checked = !!state.feedAuto; }
@@ -478,7 +492,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function toggleAutoPost(on){
     state.feedAuto = !!on; saveState();
     if(autoPostTimer) { clearInterval(autoPostTimer); autoPostTimer = null; }
-    if(on){ autoPostTimer = setInterval(()=> aiPublish(), state.feedAutoInterval || 60000); }
+    if(on){ autoPostTimer = setInterval(()=> aiPublish(), state.feedAutoInterval || 60000); showToast('AI 自动发已开启'); }
+    else showToast('AI 自动发已关闭');
   }
 
   /* modals util */
@@ -487,7 +502,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   /* ai modal */
   function openAiModal(){
-    // if active is group, show group's info? We'll use same modal — AI "他的设定" acts as global AI config.
     document.getElementById('aiName').value = state.ai.name || '';
     document.getElementById('aiGender').value = state.ai.gender || 'neutral';
     document.getElementById('aiRole').value = state.ai.role || '';
@@ -501,7 +515,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   async function saveAiSettings(){
     state.ai.name = document.getElementById('aiName').value.trim() || state.ai.name;
     state.ai.gender = document.getElementById('aiGender').value;
-    state.ai.role = document.getElementById('aiRole').value.trim();
+    state.ai.role = document.getElementById('aiRole').value.trim(); // **仅内部提示**
     const sc = document.getElementById('aiStyleCatch').value.trim();
     if(sc.includes('；')||sc.includes(';')||sc.includes(',')){ const parts=sc.split(/；|;|,/).map(s=>s.trim()).filter(Boolean); state.ai.style=parts[0]||state.ai.style; state.ai.catch=parts.slice(1).join('；')||state.ai.catch; } else { state.ai.style=sc||state.ai.style; state.ai.catch=sc||state.ai.catch; }
     const f = document.getElementById('aiAvatarFile').files; if(f && f[0]) state.ai.avatar = await fileToDataUrl(f[0]);
@@ -509,10 +523,19 @@ document.addEventListener('DOMContentLoaded', ()=>{
     state.bubble.ai = document.getElementById('aiColor').value || state.bubble.ai;
     let rc = parseInt(document.getElementById('aiReplyCount').value) || 1; rc = Math.max(1, Math.min(20, rc)); state.ai.replyCount = rc;
     state.ai.actionsEnabled = !!document.getElementById('aiActionsEnabled').checked;
-    // update AI contact if exists
-    const aiContact = (state.contacts||[]).find(c=>String(c.id).startsWith('ai_'));
-    if(aiContact){ aiContact.name = state.ai.name || aiContact.name; aiContact.avatar = state.ai.avatar || aiContact.avatar; aiContact.role = state.ai.role || aiContact.role; }
-    saveState(); closeModal('aiModal'); alert('已保存他的设定'); renderContacts();
+
+    // FIX: 只更新确认为 AI 的联系人条目（id 以 ai_ 开头），避免误改其它联系人
+    const aiContactIndex = state.contacts.findIndex(c=> String(c.id).startsWith('ai_'));
+    if(aiContactIndex >= 0){
+      // 创建新的对象替换原来的，避免外部引用问题（深拷贝风格）
+      const old = state.contacts[aiContactIndex];
+      const newObj = { id: old.id, name: state.ai.name || old.name, avatar: state.ai.avatar || old.avatar, role: state.ai.role || old.role };
+      // 替换而不是直接修改字段，确保不会影响其他引用
+      state.contacts.splice(aiContactIndex, 1, newObj);
+    }
+
+    saveState(); closeModal('aiModal'); showToast('已保存他的设定');
+    renderContacts();
   }
 
   /* profile */
@@ -523,17 +546,79 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const f = document.getElementById('meAvatarFile').files;
     if(f && f[0]) state.me.avatar = await fileToDataUrl(f[0]);
     else if(document.getElementById('meAvatarUrl').value.trim()) state.me.avatar = document.getElementById('meAvatarUrl').value.trim();
-    saveState(); closeModal('profileModal'); alert('已保存个人设置');
+    saveState(); closeModal('profileModal'); showToast('已保存个人设置'); renderContacts();
   }
 
   /* contact/group */
-  function openContactModal(){ document.getElementById('contactName').value=''; document.getElementById('contactFile').value=''; document.getElementById('contactURL').value=''; document.getElementById('contactRole').value=''; showModal('contactModal'); }
-  async function saveContact(){ const name=document.getElementById('contactName').value.trim(); if(!name) return alert('请输入名字'); let avatar=''; if(document.getElementById('contactFile').files && document.getElementById('contactFile').files[0]) avatar = await fileToDataUrl(document.getElementById('contactFile').files[0]); else if(document.getElementById('contactURL').value.trim()) avatar = document.getElementById('contactURL').value.trim(); const role = document.getElementById('contactRole').value.trim(); const id='c'+Date.now(); state.contacts.push({ id, name, avatar, role }); state.conversations[id] = state.conversations[id] || { members:['me', id], messages:[] }; saveState(); renderContacts(); closeModal('contactModal'); }
-  function openGroupModal(){ const list = document.getElementById('groupContacts'); list.innerHTML=''; (state.contacts||[]).forEach(c=>{ const el=document.createElement('div'); el.style.textAlign='center'; el.style.padding='6px'; el.innerHTML = `<label style="display:flex;flex-direction:column;align-items:center;gap:6px"><input type="checkbox" value="${c.id}"><div style="font-size:13px">${escapeHtml(c.name)}</div></label>`; list.appendChild(el); }); document.getElementById('groupName').value=''; showModal('groupModal'); }
-  async function createGroup(){ const checked = Array.from(document.querySelectorAll('#groupContacts input[type=checkbox]:checked')).map(i=>i.value); if(checked.length<1) return alert('请选择至少一位成员'); if(checked.length+1>8) return alert('最多 8 人'); const name=document.getElementById('groupName').value.trim() || ('群聊'+Math.floor(Math.random()*90+10)); const gid='g'+Date.now(); state.conversations[gid] = { members:['me', ...checked], messages:[], name }; // add group as a contact-like entry
-    state.contacts.push({ id:gid, name, avatar: defaultAvatar(), role: '群聊' });
-    // ensure conversation members exist
-    saveState(); renderContacts(); closeModal('groupModal'); alert('群聊创建成功'); }
+  function openContactModal(){
+    // FIX: 每次打开都清空输入，避免复用上一次输入
+    document.getElementById('contactName').value=''; document.getElementById('contactFile').value=''; document.getElementById('contactURL').value=''; document.getElementById('contactRole').value='';
+    showModal('contactModal');
+  }
+
+  async function saveContact(){
+    const name=document.getElementById('contactName').value.trim();
+    if(!name) return showToast('请输入名字');
+    let avatar='';
+    if(document.getElementById('contactFile').files && document.getElementById('contactFile').files[0]) avatar = await fileToDataUrl(document.getElementById('contactFile').files[0]);
+    else if(document.getElementById('contactURL').value.trim()) avatar = document.getElementById('contactURL').value.trim();
+    const role = document.getElementById('contactRole').value.trim();
+
+    // FIX: 构造一个全新的对象并 push（不要引用/修改现有对象）
+    const id = 'c' + Date.now() + '_' + Math.floor(Math.random()*999);
+    const newContact = { id, name, avatar: avatar || defaultAvatar(), role };
+
+    state.contacts = state.contacts || [];
+    state.contacts.push(newContact);
+
+    // create an independent conversation container for this id
+    state.conversations[id] = state.conversations[id] || { members:['me', id], messages:[] };
+
+    saveState();
+    renderContacts();
+    closeModal('contactModal');
+    showToast('联系人已保存');
+  }
+
+  function openGroupModal(){
+    const list = document.getElementById('groupContacts'); list.innerHTML=''; (state.contacts||[]).forEach(c=>{ const el=document.createElement('div'); el.style.textAlign='center'; el.style.padding='6px'; el.innerHTML = `<label style="display:flex;flex-direction:column;align-items:center;gap:6px"><input type="checkbox" value="${c.id}"><div style="font-size:13px">${escapeHtml(c.name)}</div></label>`; list.appendChild(el); });
+    document.getElementById('groupName').value=''; document.getElementById('groupMemberRoles').innerHTML=''; showModal('groupModal');
+    list.querySelectorAll('input[type=checkbox]').forEach(ch=>{
+      ch.addEventListener('change', ()=> renderGroupMemberRoles());
+    });
+  }
+
+  function renderGroupMemberRoles(){
+    const sel = Array.from(document.querySelectorAll('#groupContacts input[type=checkbox]:checked')).map(i=>i.value);
+    const wrap = document.getElementById('groupMemberRoles'); wrap.innerHTML='';
+    sel.forEach(id=>{
+      const c = state.contacts.find(x=>x.id===id);
+      const name = c ? c.name : id;
+      const avatar = (c && c.avatar) ? c.avatar : defaultAvatar();
+      const div = document.createElement('div'); div.style.display='flex'; div.style.gap='8px'; div.style.alignItems='center'; div.style.marginBottom='8px';
+      div.innerHTML = `<div style="width:44px;height:44px;border-radius:8px;overflow:hidden"><img src="${escapeAttr(avatar)}" style="width:100%;height:100%;object-fit:cover"></div><div style="flex:1"><div style="font-weight:700">${escapeHtml(name)}</div><input type="text" placeholder="群内人设（会在群内回复中作为提示使用）" data-id="${escapeAttr(id)}" style="width:100%;margin-top:6px;padding:6px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)"></div>`;
+      wrap.appendChild(div);
+    });
+  }
+
+  async function createGroup(){
+    const checked = Array.from(document.querySelectorAll('#groupContacts input[type=checkbox]:checked')).map(i=>i.value);
+    if(checked.length<1) return showToast('请选择至少一位成员');
+    if(checked.length+1>8) return showToast('最多 8 人');
+    const name=document.getElementById('groupName').value.trim() || ('群聊'+Math.floor(Math.random()*90+10));
+    const gid='g' + Date.now() + '_' + Math.floor(Math.random()*999);
+    // collect memberRoles from inputs
+    const memberRoles = {};
+    Array.from(document.querySelectorAll('#groupMemberRoles input[type=text]')).forEach(inp=>{
+      const id = inp.dataset.id; if(id) memberRoles[id] = inp.value.trim();
+    });
+    // create conversation object
+    state.conversations[gid] = { members:['me', ...checked], messages:[], name, memberRoles };
+    // create a new contact entry for the group (unique id)
+    const groupContact = { id: gid, name, avatar: defaultAvatar(), role: '群聊' };
+    state.contacts.push(groupContact);
+    saveState(); renderContacts(); closeModal('groupModal'); showToast('群聊创建成功');
+  }
 
   /* background modal */
   function openBgModal(){ document.getElementById('bgFile').value=''; document.getElementById('bgUrl').value=''; showModal('bgModal'); }
@@ -542,10 +627,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(f && f[0]) state.background = await fileToDataUrl(f[0]);
     else if(document.getElementById('bgUrl').value.trim()) state.background = document.getElementById('bgUrl').value.trim();
     else { state.background = ''; }
-    saveState(); closeModal('bgModal'); alert('已设置聊天卡片背景'); applyBackground();
+    saveState(); closeModal('bgModal'); applyBackground(); showToast('已设置聊天卡片背景（仅白卡）');
   }
 
-  /* Apply background only to .pane elements (white cards) — already fixed earlier */
+  /* Apply background only to .pane elements (白色卡片)，并保留后面的主题背景 */
   function applyBackground(){
     const panes = document.querySelectorAll('.pane');
     panes.forEach(p=>{
@@ -567,7 +652,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   /* utils */
   function defaultAvatar(){ return 'data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect rx='36' width='100%' height='100%' fill='white'/><text x='50%' y='50%' font-size='110' text-anchor='middle' dominant-baseline='central'>🙂</text></svg>`); }
   function escapeHtml(s){ if(!s) return ''; return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
-  function escapeAttr(s){ return (s||'').replaceAll('"','&quot;'); }
+  function escapeAttr(s){ return (s||'').replaceAll('"','&quot;').replaceAll("'",''); }
   function fileToDataUrl(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload = ()=> res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); }); }
 
   /* initial render & restore auto */
@@ -575,7 +660,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   showContacts();
   if(state.feedAuto) toggleAutoPost(true);
 
-  window._NIE = { state, saveState, renderContacts, renderFeed, loadFeed };
+  window._NIE = { state, saveState, renderContacts, renderFeed, loadFeed, showToast };
 
 }); // DOMContentLoaded
 </script>
