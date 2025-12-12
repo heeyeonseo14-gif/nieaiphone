@@ -72,7 +72,7 @@ html,body{height:100%;margin:0;font-family:"Quicksand",system-ui,-apple-system,S
 
 /* composer */
 .composer{display:flex;gap:8px;align-items:end;padding-top:8px;border-top:1px solid rgba(0,0,0,0.03)}
-textarea{flex:1;min-height:48px;max-height:120px;padding:10px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);resize:none}
+textarea{flex:1;min-height:48px;max-height:140px;padding:10px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);resize:none}
 .send{padding:10px 14px;border-radius:12px;background:linear-gradient(135deg,var(--accent1),var(--accent2));color:white;border:none;cursor:pointer}
 
 /* feed panel */
@@ -85,10 +85,11 @@ textarea{flex:1;min-height:48px;max-height:120px;padding:10px;border-radius:12px
 
 /* modal */
 .modalWrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.36);z-index:220;padding:12px}
-.modal{width:100%;max-width:540px;background:#fff;border-radius:12px;padding:14px;box-shadow:0 30px 80px rgba(10,10,20,0.45);max-height:86vh;overflow:auto}
+.modal{width:100%;max-width:540px;background:#fff;border-radius:12px;padding:14px;box-shadow:0 30px 80px rgba(10,10,20,0.45);max-height:86vh;overflow:auto;pointer-events:auto}
 .formRow{display:flex;gap:8px;align-items:center;margin-bottom:10px}
 .formRow label{width:94px;color:var(--muted);font-size:13px}
 .formRow input[type=text], .formRow input[type=file], .formRow select, .formRow textarea{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+.formRow textarea{min-height:80px;max-height:200px;resize:vertical}
 .modalActions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
 .hidden{display:none}
 
@@ -133,7 +134,7 @@ button, .action, .back{ -webkit-tap-highlight-color: transparent; touch-action: 
             <div class="chatSub" id="chatSub">单聊 · 人数：1</div>
           </div>
           <div class="chatActions">
-            <button class="action" id="openAi">AI 设置</button>
+            <button class="action" id="openAi">他的设定</button>
             <button class="action" id="openProfile">我的设置</button>
             <button class="action" id="backContacts">返回</button>
           </div>
@@ -179,7 +180,7 @@ button, .action, .back{ -webkit-tap-highlight-color: transparent; touch-action: 
     <div class="formRow"><label>名字</label><input type="text" id="contactName" placeholder="名字"></div>
     <div class="formRow"><label>头像文件</label><input type="file" id="contactFile" accept="image/*"></div>
     <div class="formRow"><label>或头像 URL</label><input type="text" id="contactURL" placeholder="图片 URL"></div>
-    <div class="modalActions"><button class="action" id="contactCancel">取消</button><button class="action primary" id="contactSave">保存</button></div>
+    <div class="modalActions"><button type="button" class="action" id="contactCancel">取消</button><button type="button" class="action primary" id="contactSave">保存</button></div>
   </div></div>
 
   <div class="modalWrap" id="groupModal"><div class="modal" role="dialog">
@@ -188,21 +189,25 @@ button, .action, .back{ -webkit-tap-highlight-color: transparent; touch-action: 
     <div class="formRow"><label>群头像</label><input type="file" id="groupFile" accept="image/*"></div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:8px">从联系人中选择成员</div>
     <div id="groupContacts" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
-    <div class="modalActions"><button class="action" id="groupCancel">取消</button><button class="action primary" id="groupCreate">创建</button></div>
+    <div class="modalActions"><button type="button" class="action" id="groupCancel">取消</button><button type="button" class="action primary" id="groupCreate">创建</button></div>
   </div></div>
 
   <div class="modalWrap" id="aiModal"><div class="modal" role="dialog">
-    <h3>AI 设置</h3>
+    <h3>他的设定</h3>
     <div class="formRow"><label>AI 名称</label><input type="text" id="aiName"></div>
     <div class="formRow"><label>性别</label><select id="aiGender"><option value="neutral">中性</option><option value="female">女</option><option value="male">男</option></select></div>
-    <div class="formRow"><label>人设</label><input type="text" id="aiRole"></div>
-    <div class="formRow"><label>风格</label><select id="aiStyle"><option value="friendly">友好</option><option value="playful">俏皮</option><option value="professional">专业</option><option value="romantic">温柔</option></select></div>
-    <div class="formRow"><label>习惯语</label><input type="text" id="aiCatch"></div>
+
+    <!-- 人设（大框） -->
+    <div class="formRow"><label>人设</label><textarea id="aiRole" placeholder="写下 AI 的人设（可以多行，例：温柔、爱开玩笑、喜欢甜食……）"></textarea></div>
+
+    <!-- 风格与习惯语合并为可编辑输入 -->
+    <div class="formRow"><label>风格/习惯语</label><textarea id="aiStyleCatch" placeholder="例如：俏皮；常用语：嗯哼、好哒..."></textarea></div>
+
     <div class="formRow"><label>AI 头像</label><input type="file" id="aiAvatarFile" accept="image/*"></div>
     <div class="formRow"><label>用户气泡</label><input type="color" id="userColor" value="#ffd6e6"></div>
     <div class="formRow"><label>AI 气泡</label><input type="color" id="aiColor" value="#d7c8ff"></div>
-    <div class="formRow"><label>后端 URL</label><input type="text" id="backendUrl" placeholder="后端代理 URL（可选）"></div>
-    <div class="modalActions"><button class="action" id="aiCancel">取消</button><button class="action primary" id="aiSave">保存</button></div>
+
+    <div class="modalActions"><button type="button" class="action" id="aiCancel">取消</button><button type="button" class="action primary" id="aiSave">保存</button></div>
   </div></div>
 
   <div class="modalWrap" id="profileModal"><div class="modal" role="dialog">
@@ -210,14 +215,12 @@ button, .action, .back{ -webkit-tap-highlight-color: transparent; touch-action: 
     <div class="formRow"><label>我的名字</label><input type="text" id="meName"></div>
     <div class="formRow"><label>我的头像</label><input type="file" id="meAvatarFile" accept="image/*"></div>
     <div class="formRow"><label>或头像 URL</label><input type="text" id="meAvatarUrl" placeholder="图片 URL"></div>
-    <div class="formRow"><label>我的人设</label><input type="text" id="meRole"></div>
-    <div class="modalActions"><button class="action" id="profileCancel">取消</button><button class="action primary" id="profileSave">保存</button></div>
+    <div class="formRow"><label>我的人设</label><textarea id="meRole" placeholder="写下你希望 AI 知道的你，例如：爱听故事、喜欢安静..."></textarea></div>
+    <div class="modalActions"><button type="button" class="action" id="profileCancel">取消</button><button type="button" class="action primary" id="profileSave">保存</button></div>
   </div></div>
 
 <script>
-/* ===========================
-   App state (localStorage)
-   =========================== */
+/* state + defaults */
 const STATE_KEY = 'nie_full_v1';
 const FEED_KEY = 'nie_feed_v1';
 const DEFAULT = {
@@ -231,15 +234,10 @@ const DEFAULT = {
 };
 let state = loadState();
 
-function loadState(){ try{ const s = localStorage.getItem(STATE_KEY); if(!s){ localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT); } return JSON.parse(s); }catch(e){ console.error(e); localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT);} }
+function loadState(){ try{ const s = localStorage.getItem(STATE_KEY); if(!s){ localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT);} return JSON.parse(s);}catch(e){ console.error(e); localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT);} }
 function saveState(){ localStorage.setItem(STATE_KEY, JSON.stringify(state)); applyBubbleColors(); applyBackground(); }
 
-function loadFeed(){ try{ return JSON.parse(localStorage.getItem(FEED_KEY)||'[]'); }catch(e){return [];} }
-function saveFeed(f){ localStorage.setItem(FEED_KEY, JSON.stringify(f)); }
-
-/* -------------------------
-   DOM refs
-   ------------------------- */
+/* DOM refs */
 const contactsGrid = document.getElementById('contactsGrid');
 const emptyHint = document.getElementById('emptyHint');
 const contactsPane = document.getElementById('contactsPane');
@@ -252,31 +250,25 @@ const chatSub = document.getElementById('chatSub');
 const messagesEl = document.getElementById('messages');
 const txtInput = document.getElementById('txtInput');
 
-const contactModal = document.getElementById('contactModal');
-const groupModal = document.getElementById('groupModal');
-const aiModal = document.getElementById('aiModal');
-const profileModal = document.getElementById('profileModal');
-
-/* buttons */
+/* listeners */
 document.getElementById('btnAdd').addEventListener('click', ()=> openContactModal());
-document.getElementById('contactCancel').addEventListener('click', ()=> closeModal(contactModal));
+document.getElementById('contactCancel').addEventListener('click', ()=> closeModal(document.getElementById('contactModal')));
 document.getElementById('contactSave').addEventListener('click', ()=> saveContact());
 document.getElementById('btnGroup').addEventListener('click', ()=> openGroupModal());
-document.getElementById('groupCancel').addEventListener('click', ()=> closeModal(groupModal));
+document.getElementById('groupCancel').addEventListener('click', ()=> closeModal(document.getElementById('groupModal')));
 document.getElementById('groupCreate').addEventListener('click', ()=> createGroup());
 document.getElementById('btnFeed').addEventListener('click', ()=> openFeed());
 document.getElementById('closeFeedBtn').addEventListener('click', ()=> closeFeed());
 document.getElementById('publishBtn').addEventListener('click', ()=> publishPost());
 document.getElementById('aiPostBtn').addEventListener('click', ()=> aiPublish());
-document.getElementById('btnBack').addEventListener('click', ()=> { /* optional back action */ });
 
 document.getElementById('openAi').addEventListener('click', ()=> openAiModal());
-document.getElementById('aiCancel').addEventListener('click', ()=> closeModal(aiModal));
+document.getElementById('aiCancel').addEventListener('click', ()=> closeModal(document.getElementById('aiModal')));
 document.getElementById('aiSave').addEventListener('click', ()=> saveAiSettings());
 
 document.getElementById('openProfile').addEventListener('click', ()=> openProfileModal());
 document.getElementById('openProfileBtn').addEventListener('click', ()=> openProfileModal());
-document.getElementById('profileCancel').addEventListener('click', ()=> closeModal(profileModal));
+document.getElementById('profileCancel').addEventListener('click', ()=> closeModal(document.getElementById('profileModal')));
 document.getElementById('profileSave').addEventListener('click', ()=> saveProfile());
 
 document.getElementById('backContacts').addEventListener('click', ()=> { contactsPane.classList.remove('hidden'); chatPane.classList.add('hidden'); feedPane.classList.add('hidden'); state.active=null; saveState(); });
@@ -285,12 +277,8 @@ txtInput.addEventListener('keydown', (e)=> { if(e.key==='Enter' && !e.shiftKey){
 
 document.getElementById('changeBgBtn').addEventListener('click', ()=> changeBackgroundPrompt());
 
-/* initial */
+/* init */
 applyBubbleColors(); applyBackground(); renderContacts(); renderFeed(); applyEmptyHint();
-
-/* ===========================
-   Rendering / UI logic
-   =========================== */
 
 function renderContacts(){
   contactsGrid.innerHTML = '';
@@ -302,7 +290,6 @@ function renderContacts(){
     contactsGrid.appendChild(el);
   });
 }
-
 function applyEmptyHint(){ if(!state.contacts || state.contacts.length===0) emptyHint.classList.remove('hidden'); else emptyHint.classList.add('hidden'); }
 
 function openConversation(id){
@@ -336,9 +323,6 @@ function renderMessages(){
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
-/* ===========================
-   Sending & reply
-   =========================== */
 async function sendMsg(){
   const txt = txtInput.value.trim(); if(!txt) return;
   const id = state.active || 'ai';
@@ -358,21 +342,20 @@ async function sendMsg(){
     pushMessage(id, { from:'ai', text:'出错：'+(err.message||'未知'), ts:Date.now() }); saveState(); renderMessages();
   }
 }
-
 function pushMessage(convId,msg){ state.conversations[convId] = state.conversations[convId] || { members:['me','ai'], messages:[] }; state.conversations[convId].messages.push(msg); saveState(); }
 
-/* request reply — if backend set, call it; otherwise local demo */
+/* requestReply 现在只会从 localStorage 读取后端地址（如果 api.html 或你手动设置了 chat_backend_url 就会调用） */
 async function requestReply(userText, convId){
-  const backend = localStorage.getItem('chat_backend_url') || (document.getElementById('backendUrl') && document.getElementById('backendUrl').value.trim());
+  const backend = localStorage.getItem('chat_backend_url'); // 仅从 localStorage 读取（不在本页面暴露编辑项）
   const persona = {...state.ai};
   if(backend){
     const payload = { action:'generate_reply', message:userText, persona, conversation: state.conversations[convId] || {} };
     const res = await fetch(backend, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
     if(!res.ok) throw new Error('后端返回 ' + res.status);
     const j = await res.json();
-    return j.reply || (j.choices && j.choices[0]?.message?.content) || JSON.stringify(j);
+    return j.reply || (j.choices && j.choices[0]?.message?.content) || (j.data && j.data[0] && j.data[0].text) || JSON.stringify(j);
   }
-  // local demo
+  // 本地 demo
   await new Promise(r=>setTimeout(r, 400 + Math.random()*700));
   const low = userText.toLowerCase();
   const pref = state.ai.style==='playful' ? '嘿嘿，' : state.ai.style==='professional' ? '' : '你好～';
@@ -381,9 +364,7 @@ async function requestReply(userText, convId){
   return pref + '（演示）关于「' + userText + '」我想说：' + userText.split('').reverse().join('').slice(0,120);
 }
 
-/* ===========================
-   FEED (朋友圈)
-   =========================== */
+/* FEED */
 function renderFeed(){
   const list = loadFeed(); const root = document.getElementById('feedList'); root.innerHTML = '';
   for(let i=list.length-1;i>=0;i--){
@@ -397,9 +378,9 @@ function renderFeed(){
     }
     root.appendChild(node);
   }
-  // bind actions
+  // bind
   root.querySelectorAll('button').forEach(b=>{
-    b.onclick = (e)=>{ const id=b.dataset.id, act=b.dataset.act; if(act==='like') toggleLike(id); else openCommentPrompt(id); };
+    b.onclick = ()=>{ const id=b.dataset.id, act=b.dataset.act; if(act==='like') toggleLike(id); else openCommentPrompt(id); };
   });
 }
 
@@ -408,61 +389,48 @@ function publishPost(){
   const list = loadFeed(); list.push({ id:'p'+Date.now(), name: state.me.name || '你', avatar: state.me.avatar||defaultAvatar(), text:t, likes:[], comments:[], ts:Date.now() });
   saveFeed(list); document.getElementById('postText').value=''; renderFeed(); alert('发布成功');
 }
-function aiPublish(){
-  const list = loadFeed(); list.push({ id:'p'+Date.now(), name: state.ai.name || '小NIE', avatar: state.ai.avatar||defaultAvatar(), text:'AI：今天也想和你说点心里话～', likes:[], comments:[], ts:Date.now() });
-  saveFeed(list); renderFeed(); alert('AI 已发布');
-}
-function toggleLike(id){
-  const list = loadFeed(); const p = list.find(x=>x.id===id); if(!p) return;
-  const me = state.me.name || '你'; p.likes = p.likes||[]; const ix = p.likes.indexOf(me); if(ix>=0) p.likes.splice(ix,1); else p.likes.push(me); saveFeed(list); renderFeed();
-}
-function openCommentPrompt(id){
-  const text = prompt('输入评论：'); if(!text) return;
-  const list = loadFeed(); const p = list.find(x=>x.id===id); if(!p) return;
-  p.comments = p.comments||[]; p.comments.push({ name:state.me.name||'你', text, ts:Date.now() }); saveFeed(list); renderFeed();
-}
-
+function aiPublish(){ const list=loadFeed(); list.push({ id:'p'+Date.now(), name: state.ai.name||'小NIE', avatar: state.ai.avatar||defaultAvatar(), text:'AI：今天也想和你说点心里话～', likes:[], comments:[], ts:Date.now() }); saveFeed(list); renderFeed(); alert('AI 已发布'); }
+function toggleLike(id){ const list=loadFeed(), p=list.find(x=>x.id===id); if(!p) return; const me=state.me.name||'你'; p.likes=p.likes||[]; const ix=p.likes.indexOf(me); if(ix>=0) p.likes.splice(ix,1); else p.likes.push(me); saveFeed(list); renderFeed(); }
+function openCommentPrompt(id){ const text=prompt('输入评论：'); if(!text) return; const list=loadFeed(), p=list.find(x=>x.id===id); if(!p) return; p.comments=p.comments||[]; p.comments.push({ name:state.me.name||'你', text, ts:Date.now() }); saveFeed(list); renderFeed(); }
 function openFeed(){ contactsPane.classList.add('hidden'); chatPane.classList.add('hidden'); feedPane.classList.remove('hidden'); renderFeed(); }
 function closeFeed(){ feedPane.classList.add('hidden'); contactsPane.classList.remove('hidden'); chatPane.classList.add('hidden'); }
 
-/* ===========================
-   AI modal & profile modal
-   =========================== */
+/* AI modal handling */
 function openAiModal(){
   document.getElementById('aiName').value = state.ai.name || '';
   document.getElementById('aiGender').value = state.ai.gender || 'neutral';
   document.getElementById('aiRole').value = state.ai.role || '';
-  document.getElementById('aiStyle').value = state.ai.style || 'friendly';
-  document.getElementById('aiCatch').value = state.ai.catch || '';
+  document.getElementById('aiStyleCatch').value = (state.ai.style ? state.ai.style + (state.ai.catch ? '；' + state.ai.catch : '') : state.ai.catch || '');
   document.getElementById('userColor').value = state.bubble.user || '#ffd6e6';
   document.getElementById('aiColor').value = state.bubble.ai || '#d7c8ff';
-  document.getElementById('backendUrl').value = localStorage.getItem('chat_backend_url') || '';
-  showModal(aiModal);
+  showModal(document.getElementById('aiModal'));
 }
 async function saveAiSettings(){
   state.ai.name = document.getElementById('aiName').value.trim() || state.ai.name;
   state.ai.gender = document.getElementById('aiGender').value;
   state.ai.role = document.getElementById('aiRole').value.trim();
-  state.ai.style = document.getElementById('aiStyle').value;
-  state.ai.catch = document.getElementById('aiCatch').value.trim();
-  // avatar file
+  const sc = document.getElementById('aiStyleCatch').value.trim();
+  if(sc.includes('；') || sc.includes(';') || sc.includes(',')){
+    const parts = sc.split(/；|;|,/).map(s=>s.trim()).filter(Boolean);
+    state.ai.style = parts[0] || state.ai.style;
+    state.ai.catch = parts.slice(1).join('；') || state.ai.catch;
+  } else {
+    state.ai.style = sc || state.ai.style;
+    state.ai.catch = sc || state.ai.catch;
+  }
   const f = document.getElementById('aiAvatarFile').files;
   if(f && f[0]) state.ai.avatar = await fileToDataUrl(f[0]);
-  // bubble colors
   state.bubble.user = document.getElementById('userColor').value || state.bubble.user;
   state.bubble.ai = document.getElementById('aiColor').value || state.bubble.ai;
-  // backend
-  const be = document.getElementById('backendUrl').value.trim();
-  if(be) localStorage.setItem('chat_backend_url', be);
-  saveState(); closeModal(aiModal); alert('AI 设置已保存');
+  saveState(); closeModal(document.getElementById('aiModal')); alert('AI 设置已保存');
 }
 
 /* profile modal */
 function openProfileModal(){
   document.getElementById('meName').value = state.me.name || '';
   document.getElementById('meRole').value = state.me.role || '';
-  document.getElementById('meAvatarUrl').value = ''; // optional
-  showModal(profileModal);
+  document.getElementById('meAvatarUrl').value = '';
+  showModal(document.getElementById('profileModal'));
 }
 async function saveProfile(){
   state.me.name = document.getElementById('meName').value.trim() || state.me.name;
@@ -470,21 +438,12 @@ async function saveProfile(){
   const f = document.getElementById('meAvatarFile').files;
   if(f && f[0]) state.me.avatar = await fileToDataUrl(f[0]);
   else if(document.getElementById('meAvatarUrl').value.trim()) state.me.avatar = document.getElementById('meAvatarUrl').value.trim();
-  saveState(); closeModal(profileModal); alert('我的设置已保存');
+  saveState(); closeModal(document.getElementById('profileModal')); alert('我的设置已保存');
 }
 
-/* ===========================
-   Contacts / group / import
-   =========================== */
-function openContactModal(){ document.getElementById('contactName').value=''; document.getElementById('contactFile').value=''; document.getElementById('contactURL').value=''; showModal(contactModal); }
-async function saveContact(){
-  const name = document.getElementById('contactName').value.trim(); if(!name) return alert('请输入名字');
-  let avatar = '';
-  if(document.getElementById('contactFile').files && document.getElementById('contactFile').files[0]) avatar = await fileToDataUrl(document.getElementById('contactFile').files[0]);
-  else if(document.getElementById('contactURL').value.trim()) avatar = document.getElementById('contactURL').value.trim();
-  const id = 'c' + Date.now();
-  state.contacts.push({ id, name, avatar }); saveState(); renderContacts(); applyEmptyHint(); closeModal(contactModal);
-}
+/* contacts / group */
+function openContactModal(){ document.getElementById('contactName').value=''; document.getElementById('contactFile').value=''; document.getElementById('contactURL').value=''; showModal(document.getElementById('contactModal')); }
+async function saveContact(){ const name = document.getElementById('contactName').value.trim(); if(!name) return alert('请输入名字'); let avatar=''; if(document.getElementById('contactFile').files && document.getElementById('contactFile').files[0]) avatar = await fileToDataUrl(document.getElementById('contactFile').files[0]); else if(document.getElementById('contactURL').value.trim()) avatar = document.getElementById('contactURL').value.trim(); const id='c'+Date.now(); state.contacts.push({ id, name, avatar }); saveState(); renderContacts(); applyEmptyHint(); closeModal(document.getElementById('contactModal')); }
 
 function openGroupModal(){
   const list = document.getElementById('groupContacts'); list.innerHTML = '';
@@ -493,7 +452,7 @@ function openGroupModal(){
     list.appendChild(el);
   });
   document.getElementById('groupName').value = ''; document.getElementById('groupFile').value = '';
-  showModal(groupModal);
+  showModal(document.getElementById('groupModal'));
 }
 async function createGroup(){
   const checked = Array.from(document.querySelectorAll('#groupContacts input[type=checkbox]:checked')).map(i=>i.value);
@@ -504,58 +463,34 @@ async function createGroup(){
   const gid = 'g' + Date.now();
   state.conversations[gid] = { members:['me', ...checked], messages:[], name };
   state.contacts.push({ id:gid, name, avatar: avatar || defaultAvatar() });
-  saveState(); renderContacts(); applyEmptyHint(); closeModal(groupModal); alert('群聊创建成功');
+  saveState(); renderContacts(); applyEmptyHint(); closeModal(document.getElementById('groupModal')); alert('群聊创建成功');
 }
 
-/* ===========================
-   Background & avatars helpers
-   =========================== */
-function changeBackgroundPrompt(){
-  const url = prompt('输入聊天背景图片 URL（留空可取消）');
-  if(!url) return;
-  state.background = url.trim(); saveState(); applyBackground(); alert('已设置背景（本地）');
-}
-function applyBackground(){
-  const app = document.querySelector('.app');
-  if(state.background) app.style.backgroundImage = `url('${escapeAttr(state.background)}')`, app.style.backgroundSize='cover';
-  else app.style.backgroundImage = '';
-}
-function applyBubbleColors(){
-  document.documentElement.style.setProperty('--user-color', state.bubble.user || '#ffd6e6');
-  document.documentElement.style.setProperty('--ai-color', state.bubble.ai || '#d7c8ff');
-}
+/* background & bubble */
+function changeBackgroundPrompt(){ const url = prompt('输入聊天背景图片 URL（留空可取消）'); if(!url) return; state.background = url.trim(); saveState(); applyBackground(); alert('已设置背景（本地）'); }
+function applyBackground(){ const app = document.querySelector('.app'); if(state.background) app.style.backgroundImage = `url('${escapeAttr(state.background)}')`, app.style.backgroundSize='cover'; else app.style.backgroundImage = ''; }
+function applyBubbleColors(){ document.documentElement.style.setProperty('--user-color', state.bubble.user || '#ffd6e6'); document.documentElement.style.setProperty('--ai-color', state.bubble.ai || '#d7c8ff'); }
 
-/* ===========================
-   Utilities
-   =========================== */
+/* utilities */
 function defaultAvatar(){ return 'data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect rx='36' width='100%' height='100%' fill='white'/><text x='50%' y='50%' font-size='110' text-anchor='middle' dominant-baseline='central'>🙂</text></svg>`); }
 function escapeHtml(s){ if(!s) return ''; return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
 function escapeAttr(s){ return (s||'').replaceAll('"','&quot;'); }
-function showModal(el){ el.style.display = 'flex'; el.setAttribute('aria-hidden','false'); }
-function closeModal(el){ el.style.display = 'none'; el.setAttribute('aria-hidden','true'); }
+function showModal(el){ el.style.display='flex'; el.setAttribute('aria-hidden','false'); }
+function closeModal(el){ el.style.display='none'; el.setAttribute('aria-hidden','true'); }
 function fileToDataUrl(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload = ()=> res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); }); }
 
-/* ===========================
-   Persistence for feed & state
-   =========================== */
+/* feed persistence */
 function loadFeed(){ try{ return JSON.parse(localStorage.getItem(FEED_KEY)||'[]'); }catch(e){return [];} }
 function saveFeed(list){ localStorage.setItem(FEED_KEY, JSON.stringify(list)); }
-function saveState(){ localStorage.setItem(STATE_KEY, JSON.stringify(state)); applyBubbleColors(); applyBackground(); }
 
-/* ===========================
-   Helpers used earlier but defined below to avoid duplication
-   =========================== */
-function saveState(){ localStorage.setItem(STATE_KEY, JSON.stringify(state)); applyBubbleColors(); applyBackground(); }
-
-/* initial save to ensure keys */
+/* initial save & expose */
 if(!state.contacts) state.contacts = DEFAULT.contacts;
 if(!state.conversations) state.conversations = DEFAULT.conversations;
 saveState();
 
-/* expose for debug */
-window._NIE = { state, saveState, loadFeed, saveFeed, renderContacts, renderFeed };
+window._NIE = { state, saveState, renderContacts, renderFeed, loadFeed };
 
-/* fix mobile touch overlay oddities */
+/* prevent mobile overlay issues */
 document.body.addEventListener('touchstart', ()=>{}, {passive:true});
 </script>
 </body>
