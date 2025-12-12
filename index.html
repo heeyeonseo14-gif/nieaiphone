@@ -5,96 +5,123 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NIEaiphone</title>
 
-  <!-- 🍬 软萌圆角风字体 Quicksand + Nunito -->
+  <!-- 圆润字体 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
+    :root{
+      --bg1:#f0e6fb;
+      --bg2:#e6d8f6;
+      --card-bg: rgba(255,255,255,0.42);
+      --btn1: #a78bfa;
+      --btn2: #7c5de8;
+      --text:#322741;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0}
     body {
-      margin: 0;
       font-family: "Quicksand", "Nunito", "Segoe UI", sans-serif;
-      background: linear-gradient(135deg, #decdf3, #d4c0ee, #c9b1e7);
+      background: linear-gradient(135deg, var(--bg1), var(--bg2) 60%, #d5c6f0);
       background-size: 200% 200%;
-      animation: bgMove 8s ease infinite;
-      color: #4a3f58;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      animation: bgMove 10s linear infinite;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--text);
+      padding:20px;
+    }
+    @keyframes bgMove{
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
     }
 
-    @keyframes bgMove {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
+    /* 容器 + 浮动动画 */
     .container {
-      width: 90%;
-      max-width: 380px;
-      padding: 40px 30px 48px;
-
-      /* 芋泥紫玻璃拟态卡片 */
-      background: rgba(255, 255, 255, 0.38);
-      border-radius: 28px;
-      backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
-
+      width: 92%;
+      max-width:420px;
+      padding:36px 28px;
+      border-radius:28px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       box-shadow:
-        0 12px 35px rgba(0, 0, 0, 0.15),
-        inset 0 0 40px rgba(255, 255, 255, 0.20);
-
-      text-align: center;
-      animation: fadeIn 0.7s ease;
+        0 18px 40px rgba(50,35,65,0.12),
+        inset 0 6px 18px rgba(255,255,255,0.26);
+      text-align:center;
+      transform-origin:center;
+      animation: floaty 6s ease-in-out infinite;
+    }
+    @keyframes floaty{
+      0%{ transform: translateY(0) rotateZ(-0.2deg) }
+      50%{ transform: translateY(-10px) rotateZ(0.2deg) }
+      100%{ transform: translateY(0) rotateZ(-0.2deg) }
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px) scale(0.97); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
+    /* 标题 + emoji */
     h1 {
-      font-size: 32px;
-      margin-bottom: 26px;
-      color: #322741;
-      font-weight: 700;
-      letter-spacing: 1px;
+      margin: 0 0 20px;
+      font-size:34px;
+      letter-spacing:0.6px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:12px;
+    }
+    .emoji {
+      display:inline-flex;
+      width:46px;height:46px;
+      align-items:center;justify-content:center;
+      background: linear-gradient(180deg,#ffeef8,#fff);
+      border-radius:12px;
+      box-shadow: 0 6px 18px rgba(124,93,232,0.18);
+      font-size:22px;
     }
 
+    /* 按钮：呼吸 + 按压效果 */
     .btn {
-      display: block;
-      width: 100%;
-      padding: 15px 0;
-      background: linear-gradient(135deg, #9b86e6, #8870dc);
-      border-radius: 18px;
-      text-decoration: none;
-      color: white;
-      font-size: 18px;
-      font-weight: 600;
-      margin-top: 10px;
-
-      box-shadow:
-        0 8px 18px rgba(140, 120, 210, 0.45),
-        inset 0 -2px 6px rgba(255, 255, 255, 0.18);
-
-      transition: 0.25s;
+      display:block;
+      width:100%;
+      padding:14px 14px;
+      margin-top:10px;
+      border-radius:16px;
+      background: linear-gradient(135deg, var(--btn1), var(--btn2));
+      color:white;
+      font-size:17px;
+      font-weight:700;
+      text-decoration:none;
+      box-shadow: 0 10px 24px rgba(124,93,232,0.28);
+      transition: transform .18s cubic-bezier(.22,.9,.26,1), box-shadow .18s;
+      animation: breathe 3.6s ease-in-out infinite;
+    }
+    @keyframes breathe{
+      0%{ box-shadow: 0 8px 20px rgba(124,93,232,0.26); transform: translateY(0) }
+      50%{ box-shadow: 0 14px 34px rgba(124,93,232,0.36); transform: translateY(-2px) }
+      100%{ box-shadow: 0 8px 20px rgba(124,93,232,0.26); transform: translateY(0) }
+    }
+    .btn:active{
+      transform: translateY(2px) scale(.995);
+      box-shadow: 0 6px 14px rgba(124,93,232,0.18);
+      animation: none;
     }
 
-    .btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 
-        0 12px 26px rgba(140, 120, 210, 0.55),
-        inset 0 -2px 4px rgba(255, 255, 255, 0.25);
+    /* 小屏适配（让卡片更大占比） */
+    @media (max-height:700px){
+      .container{ padding:28px 18px }
+      h1{ font-size:30px }
     }
   </style>
 </head>
-
 <body>
-  <div class="container">
-    <h1>NIEaiphone</h1>
+  <div class="container" role="region" aria-label="NIEaiphone 欢迎页">
+    <h1>
+      <span class="emoji" aria-hidden="true">🍡</span>
+      <span>NIEaiphone</span>
+    </h1>
 
-    <!-- 回家按钮 -->
     <a class="btn" href="home.html">回到你的小家</a>
   </div>
 </body>
