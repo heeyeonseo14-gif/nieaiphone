@@ -10,8 +10,6 @@
   --bg1:#f4e8fb; --bg2:#f0e7fb;
   --card:#fff; --muted:#7b6c88; --text:#2f2436;
   --accent1:#9b86e6; --accent2:#7a64d0;
-  --user-bubble: #ffd6e6;
-  --ai-bubble: #d7c8ff;
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;font-family:"Quicksand",system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text);-webkit-font-smoothing:antialiased}
@@ -26,11 +24,10 @@ html,body{height:100%;margin:0;font-family:"Quicksand",system-ui,-apple-system,S
 .pane{background:rgba(255,255,255,0.98);border-radius:14px;padding:12px;flex:1;overflow:auto;position:relative;min-height:0;transition:background .28s,background-image .28s,box-shadow .28s}
 .hidden{display:none !important}
 .contactsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-top:6px}
-.contactCard{background:linear-gradient(180deg,rgba(255,255,255,0.98),#fbf8ff);border-radius:14px;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;cursor:pointer;transition:transform .18s,box-shadow .18s;border:1px solid rgba(0,0,0,0.02);position:relative}
+.contactCard{background:linear-gradient(180deg,rgba(255,255,255,0.98),#fbf8ff);border-radius:14px;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;cursor:pointer;transition:transform .18s,box-shadow .18s;border:1px solid rgba(0,0,0,0.02)}
 .iconWrap{width:68px;height:68px;border-radius:14px;background:linear-gradient(180deg,#fff,#faf8ff);display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 8px 22px rgba(20,10,40,0.04)}
 .iconWrap img{width:60px;height:60px;object-fit:cover;border-radius:10px}
 .contactName{font-size:13px;font-weight:700;color:var(--text);text-align:center}
-.contactDelete{position:absolute;right:8px;top:8px;background:rgba(255,255,255,0.9);border-radius:10px;padding:4px 6px;border:1px solid rgba(0,0,0,0.04);font-size:12px;cursor:pointer}
 .chatHeader{display:flex;align-items:center;gap:12px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,0.04);margin-bottom:8px}
 .chatAvatar{width:52px;height:52px;border-radius:12px;overflow:hidden;flex-shrink:0}
 .chatAvatar img{width:100%;height:100%;object-fit:cover}
@@ -44,9 +41,8 @@ html,body{height:100%;margin:0;font-family:"Quicksand",system-ui,-apple-system,S
 .msgAvatar{width:36px;height:36px;border-radius:8px;overflow:hidden}
 .msgAvatar img{width:100%;height:100%;object-fit:cover}
 .bubble{max-width:78%;padding:10px 14px;border-radius:16px;font-size:15px;line-height:1.45;box-shadow:0 10px 30px rgba(34,18,60,0.06)}
-/* 使用 css 变量控制颜色，便于动态修改 */
-.bubble.user{background:linear-gradient(180deg,var(--user-bubble),#ffd6e6);color:#3b1a2f;border-bottom-right-radius:6px}
-.bubble.ai{background:linear-gradient(180deg,var(--ai-bubble),#cdb8ff);color:#2b1b3a;border-bottom-left-radius:6px}
+.bubble.user{background:linear-gradient(180deg,#fff0f5,#ffd6e6);color:#3b1a2f;border-bottom-right-radius:6px}
+.bubble.ai{background:linear-gradient(180deg,#f3eeff,#d7c8ff);color:#2b1b3a;border-bottom-left-radius:6px}
 .fixedComposer{position:sticky;bottom:10px;background:transparent;padding:10px 0;margin-top:8px}
 .composer{display:flex;gap:8px;align-items:end;padding-top:8px;border-top:1px solid rgba(0,0,0,0.03)}
 textarea{flex:1;min-height:48px;max-height:140px;padding:10px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);resize:none}
@@ -157,7 +153,6 @@ textarea{flex:1;min-height:48px;max-height:140px;padding:10px;border-radius:12px
 
   <div class="modalWrap" id="groupModal"><div class="modal" role="dialog">
     <h3>创建群聊（最多 8 人）</h3>
-    <div class="formRow"><label>群头像</label><input type="file" id="groupAvatarFile" accept="image/*"></div>
     <div class="formRow"><label>群名</label><input type="text" id="groupName" placeholder="群名称"></div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:8px">从联系人中选择成员</div>
     <div id="groupContacts" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px"></div>
@@ -208,16 +203,6 @@ textarea{flex:1;min-height:48px;max-height:140px;padding:10px;border-radius:12px
     <div class="formRow"><label>图片文件</label><input type="file" id="bgFile" accept="image/*"></div>
     <div class="formRow"><label>或背景 URL</label><input type="text" id="bgUrl" placeholder="图片 URL（留空可取消）"></div>
     <div class="modalActions"><button class="action" id="bgCancel">取消</button><button class="action primary" id="bgSet">设置</button></div>
-  </div></div>
-
-  <!-- 自定义确认弹窗（替代 confirm()） -->
-  <div class="modalWrap" id="confirmModal"><div class="modal" role="dialog">
-    <h3 id="confirmTitle">确认</h3>
-    <div id="confirmMsg" style="margin-top:8px;color:var(--muted)"></div>
-    <div class="modalActions" style="margin-top:12px">
-      <button class="action" id="confirmCancel">取消</button>
-      <button class="action primary" id="confirmOk">确定</button>
-    </div>
   </div></div>
 
   <div class="toast" id="toast"></div>
@@ -324,26 +309,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   document.getElementById('autoPostSwitch').addEventListener('change', (e)=> toggleAutoPost(e.target.checked));
 
-  /* confirm modal handlers */
-  let _confirmResolve = null;
-  function showConfirm(title, msg){
-    return new Promise(res=>{
-      document.getElementById('confirmTitle').textContent = title || '提示';
-      document.getElementById('confirmMsg').textContent = msg || '';
-      const wrap = document.getElementById('confirmModal');
-      wrap.classList.add('show');
-      _confirmResolve = res;
-    });
-  }
-  document.getElementById('confirmCancel').addEventListener('click', ()=> {
-    document.getElementById('confirmModal').classList.remove('show');
-    if(_confirmResolve) { _confirmResolve(false); _confirmResolve = null; }
-  });
-  document.getElementById('confirmOk').addEventListener('click', ()=> {
-    document.getElementById('confirmModal').classList.remove('show');
-    if(_confirmResolve) { _confirmResolve(true); _confirmResolve = null; }
-  });
-
   /* initial: ensure at least one AI contact exists (but do not overwrite saved avatar/background) */
   (function ensureDefaultAI(){
     if(!Array.isArray(state.contacts) || state.contacts.length === 0){
@@ -370,18 +335,33 @@ document.addEventListener('DOMContentLoaded', ()=>{
     (state.contacts||[]).forEach(c=>{
       const el = document.createElement('div'); el.className='contactCard'; el.dataset.id=c.id;
       const av = c.avatar || defaultAvatar();
-      el.innerHTML = `<div class="iconWrap"><img src="${escapeAttr(av)}" alt=""></div><div class="contactName">${escapeHtml(c.name)}</div><div class="contactDelete" data-id="${escapeAttr(c.id)}">删除</div>`;
-      el.querySelector('.contactDelete').addEventListener('click', async (ev)=>{
-        ev.stopPropagation();
-        const id = ev.currentTarget.dataset.id;
-        await deleteContact(id);
-      });
+      el.innerHTML = `<div class="iconWrap"><img src="${escapeAttr(av)}" alt=""></div><div class="contactName">${escapeHtml(c.name)}</div>`;
       el.addEventListener('click', ()=> openConversation(c.id));
+      // 长按或右键删除（移动端长按）
+      el.addEventListener('contextmenu', (ev)=>{ ev.preventDefault(); tryDeleteContact(c.id); });
+      el.addEventListener('touchstart', (ev)=>{ el.__touchStart = Date.now(); }, {passive:true});
+      el.addEventListener('touchend', (ev)=>{ const t = Date.now() - (el.__touchStart||0); if(t>700) tryDeleteContact(c.id); });
       contactsGrid.appendChild(el);
     });
     applyEmptyHint();
   }
   function applyEmptyHint(){ emptyHint.style.display = (!state.contacts || state.contacts.length===0) ? 'block':'none'; }
+
+  /* try delete contact with a nicer UI than native confirm() */
+  function tryDeleteContact(id){
+    // show a simple confirm modal (reuse browser confirm fallback)
+    const c = state.contacts.find(x=>x.id===id);
+    if(!c) return;
+    const ok = confirm('删除联系人 "' + (c.name||'') + '"？');
+    if(ok){
+      // remove related conversation
+      delete state.conversations[id];
+      state.contacts = state.contacts.filter(x=>x.id!==id);
+      saveState();
+      renderContacts();
+      showToast('已删除联系人');
+    }
+  }
 
   /* open conversation */
   function openConversation(id){
@@ -389,12 +369,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     state.conversations[id] = state.conversations[id] || { members:['me', id], messages:[], name: (state.contacts.find(c=>c.id===id)?.name || '对方') };
     const target = (state.contacts||[]).find(x=>x.id===id) || { name: state.ai.name||'对方', avatar: state.ai.avatar||defaultAvatar() };
     chatTitle.textContent = target.name;
-    // 如果是群聊，显示人数
-    if(String(id).startsWith('g')){
-      const conv = state.conversations[id] || {};
-      const members = (conv.members || []).length;
-      chatSub.textContent = `群聊 · ${members} 人`;
-    } else chatSub.textContent = '';
+    chatSub.textContent = ''; // don't show group人数 in single view
     chatAvatarImg.src = target.avatar || defaultAvatar();
     topActions.style.display='none'; bottomBar.style.display='none';
     contactsPane.classList.add('hidden'); chatPane.classList.remove('hidden'); feedPane.classList.add('hidden');
@@ -446,9 +421,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const members = conv.members.filter(m=>m!=='me');
       for(const memberId of members){
         await new Promise(r=>setTimeout(r, 200 + Math.random()*300));
-        // 从 conv 的 memberReplyCounts 读取该成员的回复条数
-        const memberRC = (conv.memberReplyCounts && conv.memberReplyCounts[memberId]) ? conv.memberReplyCounts[memberId] : 1;
-        const replies = await requestReplyGroup(raw, id, memberId, memberRC);
+        const replies = await requestReplyGroup(raw, id, memberId);
         replies.forEach(r=> pushMessage(id, { from: memberId, text: r, ts: Date.now() }));
         renderMessages();
       }
@@ -471,8 +444,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const persona = {...state.ai};
     const replyCount = Math.max(1, Math.min(20, (persona.replyCount||1)));
     const actionsEnabled = !!persona.actionsEnabled;
-
-    // 如果配置了后端，优先尝试
     if(backend){
       try{
         const payload = {message:userText, persona:{ name: persona.name, gender: persona.gender, role_desc: persona.role, style: persona.style, catch: persona.catch }};
@@ -482,74 +453,27 @@ document.addEventListener('DOMContentLoaded', ()=>{
         let text = j.reply || j.text || (j.choices && j.choices[0]?.message?.content) || JSON.stringify(j);
         let parts = splitReplyParts(text, replyCount);
         if(actionsEnabled) parts = parts.map(p=>`（他笑了笑）${p}`);
-        parts = uniqueVariants(parts, replyCount);
-        return parts.slice(0, replyCount);
-      }catch(e){
-        console.warn('backend err',e);
-        showToast('后端请求失败，使用本地生成');
-      }
+        return parts.slice(0,replyCount);
+      }catch(e){ console.warn('backend err',e); showToast('后端请求失败，使用本地生成'); }
     }
 
-    // 本地 fallback（安全、不会把 role 原文发出）
-    await new Promise(r=>setTimeout(r, 220 + Math.random()*320));
-    const candidates = [];
-    if(/^(你好|hi|嗨|hello)/i.test(userText)) candidates.push('你好～很高兴和你说话');
-    if(/(谢谢|多谢|thx)/i.test(userText)) candidates.push('不客气～随时找我聊');
-    if(userText.length < 12) candidates.push('我听到了，你说得很清楚');
-    if(userText.length >= 12 && userText.length < 80) candidates.push('我注意到你提到了些事情，可以详细说说吗？');
-    if(userText.length >= 80) candidates.push('这句比较长，我想了想，想问你更多细节');
-    if(candidates.length===0) candidates.push('嗯，我知道了');
-
-    // 使用 persona.style / persona.catch 作为“生成提示”影响语气，但不把它原文拼到消息上：
+    // fallback 本地生成（安全）
+    await new Promise(r=>setTimeout(r, 250 + Math.random()*300));
+    const baseCandidates = [];
+    if(/^(你好|hi|嗨|hello)/i.test(userText)) baseCandidates.push('你好～很高兴和你说话');
+    if(userText.length < 8) baseCandidates.push(`你说的「${userText}」我听到了`);
+    if(userText.length >= 8) baseCandidates.push(`我注意到你提到「${userText.slice(0,40)}」`);
+    if(baseCandidates.length===0) baseCandidates.push('嗯，我知道了');
     const styleNotes = (persona.catch || persona.style || '').split(/[；;，,]/).map(s=>s.trim()).filter(Boolean);
-    const styleLabel = styleNotes.length ? styleNotes[0] : '';
-
+    const pickStyle = styleNotes.length ? `（风格：${styleNotes[0]}）` : '';
     const parts = [];
-    // 生成 replyCount 个“不同但相关”的回复（轻度变形、去重）
     for(let i=0;i<replyCount;i++){
-      const base = candidates[i % candidates.length];
-      let variant = base;
-      if(i % 3 === 0) variant = base;
-      else if(i % 3 === 1) variant = base + '～';
-      else variant = base + '。';
-      if(styleLabel && Math.random()<0.6){
-        // 只在极短 style 单词时附加，否则跳过
-        if(styleLabel.length <= 8) variant = variant.replace(/。|～$/,'') + ' ' + styleLabel;
-        else variant = variant;
-      }
-      parts.push(variant);
+      const j = baseCandidates[i % baseCandidates.length];
+      const p = pickStyle ? `${j} ${pickStyle}` : j;
+      parts.push(p);
     }
-
-    // 去重并保证数量
-    const finalParts = uniqueVariants(parts, replyCount, true);
-    if(actionsEnabled) return finalParts.map(p=>`（他轻轻一笑）${p}`);
-    return finalParts;
-  }
-
-  // helper: 给定数组，返回尽量不重复的 variants（如不足则通过添加小随机后缀区分）
-  function uniqueVariants(arr, needCount, allowRandomSuffix=false){
-    const out = [];
-    const seen = new Set();
-    for(const v of arr){
-      let s = (v||'').trim();
-      if(!s) continue;
-      if(!seen.has(s)){
-        out.push(s); seen.add(s);
-      }
-      if(out.length >= needCount) break;
-    }
-    // 如果不够，尝试用轻度变体补足（数字/emoji 后缀）
-    let idx = 0;
-    while(out.length < needCount){
-      const base = arr[idx % arr.length] || '嗯';
-      let tryv = base + ' ' + (['🙂','～','啦'][out.length%3] || ('（' + (out.length+1) + '）'));
-      if(!seen.has(tryv) || allowRandomSuffix){
-        out.push(tryv); seen.add(tryv);
-      }
-      idx++;
-      if(idx > 80) break;
-    }
-    return out.slice(0, needCount);
+    if(actionsEnabled) return parts.map(p=>`（他轻轻一笑）${p}`);
+    return parts;
   }
 
   function splitReplyParts(text, count){
@@ -560,24 +484,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   /* group reply */
-  async function requestReplyGroup(userText, convId, memberId, replyCount = 1){
+  async function requestReplyGroup(userText, convId, memberId){
     const member = state.contacts.find(c=>c.id===memberId) || { name:'TA' };
     const conv = state.conversations[convId] || {};
     const memberRoles = conv.memberRoles || {};
     const role = memberRoles[memberId] || (member && member.role) || '';
-    await new Promise(r=>setTimeout(r, 180 + Math.random()*220));
-    // 基础响应：不直接把人设原文作为消息
+    await new Promise(r=>setTimeout(r, 200 + Math.random()*200));
+    // 基础响应：不直接把人设发为消息
     const short = userText.length < 20 ? userText : userText.slice(0,30);
     const base = role ? `${short}` : `${short}`;
-    // 产生 replyCount 个变体（不重复）
-    const parts = [];
-    for(let i=0;i<replyCount;i++){
-      let p = base;
-      if(i%2===1) p = base + '。';
-      else if(i%3===2) p = base + '～';
-      parts.push(p);
-    }
-    return uniqueVariants(parts, replyCount, true);
+    return [ base ];
   }
 
   /* FEED */
@@ -592,16 +508,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         if(owner){ p.name = owner.name; p.avatar = owner.avatar; }
       }
       const el = document.createElement('div'); el.className='feedItem';
-      el.innerHTML = `<div class="feedMeta" style="display:flex;gap:8px;align-items:center">
-        <div style="width:44px;height:44px;border-radius:10px;overflow:hidden;background:#fff"><img src="${escapeAttr(p.avatar||defaultAvatar())}" style="width:100%;height:100%;object-fit:cover"></div>
-        <div style="flex:1">
-          <div style="font-weight:700">${escapeHtml(p.name)}</div>
-          <div style="font-size:12px;color:var(--muted)">${new Date(p.ts).toLocaleString()}</div>
-        </div>
-      </div>
-      <div style="margin-top:8px">${escapeHtml(p.text)}</div>
-      <div class="postActions"><button class="action" data-id="${p.id}" data-act="like">赞 (${p.likes?.length||0})</button><button class="action" data-id="${p.id}" data-act="comment">评论 (${p.comments?.length||0})</button>
-      <button class="action" data-id="${p.id}" data-act="delete">删除</button></div>`;
+      el.innerHTML = `<div class="feedMeta"><div style="width:44px;height:44px;border-radius:10px;overflow:hidden;background:#fff"><img src="${escapeAttr(p.avatar||defaultAvatar())}" style="width:100%;height:100%;object-fit:cover"></div><div style="flex:1"><div style="font-weight:700">${escapeHtml(p.name)}</div><div style="font-size:12px;color:var(--muted)">${new Date(p.ts).toLocaleString()}</div></div></div><div style="margin-top:8px">${escapeHtml(p.text)}</div><div class="postActions"><button class="action" data-id="${p.id}" data-act="like">赞 (${p.likes?.length||0})</button><button class="action" data-id="${p.id}" data-act="comment">评论 (${p.comments?.length||0})</button></div>`;
       const likeLine = document.createElement('div'); likeLine.className='likeList';
       const names = (p.likes||[]).join('、');
       likeLine.innerHTML = names ? `赞：${escapeHtml(names)}` : '';
@@ -616,8 +523,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     root.querySelectorAll('button').forEach(b=> b.addEventListener('click', (ev)=>{
       const id = ev.currentTarget.dataset.id, act = ev.currentTarget.dataset.act;
       if(act==='like') toggleLike(id);
-      else if(act==='comment') openCommentModal(id);
-      else if(act==='delete') deletePost(id);
+      else openCommentModal(id);
     }));
   }
 
@@ -629,31 +535,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   function aiPublish(){
-    try{
-      const aiContact = state.contacts.find(c=>String(c.id).startsWith('ai_')) || state.contacts[0];
-      const ownerId = aiContact ? aiContact.id : null;
-      const list = loadFeed();
-      list.push({ id:'p'+Date.now(), ownerId: ownerId, name: aiContact ? aiContact.name : state.ai.name, avatar: aiContact ? aiContact.avatar : state.ai.avatar||defaultAvatar(), text: (state.ai.catch||'今天也想和你说点心里话～'), likes:[], comments:[], ts:Date.now() });
-      saveFeed(list);
-      renderFeed();
-      showToast('AI 已发一条');
-    }catch(e){
-      console.error('aiPublish err', e);
-      showToast('AI 发帖失败');
-    }
+    const aiContact = state.contacts.find(c=>String(c.id).startsWith('ai_')) || state.contacts[0];
+    const ownerId = aiContact ? aiContact.id : null;
+    const list = loadFeed();
+    list.push({ id:'p'+Date.now(), ownerId: ownerId, name: aiContact ? aiContact.name : state.ai.name, avatar: aiContact ? aiContact.avatar : state.ai.avatar||defaultAvatar(), text: (state.ai.catch||'今天也想和你说点心里话～'), likes:[], comments:[], ts:Date.now() });
+    saveFeed(list); renderFeed(); showToast('AI 已发一条');
   }
 
   function toggleLike(id){
     const list = loadFeed(); const p = list.find(x=>x.id===id); if(!p) return;
     const me = state.me.name || '你'; p.likes = p.likes || []; const idx = p.likes.indexOf(me); if(idx>=0) p.likes.splice(idx,1); else p.likes.push(me); saveFeed(list); renderFeed();
-  }
-
-  function deletePost(id){
-    (async ()=>{
-      const ok = await showConfirm('删除动态', '确定删除这条动态？');
-      if(!ok) return;
-      let list = loadFeed(); list = list.filter(x=>x.id!==id); saveFeed(list); renderFeed(); showToast('已删除');
-    })();
   }
 
   /* comment modal */
@@ -709,23 +600,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       members.forEach(mid=>{
         const contact = state.contacts.find(c=>c.id===mid) || { name:'成员', avatar: defaultAvatar(), role:'' };
         const row = document.createElement('div'); row.style.display='flex'; row.style.gap='10px'; row.style.alignItems='flex-start'; row.style.marginBottom='10px';
-        const rhtml = `
-          <div style="width:64px">
-            <div style="width:56px;height:56px;border-radius:10px;overflow:hidden">
-              <img src="${escapeAttr(contact.avatar||defaultAvatar())}" style="width:100%;height:100%;object-fit:cover">
-            </div>
-            <input type="file" data-mid="${escapeAttr(mid)}" accept="image/*" style="margin-top:6px">
-          </div>
-          <div style="flex:1">
-            <div style="font-weight:700;margin-bottom:6px">${escapeHtml(contact.name)}</div>
-            <input type="text" data-mid="${escapeAttr(mid)}" placeholder="群内显示的名字（可选）" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);margin-bottom:6px">
-            <textarea data-mid="${escapeAttr(mid)}" placeholder="群内人设（仅作为生成提示）" style="width:100%;min-height:64px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)"></textarea>
-            <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
-              <label style="font-size:13px;color:var(--muted);min-width:82px">回复条数</label>
-              <input type="number" data-mid-rc="${escapeAttr(mid)}" min="1" max="10" value="${(state.conversations[active]?.memberReplyCounts?.[mid]||1)}" style="width:86px;padding:6px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)">
-            </div>
-          </div>`;
-        row.innerHTML = rhtml;
+        row.innerHTML = `<div style="width:64px"><div style="width:56px;height:56px;border-radius:10px;overflow:hidden"><img src="${escapeAttr(contact.avatar||defaultAvatar())}" style="width:100%;height:100%;object-fit:cover"></div><input type="file" data-mid="${escapeAttr(mid)}" accept="image/*" style="margin-top:6px"></div><div style="flex:1"><div style="font-weight:700;margin-bottom:6px">${escapeHtml(contact.name)}</div><input type="text" data-mid="${escapeAttr(mid)}" placeholder="在群内显示的名字（可选）" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);margin-bottom:6px"><textarea data-mid="${escapeAttr(mid)}" placeholder="群内人设（仅作为生成提示）" style="width:100%;min-height:64px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)"></textarea></div>`;
         wrap.appendChild(row);
         // 填默认值
         const nameInput = row.querySelector('input[type=text]');
@@ -776,14 +651,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
           const c = state.contacts.find(x=>x.id===r.mid);
           if(c) c.avatar = r.data;
         }
-      });
-      // 读取回复条数设置
-      const rcInputs = wrap.querySelectorAll('input[type=number][data-mid-rc]');
-      rcInputs.forEach(inp=>{
-        const mid = inp.dataset.midRc || inp.getAttribute('data-mid-rc');
-        const v = parseInt(inp.value) || 1;
-        conv.memberReplyCounts = conv.memberReplyCounts || {};
-        conv.memberReplyCounts[mid] = Math.max(1, Math.min(10, v));
       });
       // save conversation back
       state.conversations[active] = conv;
@@ -854,16 +721,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     showToast('联系人已保存');
   }
 
-  async function deleteContact(id){
-    const ok = await showConfirm('删除联系人', '确定删除此联系人？');
-    if(!ok) return;
-    state.contacts = state.contacts.filter(c=>c.id!==id);
-    delete state.conversations[id];
-    saveState();
-    renderContacts();
-    showContacts();
-  }
-
   function openGroupModal(){
     const list = document.getElementById('groupContacts'); list.innerHTML=''; (state.contacts||[]).forEach(c=>{ const el=document.createElement('div'); el.style.textAlign='center'; el.style.padding='6px'; el.innerHTML = `<label style="display:flex;flex-direction:column;align-items:center;gap:6px"><input type="checkbox" value="${c.id}"><div style="font-size:13px">${escapeHtml(c.name)}</div></label>`; list.appendChild(el); });
     document.getElementById('groupName').value=''; document.getElementById('groupMemberRoles').innerHTML=''; showModal('groupModal');
@@ -892,15 +749,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const name=document.getElementById('groupName').value.trim() || ('群聊'+Math.floor(Math.random()*90+10));
     const gid='g' + Date.now() + '_' + Math.floor(Math.random()*999);
     const memberRoles = {};
-    // 不再收集“群内人设”输入（创建时不需要）
-    state.conversations[gid] = { members:['me', ...checked], messages:[], name, memberRoles, memberReplyCounts: {} };
-
-    // 读取头像文件（如果选了）
-    let avatar = defaultAvatar();
-    const f = document.getElementById('groupAvatarFile').files;
-    if(f && f[0]) avatar = await fileToDataUrl(f[0]);
-
-    const groupContact = { id: gid, name, avatar: avatar, role: '群聊' };
+    Array.from(document.querySelectorAll('#groupMemberRoles input[type=text]')).forEach(inp=>{
+      const id = inp.dataset.id; if(id) memberRoles[id] = inp.value.trim();
+    });
+    state.conversations[gid] = { members:['me', ...checked], messages:[], name, memberRoles };
+    const groupContact = { id: gid, name, avatar: defaultAvatar(), role: '群聊' };
     state.contacts.push(groupContact);
     saveState(); renderContacts(); closeModal('groupModal'); showToast('群聊创建成功');
   }
@@ -939,6 +792,68 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function escapeAttr(s){ return (s||'').replaceAll('"','&quot;').replaceAll("'",''); }
   function fileToDataUrl(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload = ()=> res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); }); }
   function showToast(msg, ms=1500){ toastEl.textContent = msg; toastEl.style.display = 'block'; toastEl.style.opacity = '1'; setTimeout(()=>{ toastEl.style.opacity = '0'; setTimeout(()=> toastEl.style.display='none', 250); }, ms); }
+
+  /* ---------- 补丁：返回到 home.html + storage 可用性检测 + beforeunload  ---------- */
+
+  // 1) 返回按钮：从聊天页回到主界面（home.html）
+  const btnBackEl = document.getElementById('btnBack');
+  if(btnBackEl){
+    btnBackEl.addEventListener('click', (e)=>{
+      // 优先跳回本地的 home.html（若你想跳到 GH Pages，改这里）
+      const preferred = './home.html';
+      try{
+        location.href = preferred;
+      }catch(err){
+        console.warn('跳转 home.html 失败, 尝试 location.replace', err);
+        try{ location.replace(preferred); } catch(e){}
+      }
+    });
+  }
+
+  // 2) 简单检查 localStorage 是否可用（用于提示“刷新会回到预设”的真实原因）
+  function checkStorageAvailable(){
+    const key = '__nie_storage_test__';
+    try{
+      localStorage.setItem(key, Date.now().toString());
+      const v = localStorage.getItem(key);
+      localStorage.removeItem(key);
+      return v !== null;
+    }catch(e){
+      return false;
+    }
+  }
+
+  function warnIfStorageUnavailable(){
+    const ok = checkStorageAvailable();
+    if(!ok){
+      showToast('注意：当前以文件/临时来源打开，浏览器可能无法持久保存设置。建议通过 https 或本地 http 服务器/GitHub Pages 打开。', 5000);
+      const exist = document.getElementById('nie_storage_warn');
+      if(!exist){
+        const warn = document.createElement('div');
+        warn.id = 'nie_storage_warn';
+        warn.style.cssText = 'position:fixed;left:12px;right:12px;top:70px;background:linear-gradient(90deg,#fff1f3,#fff);border-radius:12px;padding:10px;border:1px solid rgba(0,0,0,0.06);z-index:9999;font-weight:600;color:#6b2d4a;box-shadow:0 10px 30px rgba(0,0,0,0.06)';
+        warn.textContent = '提示：当前页面可能无法在刷新后保存设置。推荐通过 GitHub Pages（https://...）或本地 http 服务器打开以保持数据。';
+        document.body.appendChild(warn);
+        setTimeout(()=>{ try{ warn.style.opacity='0'; setTimeout(()=> warn.remove(), 300); }catch(e){} }, 8000);
+      }
+    }else{
+      const exist = document.getElementById('nie_storage_warn');
+      if(exist) try{ exist.remove(); }catch(e){}
+    }
+  }
+
+  // 在页面卸载前尝试保存一次（再保险）
+  window.addEventListener('beforeunload', ()=> {
+    try{
+      if(window._NIE && window._NIE.saveState) window._NIE.saveState();
+      else saveState();
+    }catch(e){}
+  });
+
+  // 立即检测一次
+  warnIfStorageUnavailable();
+
+  /* ---------- 补丁结束 ---------- */
 
   /* initial render */
   renderContacts(); applyEmptyHint(); applyBubbleColors(); applyBackground(); renderFeed(); saveState();
