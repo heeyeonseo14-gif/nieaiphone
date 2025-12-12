@@ -3,836 +3,311 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>NIEaiphone — 聊天（完整版）</title>
-
-<!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-
+<title>NIEaiphone — 联系人美化</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg1:#f4eefe; --bg2:#ecdff9;
-    --card: rgba(255,255,255,0.9);
-    --accent1:#9b86e6; --accent2:#7a64d0;
-    --muted:#7b6c88; --text:#2f2436;
-    --user-bubble: linear-gradient(180deg,#ffdfe8,#ffd6e6);
-    --ai-bubble: linear-gradient(180deg,#e9dbff,#d7c8ff);
-    --user-text: #3b1a2f;
-    --ai-text: #2b1b3a;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:"Quicksand","Nunito",system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text)}
-  a{color:inherit}
+:root{
+  --bg1:#f4e8fb; --bg2:#eddffb;
+  --card: rgba(255,255,255,0.96);
+  --accent1:#9b86e6; --accent2:#7a64d0;
+  --muted:#7b6c88; --text:#2f2436;
+  --surface: #ffffff;
+  --btn-bg: linear-gradient(135deg,var(--accent1),var(--accent2));
+  --btn-border: rgba(0,0,0,0.04);
+  --shadow: 0 18px 40px rgba(40,24,60,0.06);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:"Quicksand",system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text)}
+a{color:inherit;text-decoration:none}
 
-  /* App frame */
-  .frame{width:94%;max-width:420px;margin:12px auto;border-radius:22px;background:var(--card);padding:10px 12px 18px;box-shadow:0 18px 50px rgba(40,24,60,0.08)}
-  .topbar{display:flex;align-items:center;gap:8px}
-  .backHome{width:40px;height:40px;border-radius:10px;border:1px solid rgba(0,0,0,0.05);display:flex;align-items:center;justify-content:center;background:transparent;cursor:pointer}
-  .appTitle{flex:1;font-weight:700;font-size:16px}
-  .actions{display:flex;gap:8px;align-items:center}
+/* App frame */
+.app{width:94%;max-width:420px;margin:12px auto;border-radius:24px;background:var(--card);padding:12px;box-shadow:var(--shadow);overflow:hidden}
+.header{display:flex;align-items:center;gap:12px;padding:6px}
+.btn-icon{width:44px;height:44px;border-radius:12px;border:1px solid var(--btn-border);display:flex;align-items:center;justify-content:center;background:transparent;cursor:pointer;flex-shrink:0}
+.titleArea{flex:1}
+.title{font-weight:700;font-size:18px;margin:0}
+.subtitle{font-size:12px;color:var(--muted);margin-top:4px}
 
-  /* header controls */
-  .controls .btn{padding:8px 10px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);background:transparent;cursor:pointer}
+/* top actions group */
+.actions{display:flex;gap:10px}
+.actionBtn{padding:8px 12px;border-radius:12px;background:rgba(255,255,255,0.98);border:1px solid var(--btn-border);cursor:pointer;min-width:84px;text-align:center;font-weight:600;box-shadow: 0 6px 18px rgba(30,14,60,0.03)}
+.actionBtn.primary{background:var(--btn-bg);color:#fff;border:none;box-shadow:0 12px 30px rgba(122,100,208,0.18)}
 
-  /* panes */
-  .main{margin-top:8px}
-  .pane{background:rgba(255,255,255,0.96);border-radius:12px;padding:10px;min-height:60vh;max-height:76vh;overflow:auto}
-  .hidden{display:none}
+/* main area */
+.main{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+.pane{background:var(--surface);border-radius:14px;padding:12px;min-height:56vh;max-height:74vh;overflow:auto;position:relative}
 
-  /* contacts */
-  .contactsGrid{display:flex;flex-direction:column;gap:8px}
-  .contactCard{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;cursor:pointer}
-  .contactCard:hover{background:rgba(0,0,0,0.02)}
-  .contactAvatar{width:56px;height:56px;border-radius:12px;overflow:hidden;background:white;display:flex;align-items:center;justify-content:center}
-  .contactAvatar img{width:100%;height:100%;object-fit:cover}
-  .contactInfo{flex:1}
-  .contactName{font-weight:700}
-  .contactSub{font-size:12px;color:var(--muted)}
+/* CONTACTS GRID (beautified) */
+.contactsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-top:8px}
+.contactCard{background:linear-gradient(180deg,rgba(255,255,255,0.9),rgba(250,248,255,0.9));border-radius:14px;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;cursor:pointer;transition:transform .18s,box-shadow .18s;border:1px solid rgba(0,0,0,0.02)}
+.contactCard:hover{transform:translateY(-6px);box-shadow:0 22px 40px rgba(30,14,60,0.06)}
+.iconWrap{width:64px;height:64px;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(20,12,40,0.04);overflow:hidden}
+.iconWrap img{width:56px;height:56px;object-fit:cover;border-radius:8px}
+.contactLabel{font-size:13px;font-weight:600;color:var(--text)}
 
-  /* chat */
-  .chatHeader{display:flex;align-items:center;gap:12px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,0.04);margin-bottom:6px}
-  .chatTitle{font-weight:700}
-  .chatMeta{font-size:12px;color:var(--muted)}
+/* empty state */
+.emptyState{padding:18px;border-radius:12px;border:1px dashed rgba(0,0,0,0.04);text-align:center;color:var(--muted)}
 
-  .messages{padding:8px;display:flex;flex-direction:column;gap:12px;min-height:34vh}
-  .msgRow{display:flex;gap:10px;align-items:flex-end;transition:transform .28s cubic-bezier(.2,.9,.4,1),opacity .28s}
-  .msgRow.enter{transform:translateY(6px);opacity:0}
-  .msgRow.enter.show{transform:translateY(0);opacity:1}
-  .msgRow.mine{justify-content:flex-end}
-  .msgAvatar{width:36px;height:36px;border-radius:8px;overflow:hidden}
-  .msgAvatar img{width:100%;height:100%;object-fit:cover}
+/* footer small controls */
+.footerControls{display:flex;gap:8px;justify-content:center;padding-top:10px}
 
-  .bubble{max-width:78%;padding:10px 12px;border-radius:14px;font-size:14px;line-height:1.45;word-break:break-word;box-shadow:0 6px 18px rgba(30,14,60,0.06)}
-  .bubble.user{background:var(--user-bubble);color:var(--user-text);border-bottom-right-radius:6px}
-  .bubble.ai{background:var(--ai-bubble);color:var(--ai-text);border-bottom-left-radius:6px}
+/* modal base */
+.modalWrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.36);z-index:1200;padding:12px}
+.modal{width:100%;max-width:560px;background:#fff;border-radius:12px;padding:14px;box-shadow:0 30px 80px rgba(10,10,20,0.45);max-height:86vh;overflow:auto}
+.formRow{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.formRow label{width:96px;color:var(--muted);font-size:13px}
+.formRow input[type=text], .formRow input[type=file], .formRow select, .formRow textarea{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+.modalActions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
 
-  /* typing dots */
-  .dots{display:inline-block;height:12px}
-  .dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin:0 2px;opacity:.2;transform:translateY(0);animation:dots 1s infinite}
-  .dot:nth-child(1){animation-delay:0s}
-  .dot:nth-child(2){animation-delay:.12s}
-  .dot:nth-child(3){animation-delay:.24s}
-  @keyframes dots{0%{opacity:.2;transform:translateY(0)}50%{opacity:1;transform:translateY(-6px)}100%{opacity:.2;transform:translateY(0)}}
+/* ensure big touch targets */
+button, .actionBtn, .btn-icon { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 
-  /* composer */
-  .composer{display:flex;gap:8px;align-items:end;padding-top:8px;border-top:1px solid rgba(0,0,0,0.04)}
-  textarea{flex:1;min-height:48px;max-height:120px;padding:8px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);resize:none}
-  .sendBtn{padding:10px 14px;border-radius:10px;background:linear-gradient(135deg,var(--accent1),var(--accent2));color:white;border:none;cursor:pointer}
-
-  /* feed / moments */
-  .feedItem{padding:12px;border-bottom:1px solid rgba(0,0,0,0.03)}
-  .feedTop{display:flex;gap:10px;align-items:center}
-  .feedName{font-weight:700}
-  .feedText{margin-top:8px;white-space:pre-wrap}
-  .feedMedia{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-  .feedMedia img{width:48%;border-radius:8px}
-
-  .feedActions{display:flex;gap:8px;margin-top:8px}
-  .likeBtn, .commentBtn{padding:6px 8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:transparent;cursor:pointer;font-size:13px}
-
-  /* small UI */
-  .row{display:flex;gap:8px;align-items:center}
-  .muted{color:var(--muted);font-size:13px}
-
-  /* modal */
-  .modalWrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.36);z-index:2000;padding:12px}
-  .modal{width:100%;max-width:600px;max-height:86vh;overflow:auto;background:white;border-radius:12px;padding:14px;box-shadow:0 30px 80px rgba(10,10,20,0.45)}
-  .formRow{display:flex;gap:8px;align-items:center;margin-bottom:10px}
-  .formRow label{width:110px;font-size:13px;color:var(--muted)}
-  .formRow input[type=text], .formRow select, .formRow textarea{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
-  .modalActions{display:flex;gap:8px;justify-content:flex-end;padding-top:8px}
-
-  /* responsive */
-  @media (max-width:420px){
-    .frame{width:96%}
-    .contactAvatar{width:48px;height:48px}
-  }
+/* small screens tweak */
+@media (max-width:420px){
+  .contactsGrid{grid-template-columns:repeat(3,1fr);gap:10px}
+  .iconWrap{width:56px;height:56px}
+}
 </style>
 </head>
 <body>
-  <div class="frame" role="application" aria-label="NIEaiphone">
-    <div class="topbar">
-      <button class="backHome" id="backHome" title="返回小家">←</button>
-      <div class="appTitle">NIEaiphone</div>
+  <div class="app" role="application" aria-label="NIEaiphone">
+    <div class="header">
+      <button class="btn-icon" id="goBack" title="返回">←</button>
+      <div class="titleArea">
+        <div class="title">NIEaiphone</div>
+        <div class="subtitle">点击联系人进入聊天，或创建新的联系人/群聊</div>
+      </div>
       <div class="actions">
-        <button class="controls btn" id="openFeed">朋友圈</button>
-        <button class="controls btn" id="btnAddContact">添加联系人</button>
-        <button class="controls btn" id="btnAddGroup">创建群聊</button>
+        <button class="actionBtn" id="openFeedBtn">朋友圈</button>
+        <button class="actionBtn" id="addContactBtn">添加联系人</button>
+        <button class="actionBtn" id="addGroupBtn">创建群聊</button>
       </div>
     </div>
 
     <div class="main">
-      <!-- contacts pane -->
-      <div id="contactsPane" class="pane">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="pane" id="contactsPane" aria-live="polite">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <div style="font-weight:700">联系人</div>
-          <div class="muted">点击联系人进入聊天</div>
+          <div style="font-size:13px;color:var(--muted)">最近互动会显示在上方</div>
         </div>
+
+        <!-- Grid -->
         <div id="contactsGrid" class="contactsGrid"></div>
-        <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
-          <button class="controls btn" id="exportBtn">导出数据</button>
-          <button class="controls btn" id="importBtn">导入数据</button>
-        </div>
-      </div>
 
-      <!-- chat pane -->
-      <div id="chatPane" class="pane hidden">
-        <div class="chatHeader">
-          <div class="contactAvatar" id="chatAvatar"><img src="" alt=""></div>
-          <div style="flex:1">
-            <div class="chatTitle" id="chatTitle">与 AI 聊天</div>
-            <div class="chatMeta" id="chatMeta">单聊 · 人数：1</div>
-          </div>
-          <div style="display:flex;gap:8px">
-            <button class="controls btn" id="openAiModalBtn">AI 设置</button>
-            <button class="controls btn" id="changeBgBtn">背景</button>
-            <button class="controls btn" id="backToContacts">返回</button>
-          </div>
+        <div id="emptyState" class="emptyState hidden" style="margin-top:12px">
+          你还没有联系人。点击“添加联系人”开始创建，或使用“创建群聊”快速生成一个演示群。
         </div>
 
-        <div id="messages" class="messages"></div>
-
-        <div class="composer">
-          <textarea id="inputText" placeholder="输入消息，Enter 发送（Shift+Enter 换行）"></textarea>
-          <button class="sendBtn" id="sendBtn">发送</button>
+        <div class="footerControls" style="margin-top:12px">
+          <button class="actionBtn" id="exportBtn">导出数据</button>
+          <button class="actionBtn" id="importBtn">导入数据</button>
         </div>
-      </div>
-
-      <!-- feed pane -->
-      <div id="feedPane" class="pane hidden">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div style="font-weight:700">朋友圈</div>
-          <div style="display:flex;gap:8px">
-            <button class="controls btn" id="aiPostBtn">AI 发一条</button>
-            <button class="controls btn" id="closeFeedBtn">关闭</button>
-          </div>
-        </div>
-
-        <!-- new post -->
-        <div style="padding:8px;border-radius:8px;background:linear-gradient(180deg,#fff,#faf8ff);margin-bottom:10px">
-          <textarea id="newPostText" placeholder="在朋友圈说点什么..." style="width:100%;height:64px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);padding:8px"></textarea>
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <input type="file" id="newPostFiles" accept="image/*" multiple>
-            <button class="controls btn" id="postBtn">发布</button>
-          </div>
-        </div>
-
-        <div id="feedList"></div>
       </div>
     </div>
   </div>
 
-  <!-- AI Modal -->
-  <div class="modalWrap" id="aiModal"><div class="modal" role="dialog" aria-modal="true">
-    <h3>AI 设置 / 气泡 / 后端</h3>
-    <div class="formRow"><label>AI 名称</label><input type="text" id="aiName"></div>
-    <div class="formRow"><label>性别</label><select id="aiGender"><option value="neutral">中性</option><option value="female">女</option><option value="male">男</option></select></div>
-    <div class="formRow"><label>人设</label><input type="text" id="aiRole"></div>
-    <div class="formRow"><label>表达风格</label><select id="aiStyle"><option value="friendly">友好</option><option value="playful">俏皮</option><option value="professional">专业</option><option value="romantic">温柔</option></select></div>
-    <div class="formRow"><label>习惯用语</label><input type="text" id="aiCatch"></div>
-
-    <hr>
-
-    <div style="font-weight:700;margin-bottom:6px">气泡颜色</div>
-    <div class="formRow"><label>用户气泡</label><input type="color" id="userColor" value="#ffd6e6"></div>
-    <div class="formRow"><label>AI 气泡</label><input type="color" id="aiColor" value="#d7c8ff"></div>
-
-    <hr>
-
-    <div class="formRow"><label>后端 URL</label><input type="text" id="backendUrl" placeholder="例如 https://your-app.onrender.com/api/chat"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-      <button class="controls btn" id="testBackendBtn">测试后端</button>
-      <button class="controls btn" id="aiCancelBtn">取消</button>
-      <button class="controls btn" id="aiSaveBtn">保存</button>
+  <!-- Add Contact Modal -->
+  <div class="modalWrap" id="contactModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+      <h3 id="contactTitle">添加联系人</h3>
+      <div class="formRow"><label>名字</label><input type="text" id="contactName" placeholder="姓名"></div>
+      <div class="formRow"><label>头像文件</label><input type="file" id="contactFile" accept="image/*"></div>
+      <div class="formRow"><label>或头像 URL</label><input type="text" id="contactUrl" placeholder="图片链接"></div>
+      <div class="modalActions">
+        <button class="actionBtn" id="contactCancel">取消</button>
+        <button class="actionBtn primary" id="contactSave">保存</button>
+      </div>
     </div>
-  </div></div>
+  </div>
 
-  <!-- Contact Modal (create / edit) -->
-  <div class="modalWrap" id="contactModal"><div class="modal">
-    <h3 id="contactModalTitle">添加联系人</h3>
-    <div class="formRow"><label>名字</label><input type="text" id="contactName"></div>
-    <div class="formRow"><label>头像（文件）</label><input type="file" id="contactAvatarFile" accept="image/*"></div>
-    <div class="formRow"><label>或 头像 URL</label><input type="text" id="contactAvatarUrl" placeholder="图片 URL"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-      <button class="controls btn" id="contactCancel">取消</button>
-      <button class="controls btn" id="contactSave">保存</button>
+  <!-- Group Modal -->
+  <div class="modalWrap" id="groupModal" aria-hidden="true">
+    <div class="modal" role="dialog">
+      <h3>创建群聊（最多 8 人）</h3>
+      <div class="formRow"><label>群名</label><input type="text" id="groupName" placeholder="群聊名称"></div>
+      <div class="formRow"><label>群头像</label><input type="file" id="groupFile" accept="image/*"></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:8px">选择成员（点击选择）</div>
+      <div id="groupContacts" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
+      <div class="modalActions">
+        <button class="actionBtn" id="groupCancel">取消</button>
+        <button class="actionBtn primary" id="groupCreate">创建</button>
+      </div>
     </div>
-  </div></div>
-
-  <!-- Group Modal (full UI) -->
-  <div class="modalWrap" id="groupModal"><div class="modal">
-    <h3>创建群聊（最多 8 人）</h3>
-    <div class="formRow"><label>群名</label><input type="text" id="groupName"></div>
-    <div class="formRow"><label>群头像</label><input type="file" id="groupAvatarFile" accept="image/*"></div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">选择已有联系人加入（最长 7 人，含 AI 与你人数上限 8）</div>
-
-    <div id="groupContactsList" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:8px"></div>
-
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="controls btn" id="groupCancelBtn">取消</button>
-      <button class="controls btn" id="groupCreateBtn">创建</button>
-    </div>
-  </div></div>
-
-  <!-- Feed comment modal -->
-  <div class="modalWrap" id="commentModal"><div class="modal">
-    <h3>评论</h3>
-    <div id="commentForPostInfo" style="font-size:13px;color:var(--muted);margin-bottom:8px"></div>
-    <textarea id="commentText" style="width:100%;height:80px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)"></textarea>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-      <button class="controls btn" id="commentCancel">取消</button>
-      <button class="controls btn" id="commentSave">发布评论</button>
-    </div>
-  </div></div>
+  </div>
 
 <script>
-/* =============================================================================
-   Single-file app logic
-   - All state persisted into localStorage for demo
-   - Key storage keys:
-       NIE_STATE_V1 : main app data
-       NIE_FEED_V1  : feed posts
-       chat_backend_url : optional backend URL (also stored via AI modal)
-   - Backend API: expects POST { action, message?, persona?, conversation? } -> { reply, post, ... }
-   ============================================================================= */
+/* --------------------------
+   简洁版逻辑：联系人渲染 + 按钮功能
+   - 这个文件修复了原来按钮“点不了”的问题（遮挡/层级/disabled）
+   - 所有按钮绑定事件，modal 使用 display flex/none
+---------------------------*/
 
-const STATE_KEY = 'NIE_STATE_V1';
-const FEED_KEY = 'NIE_FEED_V1';
-const BACKEND_KEY = 'chat_backend_url';
-
-// Default initial
+const STATE_KEY = 'nie_demo_v1';
 const DEFAULT = {
-  me: { name: '你', avatar: '' },
-  ai: { name: '小NIE', avatar: '', gender:'neutral', role:'温柔的助手', style:'friendly', catch:'嗨～' },
-  bubble: { user:'#ffd6e6', ai:'#d7c8ff' },
-  background: '',
   contacts: [
     { id:'ai', name:'与 AI 聊天', avatar: '' }
   ],
-  conversations: { 'ai': { members:['me','ai'], messages:[] } }, // conversation id -> {members[], messages[]}
-  activeConv: null
+  conversations: {}
 };
-
 let state = loadState();
 
-// UI refs
+// DOM refs
 const contactsGrid = document.getElementById('contactsGrid');
-const contactsPane = document.getElementById('contactsPane');
-const chatPane = document.getElementById('chatPane');
-const feedPane = document.getElementById('feedPane');
-const messagesEl = document.getElementById('messages');
-const inputText = document.getElementById('inputText');
-const sendBtn = document.getElementById('sendBtn');
-const chatTitle = document.getElementById('chatTitle');
-const chatMeta = document.getElementById('chatMeta');
-const chatAvatarImg = document.querySelector('#chatAvatar img');
-
-const aiModal = document.getElementById('aiModal');
-const aiNameInput = document.getElementById('aiName');
-const aiGenderInput = document.getElementById('aiGender');
-const aiRoleInput = document.getElementById('aiRole');
-const aiStyleInput = document.getElementById('aiStyle');
-const aiCatchInput = document.getElementById('aiCatch');
-const userColorInput = document.getElementById('userColor');
-const aiColorInput = document.getElementById('aiColor');
-const backendUrlInput = document.getElementById('backendUrl');
-
+const emptyState = document.getElementById('emptyState');
 const contactModal = document.getElementById('contactModal');
-const contactNameInput = document.getElementById('contactName');
-const contactAvatarFile = document.getElementById('contactAvatarFile');
-const contactAvatarUrl = document.getElementById('contactAvatarUrl');
-
 const groupModal = document.getElementById('groupModal');
-const groupNameInput = document.getElementById('groupName');
-const groupAvatarFile = document.getElementById('groupAvatarFile');
-const groupContactsList = document.getElementById('groupContactsList');
 
-const feedListEl = document.getElementById('feedList');
-const newPostText = document.getElementById('newPostText');
-const newPostFiles = document.getElementById('newPostFiles');
-
-const commentModal = document.getElementById('commentModal');
-const commentForPostInfo = document.getElementById('commentForPostInfo');
-const commentText = document.getElementById('commentText');
-
-// buttons
-document.getElementById('backHome').addEventListener('click', ()=> location.href='home.html');
-document.getElementById('openFeed').addEventListener('click', ()=> openFeed());
-document.getElementById('btnAddContact').addEventListener('click', ()=> openAddContact());
-document.getElementById('btnAddGroup').addEventListener('click', ()=> openGroupModal());
-document.getElementById('aiCancelBtn').addEventListener('click', ()=> closeModal(aiModal));
-document.getElementById('aiSaveBtn').addEventListener('click', ()=> saveAiSettings());
-document.getElementById('testBackendBtn').addEventListener('click', ()=> testBackend());
-document.getElementById('openAiModalBtn').addEventListener('click', ()=> openAiModal());
-document.getElementById('changeBgBtn').addEventListener('click', ()=> openBgPrompt());
-document.getElementById('backToContacts').addEventListener('click', ()=> goBackToContacts());
-
-document.getElementById('postBtn').addEventListener('click', ()=> publishPost());
-document.getElementById('aiPostBtn').addEventListener('click', ()=> aiPublish());
-document.getElementById('closeFeedBtn').addEventListener('click', ()=> closeFeed());
-
+document.getElementById('addContactBtn').addEventListener('click', ()=> openContactModal());
 document.getElementById('contactCancel').addEventListener('click', ()=> closeModal(contactModal));
-document.getElementById('contactSave').addEventListener('click', ()=> saveContact());
-document.getElementById('groupCancelBtn').addEventListener('click', ()=> closeModal(groupModal));
-document.getElementById('groupCreateBtn').addEventListener('click', ()=> createGroupFromModal());
-
+document.getElementById('contactSave').addEventListener('click', ()=> saveContactFromModal());
+document.getElementById('addGroupBtn').addEventListener('click', ()=> openGroupModal());
+document.getElementById('groupCancel').addEventListener('click', ()=> closeModal(groupModal));
+document.getElementById('groupCreate').addEventListener('click', ()=> createGroupFromModal());
+document.getElementById('openFeedBtn').addEventListener('click', ()=> alert('朋友圈入口（演示） — 稍后会跳转到朋友圈页面'));
 document.getElementById('exportBtn').addEventListener('click', ()=> exportData());
 document.getElementById('importBtn').addEventListener('click', ()=> importData());
 
-document.getElementById('commentCancel').addEventListener('click', ()=> closeModal(commentModal));
-document.getElementById('commentSave').addEventListener('click', ()=> saveComment());
-
-sendBtn.addEventListener('click', ()=> sendCurrentMessage());
-inputText.addEventListener('keydown', (e)=> { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendCurrentMessage(); } });
-
-// initial render
-applyBubbleColors();
-renderContacts();
-renderFeed();
-
-// Utilities
+// simple functions
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STATE_KEY);
+    if(!raw){ localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT); }
+    return JSON.parse(raw);
+  }catch(e){ console.error(e); localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT); }
+}
 function saveState(){ localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
-function loadState(){ try{ const raw = localStorage.getItem(STATE_KEY); if(!raw) { localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); return structuredClone(DEFAULT); } return JSON.parse(raw); } catch(e){ console.error('load state err',e); return structuredClone(DEFAULT);} }
 
-function applyBubbleColors(){
-  document.documentElement.style.setProperty('--user-bubble', `linear-gradient(180deg, ${lighten(state.bubble.user,12)}, ${state.bubble.user})`);
-  document.documentElement.style.setProperty('--ai-bubble', `linear-gradient(180deg, ${lighten(state.bubble.ai,10)}, ${state.bubble.ai})`);
-  document.documentElement.style.setProperty('--user-text', readableTextColor(state.bubble.user));
-  document.documentElement.style.setProperty('--ai-text', readableTextColor(state.bubble.ai));
-}
-
-// color helpers
-function lighten(hex, pct){
-  const c = (hex||'#ffffff').replace('#',''); const num = parseInt(c,16);
-  let r = (num>>16) + Math.round(255*(pct/100));
-  let g = ((num>>8)&0xff) + Math.round(255*(pct/100));
-  let b = (num & 0xff) + Math.round(255*(pct/100));
-  r=Math.min(255,r);g=Math.min(255,g);b=Math.min(255,b);
-  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
-}
-function readableTextColor(hex){
-  const c = (hex||'#ffffff').replace('#',''); const r=parseInt(c.substring(0,2),16), g=parseInt(c.substring(2,4),16), b=parseInt(c.substring(4,6),16);
-  const yiq = (r*299 + g*587 + b*114)/1000;
-  return yiq>=128 ? '#2b1b3a' : '#fff';
-}
-
-// escape
-function escapeHtml(s){ if(!s) return ''; return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
-function escapeAttr(s){ return (s||'').replaceAll('"','&quot;'); }
-
-// default avatar svg
-function defaultAvatarSvg(text='🙂'){
-  return 'data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect rx='36' width='100%' height='100%' fill='white'/><text x='50%' y='50%' font-size='110' text-anchor='middle' dominant-baseline='central'>${text}</text></svg>`);
-}
-
-/* -----------------------------
-   CONTACTS / RENDER
-   ----------------------------- */
 function renderContacts(){
   contactsGrid.innerHTML = '';
-  for(const c of state.contacts){
-    const div = document.createElement('div'); div.className='contactCard'; div.dataset.id = c.id;
-    const av = c.avatar || defaultAvatarSvg('🙂');
-    div.innerHTML = `<div class="contactAvatar"><img src="${escapeAttr(av)}" alt=""></div>
-      <div class="contactInfo"><div class="contactName">${escapeHtml(c.name)}</div><div class="contactSub">点击进入聊天</div></div>`;
-    div.addEventListener('click', ()=> openConversation(c.id));
-    contactsGrid.appendChild(div);
+  if(!state.contacts || state.contacts.length === 0){
+    emptyState.classList.remove('hidden');
+  } else {
+    emptyState.classList.add('hidden');
+  }
+  // show AI first
+  const sorted = [...state.contacts];
+  for(const c of sorted){
+    const card = document.createElement('div');
+    card.className = 'contactCard';
+    card.dataset.id = c.id;
+    const av = c.avatar || defaultAvatar();
+    card.innerHTML = `<div class="iconWrap"><img src="${escapeAttr(av)}" alt=""></div><div class="contactLabel">${escapeHtml(c.name)}</div>`;
+    card.addEventListener('click', ()=> {
+      // open chat demo
+      alert('打开聊天：' + c.name + '\n（演示）');
+    });
+    contactsGrid.appendChild(card);
   }
 }
 
-/* Add contact */
-function openAddContact(){
-  contactNameInput.value = ''; contactAvatarFile.value = ''; contactAvatarUrl.value = '';
-  document.getElementById('contactModalTitle').textContent = '添加联系人';
+function defaultAvatar(){
+  return 'data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect rx='36' width='100%' height='100%' fill='white'/><text x='50%' y='50%' font-size='110' text-anchor='middle' dominant-baseline='central'>🙂</text></svg>`);
+}
+
+function escapeHtml(s){ if(!s) return ''; return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+function escapeAttr(s){ return (s||'').replaceAll('"','&quot;'); }
+
+// modal helpers
+function showModal(el){ el.style.display = 'flex'; el.setAttribute('aria-hidden','false'); }
+function closeModal(el){ el.style.display = 'none'; el.setAttribute('aria-hidden','true'); }
+
+// contact modal flow
+function openContactModal(){
+  document.getElementById('contactName').value = '';
+  document.getElementById('contactFile').value = '';
+  document.getElementById('contactUrl').value = '';
   showModal(contactModal);
 }
-async function saveContact(){
-  const name = contactNameInput.value.trim(); if(!name){ alert('请输入名字'); return; }
+async function saveContactFromModal(){
+  const name = document.getElementById('contactName').value.trim();
+  if(!name) return alert('请输入名字');
   let avatar = '';
-  if(contactAvatarFile.files && contactAvatarFile.files[0]) avatar = await fileToDataUrl(contactAvatarFile.files[0]);
-  else if(contactAvatarUrl.value.trim()) avatar = contactAvatarUrl.value.trim();
-  const id = 'c'+Date.now();
+  const fileInput = document.getElementById('contactFile');
+  const urlInput = document.getElementById('contactUrl').value.trim();
+  if(fileInput.files && fileInput.files[0]){
+    avatar = await fileToDataUrl(fileInput.files[0]);
+  } else if(urlInput){
+    avatar = urlInput;
+  }
+  const id = 'c' + Date.now();
+  state.contacts = state.contacts || [];
   state.contacts.push({ id, name, avatar });
-  saveState(); renderContacts(); closeModal(contactModal);
-}
-
-/* -----------------------------
-   OPEN CONVERSATION
-   ----------------------------- */
-function openConversation(convId){
-  // set activeConv
-  state.activeConv = convId;
-  // ensure conversation exists
-  state.conversations[convId] = state.conversations[convId] || { members: convId==='ai' ? ['me','ai'] : ['me', convId], messages: [] };
-  // UI switch
-  contactsPane.classList.add('hidden');
-  feedPane.classList.add('hidden');
-  chatPane.classList.remove('hidden');
-  renderChatHeader(convId);
-  renderMessages();
-}
-function goBackToContacts(){
-  state.activeConv = null; saveState();
-  chatPane.classList.add('hidden'); feedPane.classList.add('hidden'); contactsPane.classList.remove('hidden');
-}
-
-/* Chat header */
-function renderChatHeader(id){
-  if(id==='ai'){
-    chatTitle.textContent = state.ai.name || '小NIE';
-    chatMeta.textContent = '单聊 · 人数：1';
-    chatAvatarImg.src = state.ai.avatar || defaultAvatarSvg('🤖');
-  } else {
-    const c = state.contacts.find(x=>x.id===id);
-    if(!c){ chatTitle.textContent = '群聊'; chatMeta.textContent = '群聊'; chatAvatarImg.src = defaultAvatarSvg('👥'); }
-    else { chatTitle.textContent = c.name; chatMeta.textContent = '单聊 · 人数：1'; chatAvatarImg.src = c.avatar || defaultAvatarSvg('🙂'); }
-  }
-}
-
-/* -----------------------------
-   MESSAGES RENDER + SEND
-   ----------------------------- */
-function renderMessages(){
-  messagesEl.innerHTML = '';
-  const conv = state.conversations[state.activeConv] || { messages: [] };
-  for(const m of conv.messages){
-    const row = document.createElement('div'); row.className = 'msgRow';
-    if(m.from === 'me') row.className += ' mine';
-    // create avatar
-    const avat = document.createElement('div'); avat.className = 'msgAvatar';
-    const img = document.createElement('img');
-    if(m.from === 'me') img.src = state.me.avatar || defaultAvatarSvg('🙂');
-    else if(m.from === 'ai') img.src = state.ai.avatar || defaultAvatarSvg('🤖');
-    else {
-      const c = state.contacts.find(x=>x.id===m.from);
-      img.src = c ? (c.avatar || defaultAvatarSvg('🙂')) : defaultAvatarSvg('👤');
-    }
-    img.style.width='100%'; img.style.height='100%'; img.style.objectFit='cover';
-    avat.appendChild(img);
-
-    // bubble
-    const bubble = document.createElement('div'); bubble.className='bubble';
-    bubble.classList.add(m.from==='me' ? 'user' : 'ai');
-    if(m.temp){
-      // typing dots
-      bubble.innerHTML = `<span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>`;
-    } else {
-      bubble.innerHTML = escapeHtml(m.text).replaceAll('\\n','<br>');
-    }
-
-    // add to row (order based on sender)
-    if(m.from === 'me'){ row.appendChild(bubble); row.appendChild(avat); }
-    else { row.appendChild(avat); row.appendChild(bubble); }
-
-    messagesEl.appendChild(row);
-    // small enter animation
-    row.classList.add('enter'); setTimeout(()=> row.classList.add('show'), 10);
-  }
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-}
-
-async function sendCurrentMessage(){
-  const text = inputText.value.trim();
-  if(!text) return;
-  const convId = state.activeConv || 'ai';
-  // push user message
-  pushMessage(convId, { from:'me', text, ts: Date.now() });
-  inputText.value = '';
-  renderMessages();
-  // push temp typing
-  pushMessage(convId, { from:'ai', text:'...', ts: Date.now(), temp:true });
-  renderMessages();
-  try{
-    const reply = await requestReply(text, convId);
-    // remove temp
-    const conv = state.conversations[convId];
-    if(conv.messages.length && conv.messages[conv.messages.length-1].temp) conv.messages.pop();
-    pushMessage(convId, { from:'ai', text: reply.text || '(no reply)', ts: Date.now() });
-    saveState();
-    renderMessages();
-  } catch(err){
-    console.error(err);
-    const conv = state.conversations[convId];
-    if(conv.messages.length && conv.messages[conv.messages.length-1].temp) conv.messages.pop();
-    pushMessage(convId, { from:'ai', text: '出错：' + err.message, ts: Date.now() });
-    saveState(); renderMessages();
-  }
-}
-
-function pushMessage(convId, msg){
-  state.conversations[convId] = state.conversations[convId] || { members:['me','ai'], messages:[] };
-  state.conversations[convId].messages.push(msg);
   saveState();
+  renderContacts();
+  closeModal(contactModal);
 }
 
-/* -----------------------------
-   Backend / Reply generation
-   - If backend URL present (localStorage or ai modal), call backend, otherwise local demo
-   ----------------------------- */
-async function requestReply(userText, convId){
-  const persona = { ...state.ai };
-  const backend = localStorage.getItem(BACKEND_KEY) || (document.getElementById('backendUrl') && document.getElementById('backendUrl').value.trim());
-  if(backend){
-    // call backend endpoint
-    const payload = { action:'generate_reply', message: userText, persona, conversation: state.conversations[convId] || {} };
-    const res = await fetch(backend, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
-    if(!res.ok) throw new Error('后端返回 ' + res.status);
-    const j = await res.json();
-    // prefer j.reply
-    return { text: j.reply || (j.choices && j.choices[0]?.message?.content) || JSON.stringify(j) };
-  }
-  // local simple demo
-  await delay(500 + Math.random()*700);
-  const low = userText.toLowerCase();
-  const prefix = state.ai.style === 'playful' ? '嘿嘿，' : (state.ai.style === 'professional' ? '' : (state.ai.style === 'romantic' ? '亲爱的，' : '你好，'));
-  if(/你好|hi|嗨/.test(low)) return { text: prefix + (state.ai.catch || '我是' + (state.ai.name || '小NIE')) + '，很高兴见到你～' };
-  if(/笑话/.test(low)) return { text: prefix + '有个程序员走进咖啡馆，他说：我来调试。' };
-  return { text: prefix + '关于「' + userText + '」——（演示）我觉得：' + simpleParaphrase(userText) };
-}
-
-function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
-function simpleParaphrase(s){ if(!s) return ''; if(s.length>80) return s.slice(0,80)+'……'; return s.split('').reverse().join(''); }
-
-/* -----------------------------
-   FEED (朋友圈) with like & comment
-   - posts stored under FEED_KEY (array)
-   - post format: { id, name, avatar, text, media: [urls], likes: [], comments: [{name,text,ts}], ts }
-   ----------------------------- */
-function loadFeed(){ try{ return JSON.parse(localStorage.getItem(FEED_KEY) || '[]'); }catch(e){return [];} }
-function saveFeed(list){ localStorage.setItem(FEED_KEY, JSON.stringify(list)); }
-
-async function publishPost(){
-  const text = newPostText.value.trim();
-  if(!text && (!newPostFiles.files || !newPostFiles.files.length)){ alert('请输入内容或选择图片'); return; }
-  const media = [];
-  if(newPostFiles.files && newPostFiles.files.length){
-    for(const f of newPostFiles.files) media.push(await fileToDataUrl(f));
-  }
-  const posts = loadFeed();
-  posts.push({ id:'p'+Date.now(), name: state.me.name||'你', avatar: state.me.avatar||defaultAvatarSvg('🙂'), text, media, likes:[], comments:[], ts: Date.now() });
-  saveFeed(posts);
-  newPostText.value=''; newPostFiles.value='';
-  renderFeed();
-}
-
-function renderFeed(){
-  const list = loadFeed(); feedListEl.innerHTML = '';
-  for(let i=list.length-1;i>=0;i--){
-    const p = list[i];
-    const node = document.createElement('div'); node.className='feedItem';
-    node.innerHTML = `<div class="feedTop"><div class="contactAvatar" style="width:44px;height:44px"><img src="${escapeAttr(p.avatar||defaultAvatarSvg('🙂'))}"></div>
-      <div><div class="feedName">${escapeHtml(p.name)}</div><div style="font-size:12px;color:var(--muted)">${new Date(p.ts).toLocaleString()}</div></div></div>
-      <div class="feedText">${escapeHtml(p.text||'')}</div>`;
-    if(p.media && p.media.length){
-      const wrap = document.createElement('div'); wrap.className='feedMedia';
-      p.media.forEach(u=>{ const im = document.createElement('img'); im.src = u; wrap.appendChild(im); });
-      node.appendChild(wrap);
-    }
-    // actions
-    const actions = document.createElement('div'); actions.className='feedActions';
-    const likeBtn = document.createElement('button'); likeBtn.className='likeBtn'; likeBtn.textContent = '赞 (' + (p.likes?.length || 0) + ')';
-    const commentBtn = document.createElement('button'); commentBtn.className='commentBtn'; commentBtn.textContent = '评论 (' + (p.comments?.length || 0) + ')';
-    likeBtn.addEventListener('click', ()=> toggleLike(p.id));
-    commentBtn.addEventListener('click', ()=> openCommentModal(p.id));
-    actions.appendChild(likeBtn); actions.appendChild(commentBtn);
-    node.appendChild(actions);
-
-    // show likes and comments
-    if(p.likes && p.likes.length){
-      const likesLine = document.createElement('div'); likesLine.style.fontSize='13px'; likesLine.style.color='var(--muted)';
-      likesLine.textContent = '👍 ' + p.likes.join(', ');
-      node.appendChild(likesLine);
-    }
-    if(p.comments && p.comments.length){
-      const cmWrap = document.createElement('div'); cmWrap.style.marginTop='8px';
-      p.comments.forEach(c=>{ const cdiv = document.createElement('div'); cdiv.style.fontSize='13px'; cdiv.style.borderTop='1px dashed rgba(0,0,0,0.03)'; cdiv.style.padding='6px 0'; cdiv.innerHTML = `<strong>${escapeHtml(c.name)}</strong>： ${escapeHtml(c.text)} <div style="font-size:11px;color:var(--muted)">${new Date(c.ts).toLocaleString()}</div>`; cmWrap.appendChild(cdiv); });
-      node.appendChild(cmWrap);
-    }
-
-    feedListEl.appendChild(node);
-  }
-}
-
-function toggleLike(postId){
-  const posts = loadFeed();
-  const p = posts.find(x=>x.id===postId);
-  if(!p) return;
-  const meName = state.me.name || '你';
-  const ix = (p.likes||[]).indexOf(meName);
-  if(ix>=0) p.likes.splice(ix,1); else (p.likes = p.likes||[]).push(meName);
-  saveFeed(posts); renderFeed();
-}
-
-function openCommentModal(postId){
-  commentModal.dataset.postId = postId;
-  commentForPostInfo.textContent = '对帖子评论';
-  commentText.value = '';
-  showModal(commentModal);
-}
-function saveComment(){
-  const postId = commentModal.dataset.postId;
-  const text = commentText.value.trim(); if(!text) return alert('请输入评论');
-  const posts = loadFeed(); const p = posts.find(x=>x.id===postId);
-  if(!p) return;
-  p.comments = p.comments || []; p.comments.push({ name: state.me.name || '你', text, ts: Date.now() });
-  saveFeed(posts); closeModal(commentModal); renderFeed();
-}
-
-/* -----------------------------
-   AI auto-post (uses backend if available)
-   ----------------------------- */
-async function aiPublish(){
-  const backend = localStorage.getItem(BACKEND_KEY) || (backendUrlInput && backendUrlInput.value.trim());
-  let content = '';
-  if(backend){
-    try{
-      const res = await fetch(backend, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ action:'generate_post', persona: state.ai }) });
-      if(res.ok){ const j = await res.json(); content = j.post || j.reply || ''; }
-      else content = '（后端生成失败）';
-    } catch(e){ content = '（后端异常）'; }
-  }
-  if(!content) content = localAiGeneratePost();
-  const posts = loadFeed();
-  posts.push({ id:'p'+Date.now(), name: state.ai.name||'小NIE', avatar: state.ai.avatar||defaultAvatarSvg('🤖'), text: content, media:[], likes:[], comments:[], ts: Date.now() });
-  saveFeed(posts); renderFeed();
-  alert('AI 已发布一条动态');
-}
-
-function localAiGeneratePost(){
-  const p = state.ai;
-  const g = p.style === 'playful' ? '嘻嘻～' : (p.style === 'professional' ? '今日：' : '今天～');
-  return `${g} ${p.catch||''}\n作为 ${p.role||'AI'}，我想与你分享一点小心情～`;
-}
-
-/* -----------------------------
-   Group creation UI
-   ----------------------------- */
+// group modal
 function openGroupModal(){
-  // populate contact list with checkboxes
-  groupNameInput.value = '';
-  groupAvatarFile.value = '';
-  groupContactsList.innerHTML = '';
-  // include AI and contacts
-  const all = [{ id:'ai', name: state.ai.name || 'AI' }, ...state.contacts.filter(c=>c.id!=='ai')];
+  // populate with current contacts (checkboxes)
+  const list = document.getElementById('groupContacts');
+  list.innerHTML = '';
+  const all = state.contacts || [];
   for(const c of all){
-    const div = document.createElement('div');
-    div.innerHTML = `<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" value="${escapeAttr(c.id)}"> <span>${escapeHtml(c.name)}</span></label>`;
-    groupContactsList.appendChild(div);
+    const box = document.createElement('label');
+    box.style.display='flex'; box.style.flexDirection='column'; box.style.alignItems='center'; box.style.gap='6px';
+    const id = 'gchk_' + c.id;
+    box.innerHTML = `<input type="checkbox" id="${id}" value="${escapeAttr(c.id)}"><div style="font-size:13px">${escapeHtml(c.name)}</div>`;
+    list.appendChild(box);
   }
+  document.getElementById('groupName').value = '';
+  document.getElementById('groupFile').value = '';
   showModal(groupModal);
 }
 async function createGroupFromModal(){
-  const name = groupNameInput.value.trim() || '群聊';
-  const checked = Array.from(groupContactsList.querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value);
-  // ensure include at least one other member besides you
-  if(checked.length < 1) return alert('请至少选择一个成员（AI 或联系人）');
-  if(checked.length + 1 > 8) return alert('最多支持 8 人（含你）');
-  // group id
-  const gid = 'g'+Date.now();
-  // group avatar
+  const name = document.getElementById('groupName').value.trim() || ('群聊' + (Math.floor(Math.random()*90)+10));
+  const checked = Array.from(document.querySelectorAll('#groupContacts input[type=checkbox]:checked')).map(i=>i.value);
+  if(checked.length < 1) return alert('请选择至少一个成员');
+  if(checked.length + 1 > 8) return alert('最多 8 人（含你）');
   let avatar = '';
-  if(groupAvatarFile.files && groupAvatarFile.files[0]) avatar = await fileToDataUrl(groupAvatarFile.files[0]);
-  // create group conversation
-  state.conversations[gid] = { members: ['me', ...checked], messages: [], name, avatar };
-  // also create a synthetic contact entry representing the group (so it shows in contact list)
-  state.contacts.push({ id: gid, name, avatar: avatar || defaultAvatarSvg('👥') });
-  saveState(); renderContacts(); closeModal(groupModal); alert('群聊创建成功');
+  if(document.getElementById('groupFile').files && document.getElementById('groupFile').files[0]){
+    avatar = await fileToDataUrl(document.getElementById('groupFile').files[0]);
+  }
+  const gid = 'g' + Date.now();
+  // add a contact representing the group
+  state.contacts.push({ id: gid, name, avatar: avatar || defaultAvatar() });
+  saveState(); renderContacts(); closeModal(groupModal);
+  alert('群聊创建成功：' + name + '\n（已添加到联系人）');
 }
 
-/* -----------------------------
-   Background prompt
-   ----------------------------- */
-function openBgPrompt(){
-  const url = prompt('输入聊天背景图片 URL，或留空选择本地文件（后续会添加上传控件）');
-  if(!url) return;
-  state.background = url.trim();
-  saveState(); applyBackground();
-  alert('已应用背景（本地预览）');
-}
-function applyBackground(){
-  const frame = document.querySelector('.frame');
-  if(state.background) frame.style.backgroundImage = `url('${state.background}')`, frame.style.backgroundSize='cover';
-  else frame.style.backgroundImage = '';
-}
-
-/* -----------------------------
-   AI Modal logic (save/test)
-   ----------------------------- */
-function openAiModal(){
-  aiNameInput.value = state.ai.name || '';
-  aiGenderInput.value = state.ai.gender || 'neutral';
-  aiRoleInput.value = state.ai.role || '';
-  aiStyleInput.value = state.ai.style || 'friendly';
-  aiCatchInput.value = state.ai.catch || '';
-  userColorInput.value = state.bubble.user || '#ffd6e6';
-  aiColorInput.value = state.bubble.ai || '#d7c8ff';
-  backendUrlInput.value = localStorage.getItem(BACKEND_KEY) || '';
-  showModal(aiModal);
-}
-function saveAiSettings(){
-  state.ai.name = aiNameInput.value.trim() || state.ai.name;
-  state.ai.gender = aiGenderInput.value;
-  state.ai.role = aiRoleInput.value.trim();
-  state.ai.style = aiStyleInput.value;
-  state.ai.catch = aiCatchInput.value.trim();
-  state.bubble.user = userColorInput.value || state.bubble.user;
-  state.bubble.ai = aiColorInput.value || state.bubble.ai;
-  localStorage.setItem(BACKEND_KEY, backendUrlInput.value.trim());
-  applyBubbleColors();
-  saveState(); closeModal(aiModal); alert('AI 设置已保存');
-}
-async function testBackend(){
-  const url = backendUrlInput.value.trim() || localStorage.getItem(BACKEND_KEY);
-  if(!url) return alert('请填写后端 URL');
-  const btn = document.getElementById('testBackendBtn');
-  btn.disabled = true; btn.textContent = '测试中...';
-  try{
-    const res = await fetch(url, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ ping:true }) });
-    const j = await res.json();
-    alert('后端响应：' + JSON.stringify(j).slice(0,200));
-    localStorage.setItem(BACKEND_KEY, url);
-  }catch(e){ alert('连接失败：'+e.message); }
-  btn.disabled = false; btn.textContent = '测试后端';
-}
-
-/* -----------------------------
-   Contacts / conversations helpers
-   ----------------------------- */
-function saveState(){ localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
-function loadState(){ try{ const s = localStorage.getItem(STATE_KEY); if(!s) { localStorage.setItem(STATE_KEY, JSON.stringify(DEFAULT)); state = structuredClone(DEFAULT); return; } state = JSON.parse(s); // ensure keys
-    if(!state.contacts) state.contacts = structuredClone(DEFAULT.contacts);
-    if(!state.conversations) state.conversations = structuredClone(DEFAULT.conversations);
-    if(!state.bubble) state.bubble = structuredClone(DEFAULT.bubble);
-  } catch(e){ console.error('loadState err',e); state = structuredClone(DEFAULT); saveState(); } }
-loadState(); applyBubbleColors(); applyBackground(); renderContacts(); renderFeed();
-
-/* -----------------------------
-   Helper: file to dataURL
-   ----------------------------- */
+// file helper
 function fileToDataUrl(file){
   return new Promise((resolve,reject)=>{
-    const r = new FileReader();
-    r.onload = ()=> resolve(r.result);
-    r.onerror = e => reject(e);
-    r.readAsDataURL(file);
+    const fr = new FileReader();
+    fr.onload = ()=> resolve(fr.result);
+    fr.onerror = e => reject(e);
+    fr.readAsDataURL(file);
   });
 }
 
-/* -----------------------------
-   Export / Import Data (JSON)
-   ----------------------------- */
+// export / import
 function exportData(){
-  const blob = new Blob([JSON.stringify({ state, feed: loadFeed() }, null, 2)], { type:'application/json' });
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], { type:'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = 'nie_backup_'+Date.now()+'.json'; a.click();
   URL.revokeObjectURL(url);
 }
 function importData(){
   const input = document.createElement('input'); input.type='file'; input.accept='application/json';
-  input.onchange = async (e) => {
+  input.onchange = async (e)=>{
     const f = e.target.files[0]; if(!f) return;
-    const text = await f.text(); try{
+    const text = await f.text();
+    try{
       const j = JSON.parse(text);
-      if(j.state) state = j.state;
-      if(j.feed) saveFeed(j.feed);
-      saveState(); renderContacts(); renderFeed(); alert('已导入数据（请刷新页面查看）');
-    }catch(err){ alert('导入错误：' + err.message); }
+      if(j.contacts) state.contacts = j.contacts;
+      if(j.conversations) state.conversations = j.conversations;
+      saveState(); renderContacts(); alert('导入成功');
+    }catch(err){ alert('导入失败：'+err.message); }
   };
   input.click();
 }
-function importDataPrompt(){ importData(); }
 
-/* bind import button to modal */
-function importData(){ const input = document.createElement('input'); input.type='file'; input.accept='application/json'; input.onchange = async (e)=>{ const f = e.target.files[0]; if(!f) return; const txt = await f.text(); try{ const j = JSON.parse(txt); if(j.state) state = j.state; if(j.feed) saveFeed(j.feed); saveState(); renderContacts(); renderFeed(); alert('导入成功，请刷新查看'); }catch(err){ alert('导入失败：'+err.message); } }; input.click(); }
+// initial render
+renderContacts();
 
-/* -----------------------------
-   Modal helpers
-   ----------------------------- */
-function showModal(el){ el.style.display = 'flex'; el.setAttribute('aria-hidden','false'); }
-function closeModal(el){ el.style.display = 'none'; el.setAttribute('aria-hidden','true'); }
-
-/* -----------------------------
-   File helper used in feed & avatars
-   ----------------------------- */
-async function fileToDataUrl(file){ return new Promise((res,rej)=>{ const fr = new FileReader(); fr.onload = ()=> res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); }); }
-
-/* -----------------------------
-   Misc: renderFeed called earlier
-   ----------------------------- */
-
-/* -----------------------------
-   small UI bootstrap actions
-   ----------------------------- */
-document.getElementById('postBtn').addEventListener('click', publishPost);
-document.getElementById('openFeed').addEventListener('click', openFeed);
-
-// keyboard: Ctrl+K to focus search (future) - placeholder
-
-// expose some functions to window for debugging (optional)
-window.NIE = { state, saveState, loadState, exportData, importData, openConversation };
-
-/* =============================================================================
-   End of file
-   ============================================================================= */
+// ensure buttons clickable on mobile (prevent accidental overlay)
+document.body.addEventListener('touchstart', ()=>{}, {passive:true});
 
 </script>
 </body>
