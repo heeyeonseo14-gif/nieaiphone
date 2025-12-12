@@ -1,0 +1,137 @@
+<!doctype html>
+
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NIEaiphone — 小家</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg1:#f0e6fb;--bg2:#e6d8f6;--card:rgba(255,255,255,0.36);--accent1:#9b86e6;--accent2:#7a64d0}
+    *{box-sizing:border-box}
+    body{margin:0;height:100vh;font-family:"Quicksand","Nunito","Segoe UI",sans-serif;background:linear-gradient(180deg,var(--bg1),var(--bg2));display:flex;align-items:center;justify-content:center;color:#2f2540}.frame{width:92%;max-width:420px;height:84vh;border-radius:34px;background:var(--card);backdrop-filter:blur(14px);box-shadow:0 18px 50px rgba(40,24,60,0.12);padding:18px;display:flex;flex-direction:column}
+
+.top{display:flex;align-items:center;gap:12px;padding:8px 6px}
+.top .title{font-size:20px;font-weight:700}
+.top .subtitle{font-size:12px;color:rgba(47,37,64,0.7)}
+
+.screen{flex:1;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;padding:8px 6px}
+
+/* icon grid */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px}
+.icon{background:linear-gradient(180deg,rgba(255,255,255,0.9),rgba(255,255,255,0.76));border-radius:14px;padding:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;user-select:none;box-shadow:0 8px 22px rgba(47,35,70,0.06);transition:transform .14s ease, box-shadow .14s ease}
+.icon:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(47,35,70,0.12)}
+.icon .emoji{width:56px;height:56px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;background:linear-gradient(180deg,white,rgba(255,255,255,0.9));box-shadow:0 8px 20px rgba(136,104,218,0.12)}
+.icon .label{font-size:13px;font-weight:600;color:#3b2f4b}
+
+/* small helpers */
+.row{display:flex;gap:8px;align-items:center}
+.footer{font-size:12px;color:rgba(47,37,64,0.6);text-align:center;padding:8px}
+
+/* responsiveness */
+@media (max-width:360px){ .icon .emoji{width:48px;height:48px;font-size:22px} }
+
+/* simple page transition (fake modal) */
+.page{position:absolute;inset:0;background:transparent;display:none;align-items:center;justify-content:center}
+.page.show{display:flex}
+.cardBox{width:90%;max-width:360px;padding:18px;border-radius:16px;background:rgba(255,255,255,0.96);box-shadow:0 18px 36px rgba(10,10,20,0.08);text-align:left}
+.cardBox h2{margin:0 0 10px;font-size:18px}
+.cardBox p{margin:0 0 12px;color:#5b4d6a}
+.closeBtn{display:inline-block;padding:8px 12px;border-radius:10px;background:var(--accent2);color:white;text-decoration:none}
+
+  </style>
+</head>
+<body>
+  <div class="frame" role="application" aria-label="NIEaiphone 小家">
+    <div class="top">
+      <div style="width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#fff,#fff8);box-shadow:0 8px 22px rgba(124,93,232,0.12);font-size:24px">💜</div>
+      <div>
+        <div class="title">NIEaiphone</div>
+        <div class="subtitle">欢迎回家 • 点击图标打开应用</div>
+      </div>
+    </div><div class="screen">
+  <div class="grid" role="grid">
+    <div class="icon" data-app="chat" role="button" tabindex="0" aria-label="聊天">
+      <div class="emoji">💬</div>
+      <div class="label">聊天</div>
+    </div>
+
+    <div class="icon" data-app="diary" role="button" tabindex="0" aria-label="日记">
+      <div class="emoji">📓</div>
+      <div class="label">日记</div>
+    </div>
+
+    <div class="icon" data-app="forum" role="button" tabindex="0" aria-label="论坛">
+      <div class="emoji">🧭</div>
+      <div class="label">论坛</div>
+    </div>
+
+    <div class="icon" data-app="api" role="button" tabindex="0" aria-label="API 设置">
+      <div class="emoji">🛠️</div>
+      <div class="label">API 设置</div>
+    </div>
+
+    <div class="icon" data-app="theme" role="button" tabindex="0" aria-label="美化">
+      <div class="emoji">🎨</div>
+      <div class="label">美化</div>
+    </div>
+
+    <div class="icon" data-app="more" role="button" tabindex="0" aria-label="更多">
+      <div class="emoji">✨</div>
+      <div class="label">更多</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">* 提示：这些图标目前为占位，点击将打开演示页面。真实功能可按需接入。</div>
+
+  </div>  <!-- 简单内置演示页面（占位） -->  <div class="page" id="page" aria-hidden="true">
+    <div class="cardBox" role="dialog" aria-modal="true">
+      <h2 id="pageTitle">应用</h2>
+      <p id="pageDesc">加载中……</p>
+      <div style="text-align:right"><a class="closeBtn" href="#" id="closeBtn">关闭</a></div>
+    </div>
+  </div>  <script>
+    // 处理图标点击：打开占位页面（以后可以改成跳转 chat.html 等）
+    const icons = document.querySelectorAll('.icon');
+    const page = document.getElementById('page');
+    const pageTitle = document.getElementById('pageTitle');
+    const pageDesc = document.getElementById('pageDesc');
+    const closeBtn = document.getElementById('closeBtn');
+
+    const appInfo = {
+      chat: { title: '聊天', desc: '包含聊天、朋友圈与联系人。点击“继续”可跳到聊天 demo（将来会链接到真正的 chat 页面）。', href: 'chat.html' },
+      diary: { title: '日记', desc: '记录个人日记或查看 AI 写给你的日记。将来支持编辑与 AI 协作写日记。', href: 'diary.html' },
+      forum: { title: '论坛', desc: '查看社区热榜、帖子与评论。将来可绑定真实论坛数据。', href: 'forum.html' },
+      api: { title: 'API 设置', desc: '配置后端 API URL、API Key（仅本地保存）、模型等。建议在后端安全存储 Key。', href: 'api.html' },
+      theme: { title: '美化', desc: '更换壁纸、图标包、色系主题等，使你的 NIEaiphone 更有个性。', href: 'theme.html' },
+      more: { title: '更多', desc: '更多功能与扩展入口（小游戏、商店、相册等）。', href: '#' }
+    };
+
+    function openApp(key){
+      const info = appInfo[key] || { title: '未知', desc: '暂无信息', href: '#' };
+      pageTitle.textContent = info.title;
+      pageDesc.textContent = info.desc;
+      page.classList.add('show');
+      page.setAttribute('aria-hidden', 'false');
+      // 如果希望跳转到具体页面， uncomment 下面行：
+      // window.location.href = info.href;
+    }
+
+    icons.forEach(icon=>{
+      icon.addEventListener('click', ()=>{
+        const key = icon.getAttribute('data-app');
+        openApp(key);
+      });
+      // 支持键盘回车打开
+      icon.addEventListener('keydown', e=>{ if(e.key === 'Enter') icon.click(); });
+    });
+
+    closeBtn.addEventListener('click', e=>{ e.preventDefault(); page.classList.remove('show'); page.setAttribute('aria-hidden','true'); });
+
+    // 可选：双击空白处关闭
+    page.addEventListener('click', e=>{ if(e.target === page) { page.classList.remove('show'); page.setAttribute('aria-hidden','true'); } });
+  </script></body>
+</html>
