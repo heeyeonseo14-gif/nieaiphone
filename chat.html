@@ -24,6 +24,9 @@ html,body{height:100%;margin:0;font-family:"Quicksand",system-ui,-apple-system,S
 .main{margin-top:10px;display:flex;flex-direction:column;flex:1;min-height:0}
 .pane{background:rgba(255,255,255,0.98);border-radius:14px;padding:12px;flex:1;overflow:auto;position:relative;min-height:0}
 
+/* hidden helper (fix for previous bug) */
+.hidden{display:none !important}
+
 /* contacts grid */
 .contactsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-top:6px}
 .contactCard{background:linear-gradient(180deg,rgba(255,255,255,0.98),#fbf8ff);border-radius:14px;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;cursor:pointer;transition:transform .18s,box-shadow .18s;border:1px solid rgba(0,0,0,0.02)}
@@ -110,13 +113,13 @@ textarea{flex:1;min-height:48px;max-height:140px;padding:10px;border-radius:12px
           <div style="font-size:13px;color:var(--muted)">点击进入聊天</div>
         </div>
         <div id="contactsGrid" class="contactsGrid"></div>
-        <div id="emptyHint" class="empty hidden">当前没有联系人，点击“添加联系人”开始。</div>
+        <div id="emptyHint" style="margin-top:14px;color:var(--muted);font-size:15px">当前没有联系人，点击“添加联系人”开始。</div>
       </div>
 
       <!-- CHAT -->
       <div id="chatPane" class="pane hidden" role="region" aria-live="polite">
         <div class="chatHeader">
-          <div class="chatAvatar" id="chatAvatar"><img src=""></div>
+          <div class="chatAvatar" id="chatAvatar"><img src="" alt=""></div>
           <div class="chatInfo">
             <div class="chatTitle" id="chatTitle">对话</div>
             <div class="chatSub" id="chatSub"></div>
@@ -302,7 +305,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   /* render contacts */
   function renderContacts(){ contactsGrid.innerHTML = ''; (state.contacts||[]).forEach(c=>{ const el = document.createElement('div'); el.className='contactCard'; el.dataset.id=c.id; const av = c.avatar || defaultAvatar(); el.innerHTML = `<div class="iconWrap"><img src="${escapeAttr(av)}" alt=""></div><div class="contactName">${escapeHtml(c.name)}</div>`; el.addEventListener('click', ()=> openConversation(c.id)); contactsGrid.appendChild(el); }); applyEmptyHint(); }
-  function applyEmptyHint(){ if(!state.contacts || state.contacts.length===0) emptyHint.classList.remove('hidden'); else emptyHint.classList.add('hidden'); }
+  function applyEmptyHint(){ if(!state.contacts || state.contacts.length===0) emptyHint.style.display='block'; else emptyHint.style.display='none'; }
 
   /* open conversation */
   function openConversation(id){
@@ -504,6 +507,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   /* initial render & restore auto */
   renderContacts(); applyEmptyHint(); applyBubbleColors(); applyBackground(); renderFeed(); saveState();
+  // 关键修复：打开页面默认回到联系人面板（避免多面板堆叠）
+  showContacts();
+
   if(state.feedAuto) toggleAutoPost(true);
 
   /* helper for debug if needed */
