@@ -39,7 +39,7 @@ html,body{
   flex-direction:column;
 }
 
-/* header */
+/* ===== header ===== */
 .header{
   display:flex;
   align-items:center;
@@ -62,7 +62,7 @@ html,body{
   margin:0;
 }
 
-/* chat */
+/* ===== chat ===== */
 .chatCard{
   flex:1;
   background:var(--card);
@@ -93,7 +93,7 @@ html,body{
   background:var(--bubble-other);
 }
 
-/* input */
+/* ===== input ===== */
 .composer{
   display:flex;
   gap:8px;
@@ -103,6 +103,7 @@ html,body{
   flex:1;
   border-radius:14px;
   padding:10px;
+  border:1px solid #e6def5;
 }
 .sendBtn{
   width:54px;
@@ -112,7 +113,7 @@ html,body{
   color:white;
 }
 
-/* bottom */
+/* ===== bottom ===== */
 .bottomNav{
   display:flex;
   gap:10px;
@@ -126,7 +127,7 @@ html,body{
   font-weight:700;
 }
 
-/* modal */
+/* ===== modal ===== */
 .modalMask{
   position:fixed;
   inset:0;
@@ -178,7 +179,7 @@ html,body{
   color:white;
 }
 
-/* switch */
+/* ===== switch ===== */
 .switch{
   display:flex;
   align-items:center;
@@ -213,78 +214,84 @@ html,body{
 <body>
 <div class="app">
 
-<div class="header">
-  <button onclick="location.href='chat.html'">←</button>
-  <h1 id="chatTitle">聊天</h1>
-  <button onclick="location.href='feed.html'">☁</button>
-</div>
-
-<div class="chatCard">
-  <div class="messages" id="messages"></div>
-  <div class="composer">
-    <textarea id="input" placeholder="输入消息…"></textarea>
-    <button class="sendBtn" id="sendBtn">➤</button>
+  <div class="header">
+    <button onclick="location.href='chat.html'">←</button>
+    <h1 id="chatTitle">聊天</h1>
+    <button onclick="location.href='feed.html'">☁</button>
   </div>
-</div>
 
-<div class="bottomNav">
-  <button id="personaBtn">人设设定</button>
-  <button>我的设置</button>
-</div>
+  <div class="chatCard">
+    <div class="messages" id="messages"></div>
+    <div class="composer">
+      <textarea id="input" placeholder="输入消息…"></textarea>
+      <button class="sendBtn" id="sendBtn">➤</button>
+    </div>
+  </div>
+
+  <div class="bottomNav">
+    <button id="personaBtn">人设设定</button>
+    <button>我的设置</button>
+  </div>
 
 </div>
 
 <!-- 单聊人设 -->
 <div class="modalMask" id="personaModal">
-<div class="modal">
-<h3>人设设定</h3>
+  <div class="modal">
+    <h3>人设设定</h3>
 
-<label>AI 名称</label>
-<input>
+    <label>AI 名称</label>
+    <input placeholder="小NIE">
 
-<label>性别</label>
-<select><option>中性</option><option>男性</option><option>女性</option></select>
+    <label>性别</label>
+    <select>
+      <option>中性</option>
+      <option>男性</option>
+      <option>女性</option>
+    </select>
 
-<label>人设（生成提示）</label>
-<textarea></textarea>
+    <label>人设（仅生成提示）</label>
+    <textarea></textarea>
 
-<label>风格 / 习惯（生成提示）</label>
-<textarea></textarea>
+    <label>风格 / 习惯（仅生成提示）</label>
+    <textarea></textarea>
 
-<label>回复条数（1–30）</label>
-<input type="number" min="1" max="30" value="10">
+    <label>回复条数（1–30）</label>
+    <input type="number" min="1" max="30" value="10">
 
-<label>聊天气泡颜色</label>
-<input type="color" onchange="document.documentElement.style.setProperty('--bubble-other',this.value)">
+    <label>聊天气泡颜色（AI）</label>
+    <input type="color"
+      onchange="document.documentElement.style.setProperty('--bubble-other',this.value)">
 
-<div class="switch">
-<input type="checkbox" id="actSwitch" checked>
-<span></span>
-<label>回复中带动作 / 心理描写</label>
-</div>
+    <div class="switch">
+      <input type="checkbox" id="actSwitch" checked>
+      <span></span>
+      <label>回复中带动作 / 心理描写</label>
+    </div>
 
-<div class="modalActions">
-<button class="cancel" onclick="closePersona()">取消</button>
-<button class="save" onclick="closePersona()">保存</button>
-</div>
-</div>
+    <div class="modalActions">
+      <button class="cancel" onclick="closePersona()">取消</button>
+      <button class="save" onclick="closePersona()">保存</button>
+    </div>
+  </div>
 </div>
 
 <script>
 const personaBtn=document.getElementById('personaBtn');
 const personaModal=document.getElementById('personaModal');
-
 personaBtn.onclick=()=>personaModal.style.display='flex';
 function closePersona(){personaModal.style.display='none'}
 
 const messages=document.getElementById('messages');
 sendBtn.onclick=()=>{
   if(!input.value.trim())return;
+
   const m=document.createElement('div');
   m.className='msg me';
   m.textContent=input.value;
   messages.appendChild(m);
   input.value='';
+
   setTimeout(()=>{
     const r=document.createElement('div');
     r.className='msg other';
