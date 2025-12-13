@@ -7,7 +7,9 @@
 
 <style>
 :root{
+  --accent:#8e7ae6;
   --text:#2f2436;
+  --muted:#8a7f99;
 }
 
 /* ===== 基础 ===== */
@@ -15,20 +17,18 @@
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
-  background: transparent;
+  background: var(--user-bg, linear-gradient(180deg,#f5edff,#efe7fb));
   color:var(--text);
 }
 
-/* ===== 背景层 ===== */
+/* ===== 背景层（背景图） ===== */
 #bgLayer{
   position:fixed;
   inset:0;
-  background:linear-gradient(180deg,#f5edff,#efe7fb);
   background-size:cover;
   background-position:center;
+  opacity:.35;
   z-index:-1;
-  filter: brightness(var(--bg-bright,1)) blur(var(--bg-blur,0px));
-  transition: filter .2s;
 }
 
 /* ===== App ===== */
@@ -95,6 +95,7 @@ body{
 .card span{
   font-size:13px;
   font-weight:600;
+  text-align:center;
 }
 .badge{
   position:absolute;
@@ -127,6 +128,7 @@ body{
   background:linear-gradient(135deg,#9b8cff,#7c68e6);
   color:white;
   font-weight:600;
+  cursor:pointer;
 }
 
 /* ===== 弹窗 ===== */
@@ -139,11 +141,6 @@ body{
   align-items:center;
   justify-content:center;
   z-index:99;
-  pointer-events:none; /* ⭐关键：默认不拦截点击 */
-}
-.modalMask.show{
-  display:flex;
-  pointer-events:auto; /* ⭐打开时才拦截 */
 }
 .modal{
   background:rgba(255,255,255,.9);
@@ -151,38 +148,60 @@ body{
   width:92%;
   max-width:360px;
   border-radius:20px;
-  padding:18px 16px;
+  padding:18px 16px 16px;
+  box-shadow:0 20px 50px rgba(40,20,60,.25);
 }
 .modal h3{
-  text-align:center;
   margin:0 0 14px;
+  font-size:18px;
+  text-align:center;
 }
 .modal input{
   width:100%;
-  padding:12px;
+  padding:12px 14px;
   margin-bottom:12px;
   border-radius:12px;
-  border:1px solid #ddd;
+  border:1px solid #e3dcf3;
+  font-size:14px;
+}
+.avatarPreview{
+  width:72px;
+  height:72px;
+  border-radius:18px;
+  background:#eee;
+  object-fit:cover;
+  display:none;
+  margin:6px auto 12px;
 }
 .pickBtn{
   width:100%;
   padding:12px;
   border-radius:14px;
-  border:1px dashed #ccc;
-  background:#fafafa;
+  border:1px dashed #d8d0f0;
+  background:#faf8ff;
+  font-weight:600;
+  cursor:pointer;
   margin-bottom:12px;
 }
+
+/* 群聊选择 */
 .groupSelect{
   border:1.5px solid #ddd;
   border-radius:14px;
   padding:14px;
   text-align:center;
+  font-weight:600;
+  color:#666;
+  cursor:pointer;
+  transition:.2s;
   margin-bottom:14px;
 }
 .groupSelect.on{
   border-color:#9b8cff;
   background:rgba(155,140,255,.12);
+  color:#6b5fa6;
 }
+
 .modalActions{
   display:flex;
   gap:10px;
@@ -192,41 +211,43 @@ body{
   padding:12px;
   border-radius:999px;
   border:none;
+  font-weight:700;
+  cursor:pointer;
 }
-
-/* ===== 背景设置弹窗 ===== */
-.settingRow{
-  margin-bottom:14px;
+.modalActions button:first-child{
+  background:#f2eefc;
+  color:#6b5fa6;
 }
-.settingRow label{
-  font-size:14px;
-  display:block;
-  margin-bottom:6px;
-}
-.settingRow input[type=range]{
-  width:100%;
+.modalActions button:last-child{
+  background:linear-gradient(135deg,#9b8cff,#7c68e6);
+  color:white;
 }
 </style>
 </head>
 
 <body>
 
+<!-- 背景图层 -->
 <div id="bgLayer"></div>
 
 <div class="app">
+
+  <!-- header -->
   <div class="header">
     <button class="iconBtn" onclick="location.href='home.html'">←</button>
     <h1>聊天</h1>
     <div style="display:flex;gap:6px">
-      <button class="iconBtn" onclick="openBg()">自定义</button>
+      <button class="iconBtn" onclick="pickBg()">自定义</button>
       <button class="iconBtn" onclick="openAdd()">＋</button>
     </div>
   </div>
 
+  <!-- contacts -->
   <div class="contacts">
     <div class="grid" id="contactGrid"></div>
   </div>
 
+  <!-- bottom -->
   <div class="bottom">
     <button onclick="location.href='feed.html'">朋友圈</button>
   </div>
@@ -236,99 +257,128 @@ body{
 <div class="modalMask" id="addModal">
   <div class="modal">
     <h3>添加聊天</h3>
+
     <input id="addName" placeholder="名字 / 群名">
-    <button class="pickBtn">选择头像</button>
-    <div class="groupSelect">这是一个群聊</div>
+    <input id="addAvatar" placeholder="头像图片 URL（可空）">
+
+    <img id="avatarPreview" class="avatarPreview">
+
+    <button class="pickBtn" onclick="pickAvatar()">选择本地头像</button>
+    <input type="file" id="addAvatarFile" accept="image/*" style="display:none">
+
+    <div class="groupSelect" id="groupBox"
+      onclick="isGroup.checked=!isGroup.checked; this.classList.toggle('on',isGroup.checked)">
+      <input type="checkbox" id="isGroup" hidden>
+      这是一个群聊
+    </div>
+
     <div class="modalActions">
       <button onclick="closeAdd()">取消</button>
-      <button onclick="closeAdd()">保存</button>
+      <button onclick="saveContact()">保存</button>
     </div>
   </div>
 </div>
 
-<!-- 背景设置 -->
-<div class="modalMask" id="bgModal">
-  <div class="modal">
-    <h3>背景设置</h3>
-
-    <button class="pickBtn" onclick="pickBg()">选择背景图</button>
-
-    <div class="settingRow">
-      <label>亮度</label>
-      <input type="range" min="0.6" max="1.4" step="0.05" id="brightRange">
-    </div>
-
-    <div class="settingRow">
-      <label>模糊</label>
-      <!-- ⭐ 只改 max，不改结构 -->
-      <input type="range" min="0" max="6" step="1" id="blurRange">
-    </div>
-
-    <div class="modalActions">
-      <button onclick="closeBg()">关闭</button>
-    </div>
-  </div>
-</div>
-
-<input type="file" id="bgPicker" accept="image/*" hidden>
+<!-- 背景选择 -->
+<input type="file" id="bgPicker" accept="image/*" style="display:none">
 
 <script>
-const bg=document.getElementById('bgLayer');
-const br=document.getElementById('brightRange');
-const bl=document.getElementById('blurRange');
+const KEY='nie_contacts_v1';
+let selectedAvatarData='';
 
-/* 初始化 */
-const bgImg=localStorage.getItem('bg_img');
-if(bgImg) bg.style.backgroundImage=`url(${bgImg})`;
+const bgLayer=document.getElementById('bgLayer');
+const savedBg=localStorage.getItem('nie_bg');
+if(savedBg) bgLayer.style.backgroundImage=`url(${savedBg})`;
 
-br.value=localStorage.getItem('bg_bright')||1;
-bl.value=localStorage.getItem('bg_blur')||0;
+const savedColor=localStorage.getItem('nie_bg_color');
+if(savedColor) document.body.style.setProperty('--user-bg',savedColor);
 
-/* ⭐同步一次真实 filter（关键） */
-applyFilter();
-
-/* 背景弹窗 */
-function openBg(){
-  bgModal.classList.add('show');
-}
-function closeBg(){
-  bgModal.classList.remove('show');
-}
-
-function pickBg(){bgPicker.click()}
+function pickBg(){ bgPicker.click(); }
 bgPicker.onchange=e=>{
   const f=e.target.files[0];
   if(!f) return;
   const r=new FileReader();
   r.onload=()=>{
-    localStorage.setItem('bg_img',r.result);
-    bg.style.backgroundImage=`url(${r.result})`;
+    localStorage.setItem('nie_bg',r.result);
+    bgLayer.style.backgroundImage=`url(${r.result})`;
   };
   r.readAsDataURL(f);
 };
 
-br.oninput=()=>{
-  localStorage.setItem('bg_bright',br.value);
-  applyFilter();
-};
-bl.oninput=()=>{
-  localStorage.setItem('bg_blur',bl.value);
-  applyFilter();
-};
+function load(){return JSON.parse(localStorage.getItem(KEY)||'[]')}
+function save(l){localStorage.setItem(KEY,JSON.stringify(l))}
 
-/* ⭐统一在这里改 filter */
-function applyFilter(){
-  bg.style.filter=`brightness(${br.value}) blur(${bl.value}px)`;
+function render(){
+  contactGrid.innerHTML='';
+  load().forEach(c=>{
+    const d=document.createElement('div');
+    d.className='card';
+    d.innerHTML=`
+      <button class="del" onclick="del('${c.id}',event)">✕</button>
+      <img src="${c.avatar||'https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png'}">
+      <span>${c.name}</span>
+      ${c.type==='group'?'<div class="badge">群</div>':''}
+    `;
+    d.onclick=()=>location.href='chat_ui.html?id='+c.id;
+    contactGrid.appendChild(d);
+  });
 }
 
-/* 其他弹窗 */
 function openAdd(){
-  addModal.classList.add('show');
+  addName.value='';
+  addAvatar.value='';
+  isGroup.checked=false;
+  groupBox.classList.remove('on');
+  avatarPreview.style.display='none';
+  selectedAvatarData='';
+  addModal.style.display='flex';
 }
-function closeAdd(){
-  addModal.classList.remove('show');
-}
-</script>
+function closeAdd(){addModal.style.display='none'}
 
+function pickAvatar(){addAvatarFile.click()}
+function compressImage(file,cb){
+  const i=new Image(),r=new FileReader();
+  r.onload=e=>i.src=e.target.result;
+  i.onload=()=>{
+    const c=document.createElement('canvas');
+    c.width=c.height=256;
+    c.getContext('2d').drawImage(i,0,0,256,256);
+    cb(c.toDataURL('image/jpeg',0.7));
+  };
+  r.readAsDataURL(file);
+}
+addAvatarFile.onchange=e=>{
+  const f=e.target.files[0];
+  if(!f) return;
+  compressImage(f,d=>{
+    selectedAvatarData=d;
+    avatarPreview.src=d;
+    avatarPreview.style.display='block';
+  });
+};
+
+function saveContact(){
+  const n=addName.value.trim();
+  if(!n) return;
+  const l=load();
+  l.push({
+    id:(isGroup.checked?'g':'c')+Date.now(),
+    name:n,
+    avatar:selectedAvatarData||addAvatar.value.trim(),
+    type:isGroup.checked?'group':'single'
+  });
+  save(l);
+  closeAdd();
+  render();
+}
+function del(id,e){
+  e.stopPropagation();
+  if(!confirm('删除？'))return;
+  save(load().filter(c=>c.id!==id));
+  render();
+}
+
+render();
+</script>
 </body>
 </html>
