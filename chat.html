@@ -1,18 +1,22 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <title>NIEaiphone · 聊天</title>
 
 <style>
-*{box-sizing:border-box}
+:root{
+  --text:#2f2436;
+}
 
+/* ===== 基础 ===== */
+*{box-sizing:border-box}
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
-  background:transparent;
-  color:#2f2436;
+  background: transparent;
+  color:var(--text);
 }
 
 /* ===== 背景层 ===== */
@@ -23,7 +27,7 @@ body{
   background-size:cover;
   background-position:center;
   z-index:-1;
-  filter: brightness(1) blur(0px);
+  filter: brightness(var(--bg-bright,1)) blur(var(--bg-blur,0px));
   transition: filter .2s;
 }
 
@@ -44,17 +48,27 @@ body{
   align-items:center;
   justify-content:space-between;
 }
-.header h1{margin:0;font-size:18px}
+.header h1{
+  font-size:18px;
+  margin:0;
+}
 .iconBtn{
-  padding:6px 12px;
+  min-width:36px;
+  height:36px;
+  padding:0 12px;
   border-radius:12px;
   border:none;
   background:white;
+  font-size:14px;
   font-weight:600;
+  cursor:pointer;
 }
 
 /* ===== 联系人 ===== */
-.contacts{flex:1;padding:12px}
+.contacts{
+  flex:1;
+  padding:12px;
+}
 .grid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -65,14 +79,46 @@ body{
   backdrop-filter: blur(10px);
   border-radius:16px;
   padding:12px 8px;
-  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  cursor:pointer;
+  position:relative;
 }
 .card img{
-  width:56px;height:56px;border-radius:14px;object-fit:cover
+  width:56px;
+  height:56px;
+  border-radius:14px;
+  object-fit:cover;
+}
+.card span{
+  font-size:13px;
+  font-weight:600;
+}
+.badge{
+  position:absolute;
+  bottom:6px;
+  right:6px;
+  font-size:11px;
+  background:#eee;
+  padding:2px 6px;
+  border-radius:999px;
+}
+.del{
+  position:absolute;
+  top:6px;
+  right:6px;
+  border:none;
+  background:none;
+  font-size:14px;
+  color:#c66;
 }
 
 /* ===== 底部 ===== */
-.bottom{padding:12px}
+.bottom{
+  padding:12px;
+}
 .bottom button{
   width:100%;
   padding:10px;
@@ -83,7 +129,7 @@ body{
   font-weight:600;
 }
 
-/* ===== 弹窗通用 ===== */
+/* ===== 弹窗 ===== */
 .modalMask{
   position:fixed;
   inset:0;
@@ -96,17 +142,65 @@ body{
 }
 .modal{
   background:rgba(255,255,255,.9);
-  width:90%;
+  backdrop-filter: blur(14px);
+  width:92%;
   max-width:360px;
   border-radius:20px;
-  padding:18px;
+  padding:18px 16px;
 }
-.modal h3{text-align:center;margin:0 0 14px}
+.modal h3{
+  text-align:center;
+  margin:0 0 14px;
+}
+.modal input{
+  width:100%;
+  padding:12px;
+  margin-bottom:12px;
+  border-radius:12px;
+  border:1px solid #ddd;
+}
+.pickBtn{
+  width:100%;
+  padding:12px;
+  border-radius:14px;
+  border:1px dashed #ccc;
+  background:#fafafa;
+  margin-bottom:12px;
+}
+.groupSelect{
+  border:1.5px solid #ddd;
+  border-radius:14px;
+  padding:14px;
+  text-align:center;
+  margin-bottom:14px;
+}
+.groupSelect.on{
+  border-color:#9b8cff;
+  background:rgba(155,140,255,.12);
+}
+.modalActions{
+  display:flex;
+  gap:10px;
+}
+.modalActions button{
+  flex:1;
+  padding:12px;
+  border-radius:999px;
+  border:none;
+}
 
-/* ===== 背景设置 ===== */
-.settingRow{margin-bottom:14px}
-.settingRow label{font-size:14px;display:block;margin-bottom:6px}
-.settingRow input{width:100%}
+/* ===== 背景设置弹窗 ===== */
+.settingRow{
+  margin-bottom:14px;
+}
+.settingRow label{
+  font-size:14px;
+  display:block;
+  margin-bottom:6px;
+}
+.settingRow input[type=range]{
+  width:100%;
+}
 </style>
 </head>
 
@@ -119,41 +213,55 @@ body{
   <div class="header">
     <button class="iconBtn" onclick="location.href='home.html'">←</button>
     <h1>聊天</h1>
-    <button class="iconBtn" onclick="openBg()">自定义</button>
-  </div>
-
-  <div class="contacts">
-    <div class="grid">
-      <div class="card">
-        <img src="https://placekitten.com/200/200">
-        <div>测试</div>
-      </div>
+    <div style="display:flex;gap:6px">
+      <button class="iconBtn" onclick="openBg()">自定义</button>
+      <button class="iconBtn" onclick="openAdd()">＋</button>
     </div>
   </div>
 
+  <div class="contacts">
+    <div class="grid" id="contactGrid"></div>
+  </div>
+
   <div class="bottom">
-    <button>朋友圈</button>
+    <button onclick="location.href='feed.html'">朋友圈</button>
   </div>
 </div>
 
-<!-- 背景设置弹窗 -->
+<!-- 添加聊天 -->
+<div class="modalMask" id="addModal">
+  <div class="modal">
+    <h3>添加聊天</h3>
+    <input id="addName" placeholder="名字 / 群名">
+    <button class="pickBtn">选择头像</button>
+    <div class="groupSelect">这是一个群聊</div>
+    <div class="modalActions">
+      <button onclick="closeAdd()">取消</button>
+      <button onclick="closeAdd()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 背景设置 -->
 <div class="modalMask" id="bgModal">
   <div class="modal">
     <h3>背景设置</h3>
 
-    <button class="iconBtn" onclick="pickBg()">选择背景图</button>
+    <button class="pickBtn" onclick="pickBg()">选择背景图</button>
 
     <div class="settingRow">
       <label>亮度</label>
-      <input type="range" min="0.6" max="1.4" step="0.05" id="bright">
+      <input type="range" min="0.6" max="1.4" step="0.05" id="brightRange">
     </div>
 
     <div class="settingRow">
       <label>模糊</label>
-      <input type="range" min="0" max="12" step="1" id="blur">
+      <input type="range" min="0" max="10" step="1" id="blurRange">
     </div>
 
-    <button class="iconBtn" onclick="closeBg()">关闭</button>
+    <div class="modalActions">
+      <button onclick="closeBg()">关闭</button>
+    </div>
   </div>
 </div>
 
@@ -161,22 +269,22 @@ body{
 
 <script>
 const bg=document.getElementById('bgLayer');
-const bright=document.getElementById('bright');
-const blur=document.getElementById('blur');
+const br=document.getElementById('brightRange');
+const bl=document.getElementById('blurRange');
 
 /* 初始化 */
-const img=localStorage.getItem('bg_img');
-if(img) bg.style.backgroundImage=`url(${img})`;
+const bgImg=localStorage.getItem('bg_img');
+if(bgImg) bg.style.backgroundImage=`url(${bgImg})`;
 
-bright.value=localStorage.getItem('bg_bright')||1;
-blur.value=localStorage.getItem('bg_blur')||0;
-applyFilter();
+br.value=localStorage.getItem('bg_bright')||1;
+bl.value=localStorage.getItem('bg_blur')||0;
+document.documentElement.style.setProperty('--bg-bright',br.value);
+document.documentElement.style.setProperty('--bg-blur',bl.value+'px');
 
-/* 打开关闭 */
+/* 背景弹窗 */
 function openBg(){bgModal.style.display='flex'}
 function closeBg(){bgModal.style.display='none'}
 
-/* 选择背景 */
 function pickBg(){bgPicker.click()}
 bgPicker.onchange=e=>{
   const f=e.target.files[0];
@@ -189,14 +297,18 @@ bgPicker.onchange=e=>{
   r.readAsDataURL(f);
 };
 
-/* 滑杆 */
-bright.oninput=()=>{localStorage.setItem('bg_bright',bright.value);applyFilter()}
-blur.oninput=()=>{localStorage.setItem('bg_blur',blur.value);applyFilter()}
+br.oninput=()=>{
+  document.documentElement.style.setProperty('--bg-bright',br.value);
+  localStorage.setItem('bg_bright',br.value);
+};
+bl.oninput=()=>{
+  document.documentElement.style.setProperty('--bg-blur',bl.value+'px');
+  localStorage.setItem('bg_blur',bl.value);
+};
 
-function applyFilter(){
-  bg.style.filter=`brightness(${bright.value}) blur(${blur.value}px)`;
-}
+/* 其他弹窗 */
+function openAdd(){addModal.style.display='flex'}
+function closeAdd(){addModal.style.display='none'}
 </script>
-
 </body>
 </html>
