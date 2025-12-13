@@ -155,7 +155,7 @@ body{
     <div class="grid" id="contactGrid"></div>
   </div>
 
-  <!-- ★ 修改：底部只保留 朋友圈 -->
+  <!-- 底部：朋友圈 -->
   <div class="bottom">
     <button class="primary" onclick="location.href='feed.html'">朋友圈</button>
   </div>
@@ -167,8 +167,14 @@ body{
     <h3>添加联系人</h3>
     <input id="addName" placeholder="名字">
     <input id="addAvatar" placeholder="头像图片 URL（可空）">
-    <!-- ★ 新增：本地图片 -->
-    <input type="file" id="addAvatarFile" accept="image/*">
+
+    <!-- ★ 关键修复：不用直接显示 file input -->
+    <button type="button" onclick="pickAvatar()"
+      style="width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:1px dashed #ccc;background:#fafafa;">
+      选择本地头像
+    </button>
+    <input type="file" id="addAvatarFile" accept="image/*" style="display:none">
+
     <div class="modalActions">
       <button onclick="closeAdd()">取消</button>
       <button class="primary" onclick="saveContact()">保存</button>
@@ -213,18 +219,21 @@ function closeAdd(){
   document.getElementById('addModal').style.display='none';
 }
 
+function pickAvatar(){
+  document.getElementById('addAvatarFile').click();
+}
+
 function saveContact(){
-  const name=addName.value.trim();
+  const name = addName.value.trim();
   if(!name) return;
 
-  const file=document.getElementById('addAvatarFile').files[0];
-  const url=addAvatar.value.trim();
-
-  const list=load();
+  const file = document.getElementById('addAvatarFile').files[0];
+  const url = addAvatar.value.trim();
+  const list = load();
 
   if(file){
-    const reader=new FileReader();
-    reader.onload=()=>{
+    const reader = new FileReader();
+    reader.onload = ()=>{
       list.push({
         id:'c'+Date.now(),
         name,
