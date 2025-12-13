@@ -16,8 +16,8 @@
   --muted:#8b7c9b;
   --accent:#9b86e6;
 
-  --bubble-me:#9b86e6;
-  --bubble-other:#f3effa;
+  --bubble-me:linear-gradient(135deg,#f6c1dc,#c9b8ff);
+  --bubble-other:linear-gradient(135deg,#f3effa,#e6dcff);
 }
 
 *{box-sizing:border-box}
@@ -26,7 +26,6 @@ html,body{
   height:100%;
   font-family:"Quicksand",system-ui;
   background:linear-gradient(180deg,var(--bg1),var(--bg2));
-  color:var(--text);
 }
 
 .app{
@@ -39,72 +38,44 @@ html,body{
   flex-direction:column;
 }
 
-/* ===== header ===== */
-.header{
+/* header */
+.header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.header button{width:42px;height:42px;border-radius:12px;border:none;background:white}
+.header h1{flex:1;text-align:center;margin:0}
+
+/* chat */
+.chatCard{flex:1;background:white;border-radius:18px;padding:14px;display:flex;flex-direction:column}
+.messages{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+
+/* message row */
+.msgRow{
   display:flex;
-  align-items:center;
-  gap:10px;
-  margin-bottom:10px;
+  align-items:flex-end;
+  gap:8px;
 }
-.header button{
-  width:42px;
-  height:42px;
-  border-radius:12px;
-  border:none;
-  background:white;
-  font-size:18px;
-}
-.header h1{
-  flex:1;
-  font-size:18px;
-  font-weight:700;
-  text-align:center;
-  margin:0;
+.msgRow.me{justify-content:flex-end}
+.msgRow.other{justify-content:flex-start}
+
+.avatar{
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  object-fit:cover;
 }
 
-/* ===== chat ===== */
-.chatCard{
-  flex:1;
-  background:var(--card);
-  border-radius:18px;
-  padding:14px;
-  display:flex;
-  flex-direction:column;
-}
-.messages{
-  flex:1;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
 .msg{
-  max-width:75%;
+  max-width:70%;
   padding:10px 12px;
   border-radius:14px;
+  font-size:14px;
+  line-height:1.4;
 }
-.me{
-  align-self:flex-end;
-  background:var(--bubble-me);
-  color:white;
-}
-.other{
-  align-self:flex-start;
-  background:var(--bubble-other);
-}
+.me .msg{background:var(--bubble-me);color:white}
+.other .msg{background:var(--bubble-other)}
 
-/* ===== input ===== */
-.composer{
-  display:flex;
-  gap:8px;
-  margin-top:10px;
-}
-.composer textarea{
-  flex:1;
-  border-radius:14px;
-  padding:10px;
-  border:1px solid #e6def5;
-}
+/* composer */
+.composer{display:flex;gap:8px;margin-top:10px}
+.composer textarea{flex:1;border-radius:14px;padding:10px}
 .sendBtn{
   width:54px;
   border:none;
@@ -113,101 +84,42 @@ html,body{
   color:white;
 }
 
-/* ===== bottom ===== */
-.bottomNav{
-  display:flex;
-  gap:10px;
-  margin-top:12px;
-}
-.bottomNav button{
-  flex:1;
-  border:none;
-  border-radius:999px;
-  padding:10px;
-  font-weight:700;
-}
+/* bottom */
+.bottomNav{display:flex;gap:10px;margin-top:12px}
+.bottomNav button{flex:1;border:none;border-radius:999px;padding:10px;font-weight:700}
 
-/* ===== modal ===== */
+/* modal */
 .modalMask{
-  position:fixed;
-  inset:0;
+  position:fixed;inset:0;
   background:rgba(0,0,0,.45);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:99;
+  display:none;align-items:center;justify-content:center
 }
 .modal{
-  background:white;
-  width:92%;
-  max-width:380px;
-  border-radius:20px;
-  padding:16px;
+  background:white;width:92%;max-width:380px;
+  border-radius:20px;padding:16px
 }
-.modal h3{
-  text-align:center;
-  margin:0 0 12px;
-}
-.modal label{
-  font-size:13px;
-  color:var(--muted);
-  margin-top:8px;
-  display:block;
-}
-.modal input,.modal textarea,.modal select{
-  width:100%;
-  padding:10px;
-  border-radius:12px;
-  border:1px solid #e6def5;
-}
-.modal textarea{resize:none}
-.modalActions{
-  display:flex;
-  gap:10px;
-  margin-top:14px;
-}
-.modalActions button{
-  flex:1;
-  padding:12px;
-  border-radius:999px;
-  border:none;
-  font-weight:700;
-}
-.cancel{background:#f2eefc}
-.save{
-  background:linear-gradient(135deg,#9b8cff,#7c68e6);
-  color:white;
-}
+.modal h3{text-align:center;margin:0 0 12px}
+.modal label{font-size:13px;color:#8b7c9b;margin-top:10px;display:block}
+.modal input{width:100%;padding:10px;border-radius:12px;border:1px solid #e6def5}
 
-/* ===== switch ===== */
-.switch{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-top:8px;
-}
+.switch{display:flex;align-items:center;gap:10px;margin-top:12px}
 .switch input{display:none}
 .switch span{
-  width:42px;height:22px;
-  background:#ddd;
-  border-radius:999px;
-  position:relative;
+  width:42px;height:22px;background:#ddd;border-radius:999px;position:relative
 }
 .switch span::after{
-  content:'';
-  width:18px;height:18px;
-  background:white;
-  border-radius:50%;
-  position:absolute;
-  top:2px;left:2px;
-  transition:.2s;
+  content:'';width:18px;height:18px;background:white;
+  border-radius:50%;position:absolute;top:2px;left:2px;transition:.2s
 }
-.switch input:checked+span{
-  background:var(--accent);
+.switch input:checked+span{background:#9b86e6}
+.switch input:checked+span::after{left:22px}
+
+.modalActions{display:flex;gap:10px;margin-top:16px}
+.modalActions button{
+  flex:1;padding:12px;border-radius:999px;border:none;font-weight:700
 }
-.switch input:checked+span::after{
-  left:22px;
-}
+.cancel{background:#f2eefc}
+.save{background:linear-gradient(135deg,#9b8cff,#7c68e6);color:white}
 </style>
 </head>
 
@@ -232,36 +144,20 @@ html,body{
     <button id="personaBtn">人设设定</button>
     <button>我的设置</button>
   </div>
-
 </div>
 
-<!-- 单聊人设 -->
+<!-- 人设设定 -->
 <div class="modalMask" id="personaModal">
   <div class="modal">
     <h3>人设设定</h3>
 
-    <label>AI 名称</label>
-    <input placeholder="小NIE">
+    <label>聊天气泡（我）</label>
+    <input type="color" onchange="me1=this.value;updateMe()">
+    <input type="color" onchange="me2=this.value;updateMe()">
 
-    <label>性别</label>
-    <select>
-      <option>中性</option>
-      <option>男性</option>
-      <option>女性</option>
-    </select>
-
-    <label>人设（仅生成提示）</label>
-    <textarea></textarea>
-
-    <label>风格 / 习惯（仅生成提示）</label>
-    <textarea></textarea>
-
-    <label>回复条数（1–30）</label>
-    <input type="number" min="1" max="30" value="10">
-
-    <label>聊天气泡颜色（AI）</label>
-    <input type="color"
-      onchange="document.documentElement.style.setProperty('--bubble-other',this.value)">
+    <label>聊天气泡（AI）</label>
+    <input type="color" onchange="ai1=this.value;updateAI()">
+    <input type="color" onchange="ai2=this.value;updateAI()">
 
     <div class="switch">
       <input type="checkbox" id="actSwitch" checked>
@@ -270,36 +166,78 @@ html,body{
     </div>
 
     <div class="modalActions">
-      <button class="cancel" onclick="closePersona()">取消</button>
-      <button class="save" onclick="closePersona()">保存</button>
+      <button class="cancel" onclick="personaModal.style.display='none'">取消</button>
+      <button class="save" onclick="personaModal.style.display='none'">保存</button>
     </div>
   </div>
 </div>
 
 <script>
-const personaBtn=document.getElementById('personaBtn');
+/* ===== 初始化 ===== */
+const params=new URLSearchParams(location.search);
+const cid=params.get('id')||'default';
+const STORAGE_KEY='chat_'+cid;
+
+const messagesEl=document.getElementById('messages');
 const personaModal=document.getElementById('personaModal');
 personaBtn.onclick=()=>personaModal.style.display='flex';
-function closePersona(){personaModal.style.display='none'}
 
-const messages=document.getElementById('messages');
+/* 头像（暂时写死，后面可接联系人头像） */
+const myAvatar='https://i.imgur.com/1X4H6jY.png';
+const aiAvatar='https://i.imgur.com/8Km9tLL.png';
+
+/* 气泡渐变 */
+let me1='#f6c1dc',me2='#c9b8ff';
+let ai1='#f3effa',ai2='#e6dcff';
+function updateMe(){
+  document.documentElement.style.setProperty('--bubble-me',`linear-gradient(135deg,${me1},${me2})`);
+}
+function updateAI(){
+  document.documentElement.style.setProperty('--bubble-other',`linear-gradient(135deg,${ai1},${ai2})`);
+}
+
+/* ===== 聊天存储 ===== */
+function loadChat(){
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+}
+function saveChat(list){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(list));
+}
+
+/* 渲染 */
+function render(){
+  messagesEl.innerHTML='';
+  loadChat().forEach(m=>{
+    const row=document.createElement('div');
+    row.className='msgRow '+m.type;
+    row.innerHTML=`
+      ${m.type==='other'?`<img class="avatar" src="${aiAvatar}">`:''}
+      <div class="msg">${m.text}</div>
+      ${m.type==='me'?`<img class="avatar" src="${myAvatar}">`:''}
+    `;
+    messagesEl.appendChild(row);
+  });
+  messagesEl.scrollTop=messagesEl.scrollHeight;
+}
+
+/* 发送 */
 sendBtn.onclick=()=>{
   if(!input.value.trim())return;
-
-  const m=document.createElement('div');
-  m.className='msg me';
-  m.textContent=input.value;
-  messages.appendChild(m);
+  const list=loadChat();
+  list.push({type:'me',text:input.value});
+  saveChat(list);
   input.value='';
+  render();
 
   setTimeout(()=>{
-    const r=document.createElement('div');
-    r.className='msg other';
-    r.textContent='（他想了想）我明白你的意思。';
-    messages.appendChild(r);
-    messages.scrollTop=messages.scrollHeight;
+    const act=actSwitch.checked?'（他想了想）':'';
+    list.push({type:'other',text:act+'我明白你的意思。'});
+    saveChat(list);
+    render();
   },600);
 };
+
+render();
 </script>
 </body>
 </html>
