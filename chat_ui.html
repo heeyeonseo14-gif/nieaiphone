@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<title>NIEaiphone — 聊天</title>
+<title>NIEaiphone · 聊天</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -15,6 +15,9 @@
   --text:#2f2436;
   --muted:#8b7c9b;
   --accent:#9b86e6;
+
+  --bubble-me:#9b86e6;
+  --bubble-other:#f3effa;
 }
 
 *{box-sizing:border-box}
@@ -30,7 +33,6 @@ html,body{
   width:96%;
   max-width:420px;
   margin:10px auto;
-  border-radius:22px;
   padding:14px;
   min-height:88vh;
   display:flex;
@@ -51,7 +53,6 @@ html,body{
   border:none;
   background:white;
   font-size:18px;
-  cursor:pointer;
 }
 .header h1{
   flex:1;
@@ -61,46 +62,38 @@ html,body{
   margin:0;
 }
 
-/* chat area */
+/* chat */
 .chatCard{
   flex:1;
   background:var(--card);
   border-radius:18px;
   padding:14px;
-  box-shadow:0 12px 36px rgba(40,20,60,.06);
   display:flex;
   flex-direction:column;
 }
-
 .messages{
   flex:1;
   overflow-y:auto;
   display:flex;
   flex-direction:column;
   gap:10px;
-  font-size:14px;
 }
-
 .msg{
   max-width:75%;
   padding:10px 12px;
   border-radius:14px;
-  line-height:1.4;
 }
-
 .me{
   align-self:flex-end;
-  background:linear-gradient(135deg,#b8a6ff,#8f7be8);
+  background:var(--bubble-me);
   color:white;
 }
-
 .other{
   align-self:flex-start;
-  background:#f3effa;
-  color:var(--text);
+  background:var(--bubble-other);
 }
 
-/* composer */
+/* input */
 .composer{
   display:flex;
   gap:8px;
@@ -108,11 +101,8 @@ html,body{
 }
 .composer textarea{
   flex:1;
-  resize:none;
   border-radius:14px;
-  border:1px solid rgba(0,0,0,.08);
   padding:10px;
-  font-family:inherit;
 }
 .sendBtn{
   width:54px;
@@ -120,11 +110,9 @@ html,body{
   border-radius:14px;
   background:linear-gradient(135deg,#b8a6ff,#8f7be8);
   color:white;
-  font-size:16px;
-  cursor:pointer;
 }
 
-/* bottom nav */
+/* bottom */
 .bottomNav{
   display:flex;
   gap:10px;
@@ -136,17 +124,13 @@ html,body{
   border-radius:999px;
   padding:10px;
   font-weight:700;
-  cursor:pointer;
-  background:white;
-  box-shadow:0 6px 20px rgba(40,20,60,.08);
 }
 
-/* ===== 人设弹窗 ===== */
+/* modal */
 .modalMask{
   position:fixed;
   inset:0;
   background:rgba(0,0,0,.45);
-  backdrop-filter: blur(2px);
   display:none;
   align-items:center;
   justify-content:center;
@@ -157,37 +141,29 @@ html,body{
   width:92%;
   max-width:380px;
   border-radius:20px;
-  padding:18px 16px;
-  box-shadow:0 20px 50px rgba(40,20,60,.25);
+  padding:16px;
 }
 .modal h3{
-  margin:0 0 14px;
-  font-size:18px;
   text-align:center;
+  margin:0 0 12px;
 }
 .modal label{
   font-size:13px;
   color:var(--muted);
+  margin-top:8px;
   display:block;
-  margin:10px 0 6px;
 }
-.modal input,
-.modal textarea,
-.modal select{
+.modal input,.modal textarea,.modal select{
   width:100%;
-  padding:10px 12px;
+  padding:10px;
   border-radius:12px;
   border:1px solid #e6def5;
-  font-family:inherit;
 }
-.modal textarea{
-  resize:none;
-  min-height:60px;
-}
+.modal textarea{resize:none}
 .modalActions{
   display:flex;
   gap:10px;
-  margin-top:16px;
+  margin-top:14px;
 }
 .modalActions button{
   flex:1;
@@ -195,29 +171,41 @@ html,body{
   border-radius:999px;
   border:none;
   font-weight:700;
-  cursor:pointer;
 }
-.modalActions .cancel{
-  background:#f2eefc;
-  color:#6b5fa6;
-}
-.modalActions .save{
+.cancel{background:#f2eefc}
+.save{
   background:linear-gradient(135deg,#9b8cff,#7c68e6);
   color:white;
 }
 
-/* 群成员 */
-.memberCard{
+/* switch */
+.switch{
   display:flex;
+  align-items:center;
   gap:10px;
-  margin-bottom:14px;
-  align-items:flex-start;
+  margin-top:8px;
 }
-.memberCard img{
-  width:42px;
-  height:42px;
-  border-radius:12px;
-  object-fit:cover;
+.switch input{display:none}
+.switch span{
+  width:42px;height:22px;
+  background:#ddd;
+  border-radius:999px;
+  position:relative;
+}
+.switch span::after{
+  content:'';
+  width:18px;height:18px;
+  background:white;
+  border-radius:50%;
+  position:absolute;
+  top:2px;left:2px;
+  transition:.2s;
+}
+.switch input:checked+span{
+  background:var(--accent);
+}
+.switch input:checked+span::after{
+  left:22px;
 }
 </style>
 </head>
@@ -225,136 +213,84 @@ html,body{
 <body>
 <div class="app">
 
-  <!-- header -->
-  <div class="header">
-    <button id="backBtn">←</button>
-    <h1 id="chatTitle">聊天</h1>
-    <button id="openFeed">☁</button>
-  </div>
+<div class="header">
+  <button onclick="location.href='chat.html'">←</button>
+  <h1 id="chatTitle">聊天</h1>
+  <button onclick="location.href='feed.html'">☁</button>
+</div>
 
-  <!-- chat -->
-  <div class="chatCard">
-    <div class="messages" id="messages"></div>
-
-    <div class="composer">
-      <textarea id="input" placeholder="输入消息…"></textarea>
-      <button class="sendBtn" id="sendBtn">➤</button>
-    </div>
+<div class="chatCard">
+  <div class="messages" id="messages"></div>
+  <div class="composer">
+    <textarea id="input" placeholder="输入消息…"></textarea>
+    <button class="sendBtn" id="sendBtn">➤</button>
   </div>
+</div>
 
-  <!-- bottom -->
-  <div class="bottomNav">
-    <button id="personaBtn">人设设定</button>
-    <button>我的设置</button>
-  </div>
+<div class="bottomNav">
+  <button id="personaBtn">人设设定</button>
+  <button>我的设置</button>
+</div>
 
 </div>
 
-<!-- 单聊 · 人设设定 -->
+<!-- 单聊人设 -->
 <div class="modalMask" id="personaModal">
-  <div class="modal">
-    <h3>人设设定</h3>
+<div class="modal">
+<h3>人设设定</h3>
 
-    <label>AI 名称</label>
-    <input placeholder="小NIE">
+<label>AI 名称</label>
+<input>
 
-    <label>性别</label>
-    <select>
-      <option>中性</option>
-      <option>男性</option>
-      <option>女性</option>
-    </select>
+<label>性别</label>
+<select><option>中性</option><option>男性</option><option>女性</option></select>
 
-    <label>人设（仅作为生成提示）</label>
-    <textarea placeholder="写下 AI 的性格、人设…"></textarea>
+<label>人设（生成提示）</label>
+<textarea></textarea>
 
-    <label>风格 / 习惯</label>
-    <textarea placeholder="例如：温柔、话不多、会安慰人"></textarea>
+<label>风格 / 习惯（生成提示）</label>
+<textarea></textarea>
 
-    <label>回复条数</label>
-    <input type="number" value="4">
+<label>回复条数（1–30）</label>
+<input type="number" min="1" max="30" value="10">
 
-    <label>
-      <input type="checkbox" checked>
-      回复中带动作 / 心理描写
-    </label>
+<label>聊天气泡颜色</label>
+<input type="color" onchange="document.documentElement.style.setProperty('--bubble-other',this.value)">
 
-    <div class="modalActions">
-      <button class="cancel" onclick="closePersona()">取消</button>
-      <button class="save" onclick="closePersona()">保存</button>
-    </div>
-  </div>
+<div class="switch">
+<input type="checkbox" id="actSwitch" checked>
+<span></span>
+<label>回复中带动作 / 心理描写</label>
 </div>
 
-<!-- 群聊 · 成员设定 -->
-<div class="modalMask" id="groupPersonaModal">
-  <div class="modal">
-    <h3>群聊 · 成员设定</h3>
-
-    <div class="memberCard">
-      <img src="https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png">
-      <div style="flex:1">
-        <input value="小NIE">
-        <textarea placeholder="群内人设（仅作为生成提示）"></textarea>
-      </div>
-    </div>
-
-    <div class="modalActions">
-      <button class="cancel" onclick="closeGroupPersona()">取消</button>
-      <button class="save" onclick="closeGroupPersona()">保存</button>
-    </div>
-  </div>
+<div class="modalActions">
+<button class="cancel" onclick="closePersona()">取消</button>
+<button class="save" onclick="closePersona()">保存</button>
+</div>
+</div>
 </div>
 
 <script>
-/* ===== 基础跳转 ===== */
-backBtn.onclick = ()=> location.href = 'chat.html';
-openFeed.onclick = ()=> location.href = 'feed.html';
+const personaBtn=document.getElementById('personaBtn');
+const personaModal=document.getElementById('personaModal');
 
-/* ===== 获取联系人 ===== */
-const params = new URLSearchParams(location.search);
-const cid = params.get('id');
-const contacts = JSON.parse(localStorage.getItem('nie_contacts_v1')||'[]');
-const contact = contacts.find(c=>c.id===cid);
-if(contact) chatTitle.textContent = contact.name;
+personaBtn.onclick=()=>personaModal.style.display='flex';
+function closePersona(){personaModal.style.display='none'}
 
-/* ===== 人设按钮（修复点） ===== */
-personaBtn.onclick = ()=>{
-  if(contact && contact.type === 'group'){
-    document.getElementById('groupPersonaModal').style.display = 'flex';
-  }else{
-    document.getElementById('personaModal').style.display = 'flex';
-  }
-};
-
-function closePersona(){
-  personaModal.style.display = 'none';
-}
-function closeGroupPersona(){
-  groupPersonaModal.style.display = 'none';
-}
-
-/* ===== 假聊天 ===== */
-const messagesEl = document.getElementById('messages');
-const inputEl = document.getElementById('input');
-
-function addMsg(text, type){
-  const div = document.createElement('div');
-  div.className = 'msg ' + type;
-  div.textContent = text;
-  messagesEl.appendChild(div);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-}
-
-sendBtn.onclick = ()=>{
-  const text = inputEl.value.trim();
-  if(!text) return;
-
-  addMsg(text,'me');
-  inputEl.value='';
-
+const messages=document.getElementById('messages');
+sendBtn.onclick=()=>{
+  if(!input.value.trim())return;
+  const m=document.createElement('div');
+  m.className='msg me';
+  m.textContent=input.value;
+  messages.appendChild(m);
+  input.value='';
   setTimeout(()=>{
-    addMsg('我收到了 🙂','other');
+    const r=document.createElement('div');
+    r.className='msg other';
+    r.textContent='（他想了想）我明白你的意思。';
+    messages.appendChild(r);
+    messages.scrollTop=messages.scrollHeight;
   },600);
 };
 </script>
