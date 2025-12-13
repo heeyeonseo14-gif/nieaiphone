@@ -21,12 +21,14 @@
 }
 
 *{box-sizing:border-box}
+
 html,body{
   margin:0;
   height:100%;
   font-family:"Quicksand",system-ui;
   background:linear-gradient(180deg,var(--bg1),var(--bg2));
   color:var(--text);
+  overflow:hidden; /* ★修复：防止 body 抢滚动 */
 }
 
 .app{
@@ -37,6 +39,7 @@ html,body{
   min-height:88vh;
   display:flex;
   flex-direction:column;
+  min-height:0; /* ★修复：flex 滚动链路 */
 }
 
 /* ===== header ===== */
@@ -65,7 +68,7 @@ html,body{
 /* ===== chat ===== */
 .chatCard{
   flex:1;
-  min-height:0;               /* ★修复：允许内部滚动 */
+  min-height:0;                 /* ★修复：必须 */
   background:var(--card);
   border-radius:18px;
   padding:14px;
@@ -76,8 +79,8 @@ html,body{
 
 .messages{
   flex:1;
-  min-height:0;               /* ★修复：关键 */
-  overflow-y:auto;            /* ★修复：只滚动白色卡片 */
+  min-height:0;                 /* ★修复：必须 */
+  overflow-y:auto;              /* ★修复：只滚这里 */
   display:flex;
   flex-direction:column;
   gap:10px;
@@ -96,16 +99,11 @@ html,body{
   width:34px;
   height:34px;
   border-radius:50%;
-  background:#ddd;
+  background-color:#e6def5;      /* ★修复：兜底头像 */
   background-position:center;
   background-size:cover;
   background-repeat:no-repeat;
   flex-shrink:0;
-}
-
-/* ★新增：无头像时占位 */
-.avatar.empty{
-  background:#e6def5;
 }
 
 .msg{
@@ -168,6 +166,7 @@ html,body{
   justify-content:center;
   z-index:99;
 }
+
 .modal{
   background:white;
   width:92%;
@@ -175,28 +174,34 @@ html,body{
   border-radius:20px;
   padding:16px;
 }
+
 .modal h3{
   text-align:center;
   margin:0 0 12px;
 }
+
 .modal label{
   font-size:13px;
   color:var(--muted);
   margin-top:10px;
   display:block;
 }
+
 .modal input,.modal textarea,.modal select{
   width:100%;
   padding:10px;
   border-radius:12px;
   border:1px solid #e6def5;
 }
+
 .modal textarea{resize:none}
+
 .modalActions{
   display:flex;
   gap:10px;
   margin-top:14px;
 }
+
 .modalActions button{
   flex:1;
   padding:12px;
@@ -204,15 +209,19 @@ html,body{
   border:none;
   font-weight:700;
 }
-.cancel{background:#f2eefc}
-.save{background:linear-gradient(135deg,#9b8cff,#7c68e6);color:white}
 
-/* ===== gradient picker（你原本的） ===== */
+.cancel{background:#f2eefc}
+.save{
+  background:linear-gradient(135deg,#9b8cff,#7c68e6);
+  color:white;
+}
+
+/* ===== gradient picker ===== */
 .gradRow{display:flex;gap:10px;margin:6px 0}
 .grad{width:48px;height:28px;border-radius:999px;cursor:pointer;border:2px solid transparent}
 .grad.active{border-color:#9b86e6}
 
-/* 气泡（你原本 + 新增） */
+/* 我的气泡 */
 .me1{background:linear-gradient(135deg,#cbb8ff,#9b86e6)}
 .me2{background:linear-gradient(135deg,#ffd6e9,#e7b6ff)}
 .me3{background:linear-gradient(135deg,#e6f2ff,#cfe5ff)}
@@ -254,7 +263,7 @@ html,body{
 
 </div>
 
-<!-- ===== 你原本的人设设定（一行没删） ===== -->
+<!-- 人设设定（你原本的全部保留） -->
 <div class="modalMask" id="personaModal">
 <div class="modal">
 <h3>人设设定</h3>
@@ -294,12 +303,12 @@ html,body{
 </div>
 
 <script>
-/* ===== 人设 ===== */
 const personaBtn=document.getElementById('personaBtn');
 const personaModal=document.getElementById('personaModal');
 personaBtn.onclick=()=>personaModal.style.display='flex';
 function closePersona(){personaModal.style.display='none'}
 
+/* ★修复：保存 AI 头像 */
 aiAvatarInput.onchange=e=>{
   const f=e.target.files[0];
   if(!f)return;
@@ -320,18 +329,27 @@ function savePersona(){
   closePersona();
 }
 
-/* 初始化人设 */
-(function(){
+/* ★修复：初始化恢复人设 / 气泡 / 标题 */
+(function init(){
   const d=JSON.parse(localStorage.getItem('persona')||'{}');
-  if(d.name){p_name.value=d.name;chatTitle.textContent=d.name}
+  if(d.name){
+    p_name.value=d.name;
+    chatTitle.textContent=d.name;
+  }
   if(d.gender)p_gender.value=d.gender;
   if(d.persona)p_persona.value=d.persona;
   if(d.style)p_style.value=d.style;
   if(d.limit)p_limit.value=d.limit;
   if(d.act)actSwitch.checked=true;
+
+  const meBubble=localStorage.getItem('meBubble');
+  if(meBubble)document.documentElement.style.setProperty('--bubble-me',meBubble);
+
+  const aiBubble=localStorage.getItem('aiBubble');
+  if(aiBubble)document.documentElement.style.setProperty('--bubble-ai',aiBubble);
 })();
 
-/* ===== 聊天 ===== */
+/* 聊天记录 */
 const KEY='chat_'+location.search;
 const messagesEl=document.getElementById('messages');
 
@@ -344,12 +362,11 @@ function render(){
     row.className='msgRow '+m.type;
     row.innerHTML=`
       ${m.type==='ai'
-        ? `<div class="avatar ${aiAvatar?'':'empty'}"
-             ${aiAvatar?`style="background-image:url('${aiAvatar}')"`:''}></div>`
+        ? `<div class="avatar" ${aiAvatar ? `style="background-image:url('${aiAvatar}')"`:''}></div>`
         : ''
       }
       <div class="msg">${m.text}</div>
-      ${m.type==='me'?'<div class="avatar empty"></div>':''}
+      ${m.type==='me'?'<div class="avatar"></div>':''}
     `;
     messagesEl.appendChild(row);
   });
