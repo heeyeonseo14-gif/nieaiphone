@@ -1,12 +1,243 @@
 <!doctype html>
-<html>
+<html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>跳转中...</title>
-<script>
-  location.replace('chat_ui.html');
-</script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>NIEaiphone · 聊天</title>
+
+<style>
+:root{
+  --bg:#f3ecfb;
+  --card:#ffffff;
+  --accent:#8e7ae6;
+  --text:#2f2436;
+  --muted:#8a7f99;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+  background:linear-gradient(180deg,#f5edff,#efe7fb);
+  color:var(--text);
+}
+.app{
+  max-width:430px;
+  margin:0 auto;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+.header{
+  padding:14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.header h1{
+  font-size:18px;
+  margin:0;
+}
+.iconBtn{
+  width:36px;
+  height:36px;
+  border-radius:12px;
+  border:none;
+  background:white;
+  font-size:18px;
+  cursor:pointer;
+}
+.contacts{
+  flex:1;
+  padding:12px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+.card{
+  background:var(--card);
+  border-radius:16px;
+  padding:12px 8px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  cursor:pointer;
+  position:relative;
+}
+.card img{
+  width:56px;
+  height:56px;
+  border-radius:14px;
+  object-fit:cover;
+}
+.card span{
+  font-size:13px;
+  font-weight:600;
+  text-align:center;
+}
+.del{
+  position:absolute;
+  top:6px;
+  right:6px;
+  border:none;
+  background:none;
+  font-size:14px;
+  color:#c66;
+}
+.bottom{
+  padding:12px;
+  display:flex;
+  gap:10px;
+}
+.bottom button{
+  flex:1;
+  padding:10px;
+  border-radius:999px;
+  border:none;
+  background:white;
+  font-weight:600;
+  cursor:pointer;
+}
+.primary{
+  background:linear-gradient(135deg,#9b8cff,#7c68e6);
+  color:white;
+}
+
+/* modal */
+.modalMask{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.35);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:99;
+}
+.modal{
+  background:white;
+  width:90%;
+  max-width:360px;
+  border-radius:16px;
+  padding:16px;
+}
+.modal h3{
+  margin:0 0 12px 0;
+}
+.modal input{
+  width:100%;
+  padding:8px;
+  margin-bottom:10px;
+  border-radius:8px;
+  border:1px solid #ddd;
+}
+.modalActions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+}
+</style>
 </head>
-<body></body>
+
+<body>
+<div class="app">
+
+  <!-- 顶部 -->
+  <div class="header">
+    <button class="iconBtn" onclick="location.href='home.html'">←</button>
+    <h1>聊天</h1>
+    <button class="iconBtn" onclick="openAdd()">＋</button>
+  </div>
+
+  <!-- 联系人 -->
+  <div class="contacts">
+    <div class="grid" id="contactGrid"></div>
+  </div>
+
+  <!-- 底部 -->
+  <div class="bottom">
+    <button onclick="openAdd()">添加联系人</button>
+    <button class="primary" onclick="openGroup()">创建群聊</button>
+  </div>
+</div>
+
+<!-- 添加联系人 -->
+<div class="modalMask" id="addModal">
+  <div class="modal">
+    <h3>添加联系人</h3>
+    <input id="addName" placeholder="名字">
+    <input id="addAvatar" placeholder="头像图片 URL（可空）">
+    <div class="modalActions">
+      <button onclick="closeAdd()">取消</button>
+      <button class="primary" onclick="saveContact()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY = 'nie_contacts_v1';
+
+function load(){
+  return JSON.parse(localStorage.getItem(KEY)||'[]');
+}
+function save(list){
+  localStorage.setItem(KEY,JSON.stringify(list));
+}
+
+function render(){
+  const grid=document.getElementById('contactGrid');
+  grid.innerHTML='';
+  load().forEach(c=>{
+    const el=document.createElement('div');
+    el.className='card';
+    el.innerHTML=`
+      <button class="del" onclick="del('${c.id}',event)">✕</button>
+      <img src="${c.avatar||'https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png'}">
+      <span>${c.name}</span>
+    `;
+    el.onclick=()=>openChat(c.id);
+    grid.appendChild(el);
+  });
+}
+
+function openChat(id){
+  location.href='chat_ui.html?id='+id;
+}
+
+function openAdd(){
+  document.getElementById('addModal').style.display='flex';
+}
+function closeAdd(){
+  document.getElementById('addModal').style.display='none';
+}
+
+function saveContact(){
+  const name=addName.value.trim();
+  if(!name) return;
+  const list=load();
+  list.push({
+    id:'c'+Date.now(),
+    name,
+    avatar:addAvatar.value.trim()
+  });
+  save(list);
+  closeAdd();
+  render();
+}
+
+function del(id,e){
+  e.stopPropagation();
+  if(!confirm('删除联系人？')) return;
+  save(load().filter(c=>c.id!==id));
+  render();
+}
+
+function openGroup(){
+  alert('群聊功能下一步接 😌');
+}
+
+render();
+</script>
+</body>
 </html>
