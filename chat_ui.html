@@ -8,85 +8,82 @@
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
+/* ================== 主题变量 ================== */
 :root{
-  --bg1:#f4e8fb;
-  --bg2:#f0e7fb;
+  --bg:#f4e8fb;
   --card:#ffffff;
   --text:#2f2436;
   --muted:#8b7c9b;
-  --accent:#9b86e6;
 
-  --bubble-me:linear-gradient(135deg,#cbb8ff,#9b86e6);
-  --bubble-ai:linear-gradient(135deg,#f6f1ff,#ebe3ff);
+  --meBubble:linear-gradient(135deg,#cbb8ff,#9b86e6);
+  --aiBubble:linear-gradient(135deg,#f6f1ff,#ebe3ff);
 }
 
 *{box-sizing:border-box}
-
 html,body{
   margin:0;
   height:100%;
   font-family:"Quicksand",system-ui;
-  background:linear-gradient(180deg,var(--bg1),var(--bg2));
+  background:var(--bg);
   color:var(--text);
-  overflow:hidden; /* ★修复：防止 body 抢滚动 */
+  overflow:hidden; /* ★ 页面本身不滚 */
 }
 
+/* ================== 布局 ================== */
 .app{
-  width:96%;
   max-width:420px;
-  margin:10px auto;
-  padding:14px;
-  min-height:88vh;
+  margin:0 auto;
+  height:100%;
   display:flex;
   flex-direction:column;
-  min-height:0; /* ★修复：flex 滚动链路 */
 }
 
-/* ===== header ===== */
+/* ================== 顶部 ================== */
 .header{
+  height:56px;
   display:flex;
   align-items:center;
-  gap:10px;
-  margin-bottom:10px;
+  padding:0 12px;
+  background:#f1e6fa;
 }
 .header button{
-  width:42px;
-  height:42px;
-  border-radius:12px;
   border:none;
   background:white;
-  font-size:18px;
+  border-radius:12px;
+  width:36px;
+  height:36px;
 }
 .header h1{
   flex:1;
-  font-size:18px;
-  font-weight:700;
   text-align:center;
+  font-size:17px;
   margin:0;
 }
 
-/* ===== chat ===== */
-.chatCard{
+/* ================== 聊天白卡片 ================== */
+.chatWrap{
   flex:1;
-  min-height:0;                 /* ★修复：必须 */
+  padding:10px;
+}
+.chatCard{
   background:var(--card);
+  height:100%;
   border-radius:18px;
-  padding:14px;
+  padding:12px;
   display:flex;
   flex-direction:column;
-  margin-bottom:12px;
 }
 
+/* ★ 只有这里滚 */
 .messages{
   flex:1;
-  min-height:0;                 /* ★修复：必须 */
-  overflow-y:auto;              /* ★修复：只滚这里 */
+  overflow-y:auto;
   display:flex;
   flex-direction:column;
-  gap:10px;
+  gap:12px;
 }
 
-/* ===== message row ===== */
+/* ================== 消息 ================== */
 .msgRow{
   display:flex;
   gap:8px;
@@ -99,10 +96,7 @@ html,body{
   width:34px;
   height:34px;
   border-radius:50%;
-  background-color:#e6def5;      /* ★修复：兜底头像 */
-  background-position:center;
-  background-size:cover;
-  background-repeat:no-repeat;
+  background:#ddd center/cover no-repeat;
   flex-shrink:0;
 }
 
@@ -110,19 +104,19 @@ html,body{
   max-width:70%;
   padding:10px 12px;
   border-radius:14px;
-  line-height:1.45;
   font-size:14px;
+  line-height:1.45;
 }
 
 .me .msg{
-  background:var(--bubble-me);
+  background:var(--meBubble);
   color:white;
 }
 .ai .msg{
-  background:var(--bubble-ai);
+  background:var(--aiBubble);
 }
 
-/* ===== input ===== */
+/* ================== 输入 ================== */
 .composer{
   display:flex;
   gap:8px;
@@ -133,6 +127,7 @@ html,body{
   border-radius:14px;
   padding:10px;
   border:1px solid #e6def5;
+  resize:none;
 }
 .sendBtn{
   width:54px;
@@ -142,11 +137,11 @@ html,body{
   color:white;
 }
 
-/* ===== bottom ===== */
+/* ================== 底部 ================== */
 .bottomNav{
   display:flex;
   gap:10px;
-  margin-top:12px;
+  padding:10px;
 }
 .bottomNav button{
   flex:1;
@@ -156,7 +151,7 @@ html,body{
   font-weight:700;
 }
 
-/* ===== modal ===== */
+/* ================== 人设 Modal ================== */
 .modalMask{
   position:fixed;
   inset:0;
@@ -166,7 +161,6 @@ html,body{
   justify-content:center;
   z-index:99;
 }
-
 .modal{
   background:white;
   width:92%;
@@ -174,34 +168,25 @@ html,body{
   border-radius:20px;
   padding:16px;
 }
-
-.modal h3{
-  text-align:center;
-  margin:0 0 12px;
-}
-
+.modal h3{text-align:center;margin:0 0 12px}
 .modal label{
   font-size:13px;
   color:var(--muted);
   margin-top:10px;
   display:block;
 }
-
 .modal input,.modal textarea,.modal select{
   width:100%;
   padding:10px;
   border-radius:12px;
   border:1px solid #e6def5;
 }
-
 .modal textarea{resize:none}
-
 .modalActions{
   display:flex;
   gap:10px;
   margin-top:14px;
 }
-
 .modalActions button{
   flex:1;
   padding:12px;
@@ -209,53 +194,57 @@ html,body{
   border:none;
   font-weight:700;
 }
-
 .cancel{background:#f2eefc}
 .save{
   background:linear-gradient(135deg,#9b8cff,#7c68e6);
   color:white;
 }
 
-/* ===== gradient picker ===== */
-.gradRow{display:flex;gap:10px;margin:6px 0}
-.grad{width:48px;height:28px;border-radius:999px;cursor:pointer;border:2px solid transparent}
+/* ================== 气泡选择 ================== */
+.gradRow{display:flex;gap:10px;margin-top:6px}
+.grad{
+  width:48px;
+  height:28px;
+  border-radius:999px;
+  border:2px solid transparent;
+}
 .grad.active{border-color:#9b86e6}
 
-/* 我的气泡 */
 .me1{background:linear-gradient(135deg,#cbb8ff,#9b86e6)}
 .me2{background:linear-gradient(135deg,#ffd6e9,#e7b6ff)}
 .me3{background:linear-gradient(135deg,#e6f2ff,#cfe5ff)}
 .me4{background:linear-gradient(135deg,#e7f7ec,#cdeedd)}
-.me5{background:linear-gradient(135deg,#fff7e6,#ffe1b3)}
-.me6{background:linear-gradient(135deg,#f1f0ff,#dcd9ff)}
 
 .ai1{background:linear-gradient(135deg,#f6f1ff,#ebe3ff)}
 .ai2{background:linear-gradient(135deg,#fff1f7,#f0dcff)}
 .ai3{background:linear-gradient(135deg,#eef6ff,#ddeaff)}
 .ai4{background:linear-gradient(135deg,#f0fbf4,#dcf3e6)}
-.ai5{background:linear-gradient(135deg,#fff7fa,#ffe6f0)}
-.ai6{background:linear-gradient(135deg,#f6fffb,#e2f7ef)}
 </style>
 </head>
 
 <body>
 <div class="app">
 
+<!-- ===== 顶部 ===== -->
 <div class="header">
-  <button onclick="location.href='chat.html'">←</button>
+  <button onclick="history.back()">←</button>
   <h1 id="chatTitle">聊天</h1>
-  <button onclick="location.href='feed.html'">☁</button>
+  <button>☁</button>
 </div>
 
-<div class="chatCard">
-  <div class="messages" id="messages"></div>
+<!-- ===== 聊天 ===== -->
+<div class="chatWrap">
+  <div class="chatCard">
+    <div class="messages" id="messages"></div>
 
-  <div class="composer">
-    <textarea id="input" placeholder="输入消息…"></textarea>
-    <button class="sendBtn" id="sendBtn">➤</button>
+    <div class="composer">
+      <textarea id="input" placeholder="输入消息…"></textarea>
+      <button class="sendBtn" id="sendBtn">➤</button>
+    </div>
   </div>
 </div>
 
+<!-- ===== 底部 ===== -->
 <div class="bottomNav">
   <button id="personaBtn">人设设定</button>
   <button>我的设置</button>
@@ -263,7 +252,7 @@ html,body{
 
 </div>
 
-<!-- 人设设定（你原本的全部保留） -->
+<!-- ===== 人设设定 ===== -->
 <div class="modalMask" id="personaModal">
 <div class="modal">
 <h3>人设设定</h3>
@@ -285,14 +274,29 @@ html,body{
 <textarea id="p_style"></textarea>
 
 <label>回复条数（1–30）</label>
-<input id="p_limit" type="number" min="1" max="30" value="3">
+<input id="p_limit" type="number" min="1" max="30" value="2">
 
 <label>AI 头像</label>
-<input type="file" accept="image/*" id="aiAvatarInput">
+<input type="file" id="aiAvatarInput" accept="image/*">
+
+<label>我的气泡</label>
+<div class="gradRow" id="meRow">
+  <div class="grad me1" onclick="setMe(0)"></div>
+  <div class="grad me2" onclick="setMe(1)"></div>
+  <div class="grad me3" onclick="setMe(2)"></div>
+  <div class="grad me4" onclick="setMe(3)"></div>
+</div>
+
+<label>AI 气泡</label>
+<div class="gradRow" id="aiRow">
+  <div class="grad ai1" onclick="setAI(0)"></div>
+  <div class="grad ai2" onclick="setAI(1)"></div>
+  <div class="grad ai3" onclick="setAI(2)"></div>
+  <div class="grad ai4" onclick="setAI(3)"></div>
+</div>
 
 <label>
-  <input type="checkbox" id="actSwitch">
-  回复中带动作 / 心理描写
+  <input type="checkbox" id="actSwitch"> 回复中带动作 / 心理描写
 </label>
 
 <div class="modalActions">
@@ -303,12 +307,34 @@ html,body{
 </div>
 
 <script>
+/* ===== 人设逻辑 ===== */
 const personaBtn=document.getElementById('personaBtn');
 const personaModal=document.getElementById('personaModal');
 personaBtn.onclick=()=>personaModal.style.display='flex';
 function closePersona(){personaModal.style.display='none'}
 
-/* ★修复：保存 AI 头像 */
+const ME_G=[
+'linear-gradient(135deg,#cbb8ff,#9b86e6)',
+'linear-gradient(135deg,#ffd6e9,#e7b6ff)',
+'linear-gradient(135deg,#e6f2ff,#cfe5ff)',
+'linear-gradient(135deg,#e7f7ec,#cdeedd)'
+];
+const AI_G=[
+'linear-gradient(135deg,#f6f1ff,#ebe3ff)',
+'linear-gradient(135deg,#fff1f7,#f0dcff)',
+'linear-gradient(135deg,#eef6ff,#ddeaff)',
+'linear-gradient(135deg,#f0fbf4,#dcf3e6)'
+];
+
+function setMe(i){
+  document.documentElement.style.setProperty('--meBubble',ME_G[i]);
+  localStorage.setItem('meBubble',ME_G[i]);
+}
+function setAI(i){
+  document.documentElement.style.setProperty('--aiBubble',AI_G[i]);
+  localStorage.setItem('aiBubble',AI_G[i]);
+}
+
 aiAvatarInput.onchange=e=>{
   const f=e.target.files[0];
   if(!f)return;
@@ -326,45 +352,38 @@ function savePersona(){
     limit:+p_limit.value,
     act:actSwitch.checked
   }));
+  chatTitle.textContent=p_name.value||'聊天';
   closePersona();
 }
 
-/* ★修复：初始化恢复人设 / 气泡 / 标题 */
-(function init(){
-  const d=JSON.parse(localStorage.getItem('persona')||'{}');
-  if(d.name){
-    p_name.value=d.name;
-    chatTitle.textContent=d.name;
-  }
-  if(d.gender)p_gender.value=d.gender;
-  if(d.persona)p_persona.value=d.persona;
-  if(d.style)p_style.value=d.style;
-  if(d.limit)p_limit.value=d.limit;
-  if(d.act)actSwitch.checked=true;
+/* ===== 初始化 ===== */
+(function(){
+  const p=JSON.parse(localStorage.getItem('persona')||'{}');
+  if(p.name){p_name.value=p.name;chatTitle.textContent=p.name}
+  if(p.gender)p_gender.value=p.gender;
+  if(p.persona)p_persona.value=p.persona;
+  if(p.style)p_style.value=p.style;
+  if(p.limit)p_limit.value=p.limit;
+  if(p.act)actSwitch.checked=true;
 
-  const meBubble=localStorage.getItem('meBubble');
-  if(meBubble)document.documentElement.style.setProperty('--bubble-me',meBubble);
-
-  const aiBubble=localStorage.getItem('aiBubble');
-  if(aiBubble)document.documentElement.style.setProperty('--bubble-ai',aiBubble);
+  if(localStorage.getItem('meBubble'))
+    document.documentElement.style.setProperty('--meBubble',localStorage.getItem('meBubble'));
+  if(localStorage.getItem('aiBubble'))
+    document.documentElement.style.setProperty('--aiBubble',localStorage.getItem('aiBubble'));
 })();
 
-/* 聊天记录 */
-const KEY='chat_'+location.search;
+/* ===== 聊天 ===== */
+const KEY='chat_history';
 const messagesEl=document.getElementById('messages');
 
 function render(){
   messagesEl.innerHTML='';
-  const aiAvatar=localStorage.getItem('aiAvatar');
-
+  const avatar=localStorage.getItem('aiAvatar');
   JSON.parse(localStorage.getItem(KEY)||'[]').forEach(m=>{
     const row=document.createElement('div');
     row.className='msgRow '+m.type;
     row.innerHTML=`
-      ${m.type==='ai'
-        ? `<div class="avatar" ${aiAvatar ? `style="background-image:url('${aiAvatar}')"`:''}></div>`
-        : ''
-      }
+      ${m.type==='ai'?`<div class="avatar" style="background-image:url('${avatar||''}')"></div>`:''}
       <div class="msg">${m.text}</div>
       ${m.type==='me'?'<div class="avatar"></div>':''}
     `;
@@ -383,15 +402,12 @@ sendBtn.onclick=()=>{
   render();
 
   const p=JSON.parse(localStorage.getItem('persona')||'{}');
-  const replies=p.limit||1;
-
-  for(let i=0;i<replies;i++){
+  const n=p.limit||1;
+  for(let i=0;i<n;i++){
     setTimeout(()=>{
       list.push({
         type:'ai',
-        text:p.act
-          ? `（他想了想）这是第 ${i+1} 条回复。`
-          : `这是第 ${i+1} 条回复。`
+        text:p.act?`（他想了想）这是第 ${i+1} 条回复。`:`这是第 ${i+1} 条回复。`
       });
       localStorage.setItem(KEY,JSON.stringify(list));
       render();
