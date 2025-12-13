@@ -219,19 +219,16 @@ body{
 
 <div class="app">
 
-  <!-- header -->
   <div class="header">
     <button class="iconBtn" onclick="location.href='home.html'">←</button>
     <h1>聊天</h1>
     <button class="iconBtn" onclick="openAdd()">＋</button>
   </div>
 
-  <!-- contacts -->
   <div class="contacts">
     <div class="grid" id="contactGrid"></div>
   </div>
 
-  <!-- bottom -->
   <div class="bottom">
     <button onclick="location.href='feed.html'">朋友圈</button>
   </div>
@@ -281,7 +278,8 @@ function render(){
       <span>${c.name}</span>
       ${c.type==='group'?'<div class="badge">群</div>':''}
     `;
-    d.onclick=()=>location.href='chat_ui.html?id='+c.id;
+    /* ★修改点：把 id 改成 cid，作为聊天唯一身份 */
+    d.onclick=()=>location.href='chat_ui.html?cid='+c.id;
     contactGrid.appendChild(d);
   });
 }
