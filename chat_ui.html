@@ -29,85 +29,54 @@ html,body{
   color:var(--text);
 }
 
-/* ===== App 布局 ===== */
 .app{
   max-width:420px;
   margin:0 auto;
   height:100vh;
   display:flex;
   flex-direction:column;
-  padding:12px;
 }
 
-/* ===== Header ===== */
+/* ===== header ===== */
 .header{
   display:flex;
   align-items:center;
   gap:10px;
-  margin-bottom:8px;
+  padding:12px;
 }
 .header button{
-  width:38px;
-  height:38px;
-  border-radius:12px;
+  width:36px;
+  height:36px;
+  border-radius:10px;
   border:none;
   background:white;
-  font-size:18px;
 }
 .header h1{
   flex:1;
   text-align:center;
-  font-size:17px;
-  font-weight:700;
+  font-size:16px;
   margin:0;
 }
 
-/* 右上角菜单 */
-.menuWrap{position:relative}
-.menu{
-  position:absolute;
-  top:46px;
-  right:0;
-  background:white;
-  border-radius:14px;
-  box-shadow:0 10px 30px rgba(0,0,0,.12);
-  overflow:hidden;
-  display:none;
-}
-.menu button{
-  display:block;
-  padding:12px 18px;
-  border:none;
-  background:none;
-  width:100%;
-  text-align:left;
-  font-weight:600;
-  cursor:pointer;
-}
-.menu button:hover{background:#f3eefc}
-
-/* ===== Chat Card ===== */
+/* ===== chat card ===== */
 .chatCard{
   flex:1;
-  min-height:0;
   background:var(--card);
-  border-radius:18px;
-  padding:12px;
+  border-radius:18px 18px 0 0;
+  padding:14px;
   display:flex;
   flex-direction:column;
+  overflow:hidden;
 }
 
-/* 消息区滚动 */
 .messages{
   flex:1;
-  min-height:0;
   overflow-y:auto;
   display:flex;
   flex-direction:column;
   gap:10px;
 }
 
-/* 消息 */
 .msgRow{
   display:flex;
   gap:8px;
@@ -125,13 +94,12 @@ html,body{
 }
 
 .msg{
-  max-width:72%;
+  max-width:70%;
   padding:10px 12px;
   border-radius:14px;
   font-size:14px;
   line-height:1.45;
 }
-
 .me .msg{
   background:var(--bubble-me);
   color:white;
@@ -140,31 +108,31 @@ html,body{
   background:var(--bubble-ai);
 }
 
-/* ===== 输入区（固定底部） ===== */
+/* ===== input fixed ===== */
 .composer{
   position:sticky;
   bottom:0;
-  background:var(--card);
-  padding-top:8px;
+  background:white;
   display:flex;
   gap:8px;
+  padding:10px;
+  border-top:1px solid #eee;
 }
 .composer textarea{
   flex:1;
-  resize:none;
   border-radius:14px;
   padding:10px;
   border:1px solid #e6def5;
 }
 .sendBtn{
-  width:54px;
+  width:52px;
   border:none;
   border-radius:14px;
   background:linear-gradient(135deg,#b8a6ff,#8f7be8);
   color:white;
 }
 
-/* ===== 人设弹窗 ===== */
+/* ===== modal ===== */
 .modalMask{
   position:fixed;
   inset:0;
@@ -181,56 +149,55 @@ html,body{
   border-radius:20px;
   padding:16px;
 }
-.modal label{
-  font-size:13px;
-  color:var(--muted);
-  margin-top:10px;
-  display:block;
-}
+.modal h3{text-align:center;margin:0 0 12px}
+.modal label{font-size:13px;color:var(--muted);margin-top:10px;display:block}
 .modal input,.modal textarea,.modal select{
   width:100%;
   padding:10px;
   border-radius:12px;
   border:1px solid #e6def5;
 }
+.modal textarea{resize:none}
+
+.gradRow{display:flex;gap:10px;margin:6px 0}
+.grad{
+  width:48px;height:28px;border-radius:999px;
+  cursor:pointer;border:2px solid transparent
+}
+.grad.active{border-color:#9b86e6}
+
+.me1{background:linear-gradient(135deg,#cbb8ff,#9b86e6)}
+.me2{background:linear-gradient(135deg,#ffd6e9,#e7b6ff)}
+.me3{background:linear-gradient(135deg,#e6f2ff,#cfe5ff)}
+.me4{background:linear-gradient(135deg,#e7f7ec,#cdeedd)}
+
+.ai1{background:linear-gradient(135deg,#f6f1ff,#ebe3ff)}
+.ai2{background:linear-gradient(135deg,#fff1f7,#f0dcff)}
+.ai3{background:linear-gradient(135deg,#eef6ff,#ddeaff)}
+.ai4{background:linear-gradient(135deg,#f0fbf4,#dcf3e6)}
+
 .modalActions{
-  display:flex;
-  gap:10px;
-  margin-top:14px;
+  display:flex;gap:10px;margin-top:14px
 }
 .modalActions button{
-  flex:1;
-  padding:12px;
-  border-radius:999px;
-  border:none;
-  font-weight:700;
+  flex:1;padding:12px;border-radius:999px;border:none;font-weight:700
 }
-.cancel{background:#f2eefc}
 .save{background:linear-gradient(135deg,#9b8cff,#7c68e6);color:white}
+.cancel{background:#f2eefc}
 </style>
 </head>
 
 <body>
 <div class="app">
 
-<!-- Header -->
 <div class="header">
   <button onclick="history.back()">←</button>
   <h1 id="chatTitle">聊天</h1>
-
-  <div class="menuWrap">
-    <button onclick="toggleMenu()">⋯</button>
-    <div class="menu" id="menu">
-      <button onclick="openPersona()">人设设定</button>
-      <button onclick="alert('我的设定稍后')">我的设定</button>
-    </div>
-  </div>
+  <button onclick="openPersona()">⚙</button>
 </div>
 
-<!-- Chat -->
 <div class="chatCard">
   <div class="messages" id="messages"></div>
-
   <div class="composer">
     <textarea id="input" placeholder="输入消息…"></textarea>
     <button class="sendBtn" id="sendBtn">➤</button>
@@ -247,28 +214,37 @@ html,body{
 <input id="p_name">
 
 <label>性别</label>
-<select id="p_gender">
-  <option>中性</option>
-  <option>男性</option>
-  <option>女性</option>
-</select>
+<select id="p_gender"><option>中性</option><option>男性</option><option>女性</option></select>
 
-<label>人设（生成提示）</label>
+<label>人设</label>
 <textarea id="p_persona"></textarea>
 
-<label>风格 / 习惯（生成提示）</label>
+<label>风格 / 习惯</label>
 <textarea id="p_style"></textarea>
 
-<label>回复条数（1–30）</label>
-<input id="p_limit" type="number" min="1" max="30" value="3">
+<label>回复条数</label>
+<input id="p_limit" type="number" min="1" max="30" value="1">
 
 <label>AI 头像</label>
-<input type="file" accept="image/*" id="aiAvatarInput">
+<input type="file" id="aiAvatarInput" accept="image/*">
 
-<label>
-  <input type="checkbox" id="actSwitch">
-  回复中带动作 / 心理描写
-</label>
+<label>我的气泡</label>
+<div class="gradRow" id="meRow">
+  <div class="grad me1" onclick="setMe(0)"></div>
+  <div class="grad me2" onclick="setMe(1)"></div>
+  <div class="grad me3" onclick="setMe(2)"></div>
+  <div class="grad me4" onclick="setMe(3)"></div>
+</div>
+
+<label>AI 气泡</label>
+<div class="gradRow" id="aiRow">
+  <div class="grad ai1" onclick="setAI(0)"></div>
+  <div class="grad ai2" onclick="setAI(1)"></div>
+  <div class="grad ai3" onclick="setAI(2)"></div>
+  <div class="grad ai4" onclick="setAI(3)"></div>
+</div>
+
+<label><input type="checkbox" id="actSwitch"> 回复带动作 / 心理</label>
 
 <div class="modalActions">
   <button class="cancel" onclick="closePersona()">取消</button>
@@ -278,65 +254,50 @@ html,body{
 </div>
 
 <script>
-/* ===== 联系人隔离 ===== */
-const cid=new URLSearchParams(location.search).get('id')||'default';
-const CHAT_KEY='chat_'+cid;
-const PERSONA_KEY='persona_'+cid;
-const AVATAR_KEY='aiAvatar_'+cid;
+const id=new URLSearchParams(location.search).get('id')||'default';
+const KEY_CHAT='chat_'+id;
+const KEY_PERSONA='persona_'+id;
+const KEY_AVATAR='aiAvatar_'+id;
 
-/* 菜单 */
-function toggleMenu(){
-  menu.style.display=menu.style.display==='block'?'none':'block';
-}
-function openPersona(){
-  menu.style.display='none';
-  personaModal.style.display='flex';
-}
+function openPersona(){personaModal.style.display='flex'}
 function closePersona(){personaModal.style.display='none'}
 
-/* 人设 */
 function savePersona(){
-  localStorage.setItem(PERSONA_KEY,JSON.stringify({
-    name:p_name.value,
-    gender:p_gender.value,
-    persona:p_persona.value,
-    style:p_style.value,
-    limit:+p_limit.value,
-    act:actSwitch.checked
+  localStorage.setItem(KEY_PERSONA,JSON.stringify({
+    name:p_name.value,gender:p_gender.value,
+    persona:p_persona.value,style:p_style.value,
+    limit:+p_limit.value,act:actSwitch.checked
   }));
-  chatTitle.textContent=p_name.value||'聊天';
+  document.getElementById('chatTitle').textContent=p_name.value||'聊天';
   closePersona();
 }
 
-(function initPersona(){
-  const d=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
-  if(d.name)p_name.value=d.name;
-  if(d.gender)p_gender.value=d.gender;
-  if(d.persona)p_persona.value=d.persona;
-  if(d.style)p_style.value=d.style;
-  if(d.limit)p_limit.value=d.limit;
-  if(d.act)actSwitch.checked=true;
-  if(d.name)chatTitle.textContent=d.name;
+(function init(){
+  const p=JSON.parse(localStorage.getItem(KEY_PERSONA)||'{}');
+  if(p.name)p_name.value=p.name,chatTitle.textContent=p.name;
+  if(p.gender)p_gender.value=p.gender;
+  if(p.persona)p_persona.value=p.persona;
+  if(p.style)p_style.value=p.style;
+  if(p.limit)p_limit.value=p.limit;
+  if(p.act)actSwitch.checked=true;
 })();
 
-/* 头像 */
 aiAvatarInput.onchange=e=>{
   const f=e.target.files[0];
   if(!f)return;
   const r=new FileReader();
-  r.onload=()=>localStorage.setItem(AVATAR_KEY,r.result);
+  r.onload=()=>localStorage.setItem(KEY_AVATAR,r.result);
   r.readAsDataURL(f);
 };
 
-/* 聊天 */
 function render(){
   messages.innerHTML='';
-  const avatar=localStorage.getItem(AVATAR_KEY);
-  JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{
+  const avatar=localStorage.getItem(KEY_AVATAR)||'';
+  (JSON.parse(localStorage.getItem(KEY_CHAT)||[])).forEach(m=>{
     const row=document.createElement('div');
     row.className='msgRow '+m.type;
     row.innerHTML=`
-      ${m.type==='ai'?`<div class="avatar" ${avatar?`style="background-image:url('${avatar}')"`:''}></div>`:''}
+      ${m.type==='ai'?`<div class="avatar" style="background-image:url('${avatar}')"></div>`:''}
       <div class="msg">${m.text}</div>
       ${m.type==='me'?'<div class="avatar"></div>':''}
     `;
@@ -348,24 +309,18 @@ render();
 
 sendBtn.onclick=()=>{
   if(!input.value.trim())return;
-  const list=JSON.parse(localStorage.getItem(CHAT_KEY)||'[]');
+  const list=JSON.parse(localStorage.getItem(KEY_CHAT)||[]);
   list.push({type:'me',text:input.value});
   input.value='';
-  localStorage.setItem(CHAT_KEY,JSON.stringify(list));
+  localStorage.setItem(KEY_CHAT,JSON.stringify(list));
   render();
 
-  const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
-  const replies=p.limit||1;
-  for(let i=0;i<replies;i++){
-    setTimeout(()=>{
-      list.push({
-        type:'ai',
-        text:p.act?`（他想了想）这是第 ${i+1} 条回复。`:`这是第 ${i+1} 条回复。`
-      });
-      localStorage.setItem(CHAT_KEY,JSON.stringify(list));
-      render();
-    },600*(i+1));
-  }
+  const p=JSON.parse(localStorage.getItem(KEY_PERSONA)||{});
+  setTimeout(()=>{
+    list.push({type:'ai',text:p.act?'（他想了想）我明白了。':'我明白了。'});
+    localStorage.setItem(KEY_CHAT,JSON.stringify(list));
+    render();
+  },600);
 };
 </script>
 </body>
