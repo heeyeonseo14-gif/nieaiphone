@@ -155,10 +155,9 @@ body{
     <div class="grid" id="contactGrid"></div>
   </div>
 
-  <!-- 底部 -->
+  <!-- ★ 修改：底部只保留 朋友圈 -->
   <div class="bottom">
-    <button onclick="openAdd()">添加联系人</button>
-    <button class="primary" onclick="openGroup()">创建群聊</button>
+    <button class="primary" onclick="location.href='feed.html'">朋友圈</button>
   </div>
 </div>
 
@@ -168,6 +167,8 @@ body{
     <h3>添加联系人</h3>
     <input id="addName" placeholder="名字">
     <input id="addAvatar" placeholder="头像图片 URL（可空）">
+    <!-- ★ 新增：本地图片 -->
+    <input type="file" id="addAvatarFile" accept="image/*">
     <div class="modalActions">
       <button onclick="closeAdd()">取消</button>
       <button class="primary" onclick="saveContact()">保存</button>
@@ -215,15 +216,35 @@ function closeAdd(){
 function saveContact(){
   const name=addName.value.trim();
   if(!name) return;
+
+  const file=document.getElementById('addAvatarFile').files[0];
+  const url=addAvatar.value.trim();
+
   const list=load();
-  list.push({
-    id:'c'+Date.now(),
-    name,
-    avatar:addAvatar.value.trim()
-  });
-  save(list);
-  closeAdd();
-  render();
+
+  if(file){
+    const reader=new FileReader();
+    reader.onload=()=>{
+      list.push({
+        id:'c'+Date.now(),
+        name,
+        avatar:reader.result
+      });
+      save(list);
+      closeAdd();
+      render();
+    };
+    reader.readAsDataURL(file);
+  }else{
+    list.push({
+      id:'c'+Date.now(),
+      name,
+      avatar:url
+    });
+    save(list);
+    closeAdd();
+    render();
+  }
 }
 
 function del(id,e){
@@ -231,10 +252,6 @@ function del(id,e){
   if(!confirm('删除联系人？')) return;
   save(load().filter(c=>c.id!==id));
   render();
-}
-
-function openGroup(){
-  alert('群聊功能下一步接 😌');
 }
 
 render();
