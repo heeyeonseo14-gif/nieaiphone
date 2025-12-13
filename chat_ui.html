@@ -81,40 +81,23 @@ html,body{
   font-size:14px;
 }
 
-.msgRow{
-  display:flex;
-  gap:8px;
-  align-items:flex-start;
-}
-
-.avatar{
-  width:36px;
-  height:36px;
-  border-radius:12px;
-  object-fit:cover;
-}
-
 .msg{
-  max-width:70%;
+  max-width:75%;
   padding:10px 12px;
   border-radius:14px;
   line-height:1.4;
 }
 
 .me{
-  margin-left:auto;
+  align-self:flex-end;
   background:linear-gradient(135deg,#b8a6ff,#8f7be8);
   color:white;
 }
 
 .other{
+  align-self:flex-start;
   background:#f3effa;
-}
-
-.name{
-  font-size:11px;
-  color:var(--muted);
-  margin-bottom:2px;
+  color:var(--text);
 }
 
 /* composer */
@@ -123,7 +106,6 @@ html,body{
   gap:8px;
   margin-top:10px;
 }
-
 .composer textarea{
   flex:1;
   resize:none;
@@ -132,7 +114,6 @@ html,body{
   padding:10px;
   font-family:inherit;
 }
-
 .sendBtn{
   width:54px;
   border:none;
@@ -159,18 +140,99 @@ html,body{
   background:white;
   box-shadow:0 6px 20px rgba(40,20,60,.08);
 }
+
+/* ===== 人设弹窗 ===== */
+.modalMask{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  backdrop-filter: blur(2px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:99;
+}
+.modal{
+  background:white;
+  width:92%;
+  max-width:380px;
+  border-radius:20px;
+  padding:18px 16px;
+  box-shadow:0 20px 50px rgba(40,20,60,.25);
+}
+.modal h3{
+  margin:0 0 14px;
+  font-size:18px;
+  text-align:center;
+}
+.modal label{
+  font-size:13px;
+  color:var(--muted);
+  display:block;
+  margin:10px 0 6px;
+}
+.modal input,
+.modal textarea,
+.modal select{
+  width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid #e6def5;
+  font-family:inherit;
+}
+.modal textarea{
+  resize:none;
+  min-height:60px;
+}
+.modalActions{
+  display:flex;
+  gap:10px;
+  margin-top:16px;
+}
+.modalActions button{
+  flex:1;
+  padding:12px;
+  border-radius:999px;
+  border:none;
+  font-weight:700;
+  cursor:pointer;
+}
+.modalActions .cancel{
+  background:#f2eefc;
+  color:#6b5fa6;
+}
+.modalActions .save{
+  background:linear-gradient(135deg,#9b8cff,#7c68e6);
+  color:white;
+}
+
+/* 群成员 */
+.memberCard{
+  display:flex;
+  gap:10px;
+  margin-bottom:14px;
+  align-items:flex-start;
+}
+.memberCard img{
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  object-fit:cover;
+}
 </style>
 </head>
 
 <body>
 <div class="app">
 
+  <!-- header -->
   <div class="header">
-    <button onclick="location.href='chat.html'">←</button>
+    <button id="backBtn">←</button>
     <h1 id="chatTitle">聊天</h1>
-    <button onclick="location.href='feed.html'">☁</button>
+    <button id="openFeed">☁</button>
   </div>
 
+  <!-- chat -->
   <div class="chatCard">
     <div class="messages" id="messages"></div>
 
@@ -180,144 +242,120 @@ html,body{
     </div>
   </div>
 
+  <!-- bottom -->
   <div class="bottomNav">
-    <button>人设设定</button>
+    <button id="personaBtn">人设设定</button>
     <button>我的设置</button>
   </div>
 
 </div>
 
+<!-- 单聊 · 人设设定 -->
+<div class="modalMask" id="personaModal">
+  <div class="modal">
+    <h3>人设设定</h3>
+
+    <label>AI 名称</label>
+    <input placeholder="小NIE">
+
+    <label>性别</label>
+    <select>
+      <option>中性</option>
+      <option>男性</option>
+      <option>女性</option>
+    </select>
+
+    <label>人设（仅作为生成提示）</label>
+    <textarea placeholder="写下 AI 的性格、人设…"></textarea>
+
+    <label>风格 / 习惯</label>
+    <textarea placeholder="例如：温柔、话不多、会安慰人"></textarea>
+
+    <label>回复条数</label>
+    <input type="number" value="4">
+
+    <label>
+      <input type="checkbox" checked>
+      回复中带动作 / 心理描写
+    </label>
+
+    <div class="modalActions">
+      <button class="cancel" onclick="closePersona()">取消</button>
+      <button class="save" onclick="closePersona()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 群聊 · 成员设定 -->
+<div class="modalMask" id="groupPersonaModal">
+  <div class="modal">
+    <h3>群聊 · 成员设定</h3>
+
+    <div class="memberCard">
+      <img src="https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png">
+      <div style="flex:1">
+        <input value="小NIE">
+        <textarea placeholder="群内人设（仅作为生成提示）"></textarea>
+      </div>
+    </div>
+
+    <div class="modalActions">
+      <button class="cancel" onclick="closeGroupPersona()">取消</button>
+      <button class="save" onclick="closeGroupPersona()">保存</button>
+    </div>
+  </div>
+</div>
+
 <script>
-/* ========= 初始化 ========= */
+/* ===== 基础跳转 ===== */
+backBtn.onclick = ()=> location.href = 'chat.html';
+openFeed.onclick = ()=> location.href = 'feed.html';
+
+/* ===== 获取联系人 ===== */
 const params = new URLSearchParams(location.search);
 const cid = params.get('id');
 const contacts = JSON.parse(localStorage.getItem('nie_contacts_v1')||'[]');
 const contact = contacts.find(c=>c.id===cid);
 if(contact) chatTitle.textContent = contact.name;
 
-const isGroup = contact?.type === 'group';
+/* ===== 人设按钮（修复点） ===== */
+personaBtn.onclick = ()=>{
+  if(contact && contact.type === 'group'){
+    document.getElementById('groupPersonaModal').style.display = 'flex';
+  }else{
+    document.getElementById('personaModal').style.display = 'flex';
+  }
+};
+
+function closePersona(){
+  personaModal.style.display = 'none';
+}
+function closeGroupPersona(){
+  groupPersonaModal.style.display = 'none';
+}
+
+/* ===== 假聊天 ===== */
 const messagesEl = document.getElementById('messages');
 const inputEl = document.getElementById('input');
 
-/* ===== Mock 群成员（后期可从设置页存入 localStorage） ===== */
-const groupMembers = isGroup ? [
-  {
-    id:'m1',
-    name:'小NIE',
-    avatar:'https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png',
-    action:true
-  },
-  {
-    id:'m2',
-    name:'测试',
-    avatar:'https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png',
-    action:false
-  },
-  {
-    id:'m3',
-    name:'AI-03',
-    avatar:'https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png',
-    action:true
-  }
-] : [];
-
-/* ===== 工具函数 ===== */
-function addMyMsg(text){
-  const div=document.createElement('div');
-  div.className='msg me';
-  div.textContent=text;
+function addMsg(text, type){
+  const div = document.createElement('div');
+  div.className = 'msg ' + type;
+  div.textContent = text;
   messagesEl.appendChild(div);
-  scrollBottom();
-}
-
-function addAIMsg(member,text){
-  const row=document.createElement('div');
-  row.className='msgRow';
-
-  const img=document.createElement('img');
-  img.className='avatar';
-  img.src=member.avatar;
-
-  const box=document.createElement('div');
-
-  const name=document.createElement('div');
-  name.className='name';
-  name.textContent=member.name;
-
-  const msg=document.createElement('div');
-  msg.className='msg other';
-  msg.textContent=text;
-
-  box.appendChild(name);
-  box.appendChild(msg);
-
-  row.appendChild(img);
-  row.appendChild(box);
-
-  messagesEl.appendChild(row);
-  scrollBottom();
-}
-
-function scrollBottom(){
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
-/* ===== Mock 回复池 ===== */
-const replyPool = [
-  '我明白你的意思。',
-  '听你这么说，确实是这样。',
-  '你这么想也没错。',
-  '我会认真考虑一下。',
-  '别太勉强自己。'
-];
-
-function buildReply(member){
-  const base = replyPool[Math.floor(Math.random()*replyPool.length)];
-  if(member.action){
-    return `（${member.name}想了想）${base}`;
-  }
-  return base;
-}
-
-/* ===== 群聊逻辑：轮流 + 抢话 ===== */
-function groupReply(){
-  const count = Math.random()<0.7
-    ? 1 + Math.floor(Math.random()*2)
-    : 2 + Math.floor(Math.random()*2);
-
-  const shuffled=[...groupMembers].sort(()=>Math.random()-0.5);
-  let i=0;
-
-  function next(){
-    if(i>=count) return;
-    const m = shuffled[i++];
-    addAIMsg(m, buildReply(m));
-    setTimeout(next, 500 + Math.random()*400);
-  }
-
-  setTimeout(next, 600);
-}
-
-/* ===== 单聊逻辑 ===== */
-function singleReply(){
-  setTimeout(()=>{
-    const text = replyPool[Math.floor(Math.random()*replyPool.length)];
-    const div=document.createElement('div');
-    div.className='msg other';
-    div.textContent=text;
-    messagesEl.appendChild(div);
-    scrollBottom();
-  },600);
-}
-
-/* ===== 发送 ===== */
 sendBtn.onclick = ()=>{
   const text = inputEl.value.trim();
   if(!text) return;
-  addMyMsg(text);
+
+  addMsg(text,'me');
   inputEl.value='';
 
-  isGroup ? groupReply() : singleReply();
+  setTimeout(()=>{
+    addMsg('我收到了 🙂','other');
+  },600);
 };
 </script>
 </body>
