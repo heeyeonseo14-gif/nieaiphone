@@ -9,11 +9,12 @@
 
 <style>
 :root{
-  --bg1:#f6eefe;
-  --bg2:#efe6fb;
+  --bg1:#f4e8fb;
+  --bg2:#f0e7fb;
   --card:#ffffff;
   --text:#2f2436;
   --muted:#8b7c9b;
+  --accent:#9b86e6;
 
   --bubble-me:linear-gradient(135deg,#cbb8ff,#9b86e6);
   --bubble-ai:linear-gradient(135deg,#f6f1ff,#ebe3ff);
@@ -28,7 +29,6 @@ html,body{
   color:var(--text);
 }
 
-/* 外层保持芋泥紫 */
 .app{
   width:96%;
   max-width:420px;
@@ -80,7 +80,7 @@ html,body{
   gap:10px;
 }
 
-/* 消息行 */
+/* message row */
 .msgRow{
   display:flex;
   gap:8px;
@@ -93,8 +93,9 @@ html,body{
   width:34px;
   height:34px;
   border-radius:50%;
-  object-fit:cover;
   background:#ddd;
+  object-fit:cover;
+  flex-shrink:0;
 }
 
 .msg{
@@ -173,7 +174,7 @@ html,body{
 
 .modal label{
   font-size:13px;
-  color:#8b7c9b;
+  color:var(--muted);
   margin-top:10px;
   display:block;
 }
@@ -184,16 +185,32 @@ html,body{
   border-radius:12px;
   border:1px solid #e6def5;
 }
-
 .modal textarea{resize:none}
 
-/* 气泡选择 */
+.modalActions{
+  display:flex;
+  gap:10px;
+  margin-top:14px;
+}
+.modalActions button{
+  flex:1;
+  padding:12px;
+  border-radius:999px;
+  border:none;
+  font-weight:700;
+}
+.cancel{background:#f2eefc}
+.save{
+  background:linear-gradient(135deg,#9b8cff,#7c68e6);
+  color:white;
+}
+
+/* ===== gradient picker ===== */
 .gradRow{
   display:flex;
   gap:10px;
-  margin:8px 0;
+  margin:6px 0;
 }
-
 .grad{
   width:48px;
   height:28px;
@@ -201,25 +218,23 @@ html,body{
   cursor:pointer;
   border:2px solid transparent;
 }
-.grad.active{
-  border-color:#9b86e6;
-}
+.grad.active{border-color:#9b86e6}
 
-/* 我的气泡（6 个） */
+/* 我的气泡（原 + 新增） */
 .me1{background:linear-gradient(135deg,#cbb8ff,#9b86e6)}
 .me2{background:linear-gradient(135deg,#ffd6e9,#e7b6ff)}
 .me3{background:linear-gradient(135deg,#e6f2ff,#cfe5ff)}
 .me4{background:linear-gradient(135deg,#e7f7ec,#cdeedd)}
-.me5{background:linear-gradient(135deg,#fff1dc,#ffe2b8)}
-.me6{background:linear-gradient(135deg,#f0f0f0,#e2e2e2)}
+.me5{background:linear-gradient(135deg,#f3ecff,#e1d6ff)}
+.me6{background:linear-gradient(135deg,#edf7ff,#dbeeff)}
 
-/* AI 气泡（6 个） */
+/* AI 气泡（原 + 新增） */
 .ai1{background:linear-gradient(135deg,#f6f1ff,#ebe3ff)}
 .ai2{background:linear-gradient(135deg,#fff1f7,#f0dcff)}
 .ai3{background:linear-gradient(135deg,#eef6ff,#ddeaff)}
 .ai4{background:linear-gradient(135deg,#f0fbf4,#dcf3e6)}
-.ai5{background:linear-gradient(135deg,#fff7e8,#ffeac7)}
-.ai6{background:linear-gradient(135deg,#f5f5f5,#ebebeb)}
+.ai5{background:linear-gradient(135deg,#faf7ff,#ede7ff)}
+.ai6{background:linear-gradient(135deg,#f3fff8,#def5ea)}
 </style>
 </head>
 
@@ -227,14 +242,13 @@ html,body{
 <div class="app">
 
 <div class="header">
-  <button onclick="history.back()">←</button>
-  <h1>聊天</h1>
-  <button>☁</button>
+  <button onclick="location.href='chat.html'">←</button>
+  <h1 id="chatTitle">聊天</h1>
+  <button onclick="location.href='feed.html'">☁</button>
 </div>
 
 <div class="chatCard">
   <div class="messages" id="messages"></div>
-
   <div class="composer">
     <textarea id="input" placeholder="输入消息…"></textarea>
     <button class="sendBtn" id="sendBtn">➤</button>
@@ -245,7 +259,6 @@ html,body{
   <button id="personaBtn">人设设定</button>
   <button>我的设置</button>
 </div>
-
 </div>
 
 <!-- 人设设定 -->
@@ -256,8 +269,21 @@ html,body{
 <label>AI 名称</label>
 <input id="p_name">
 
+<label>性别</label>
+<select id="p_gender">
+  <option>中性</option>
+  <option>男性</option>
+  <option>女性</option>
+</select>
+
+<label>人设（生成提示）</label>
+<textarea id="p_persona"></textarea>
+
+<label>风格 / 习惯（生成提示）</label>
+<textarea id="p_style"></textarea>
+
 <label>回复条数（1–30）</label>
-<input id="p_limit" type="number" min="1" max="30">
+<input id="p_limit" type="number" min="1" max="30" value="3">
 
 <label>AI 头像</label>
 <input type="file" accept="image/*" id="aiAvatarInput">
@@ -287,17 +313,17 @@ html,body{
   回复中带动作 / 心理描写
 </label>
 
-<div style="display:flex;gap:10px;margin-top:14px">
+<div class="modalActions">
   <button class="cancel" onclick="closePersona()">取消</button>
   <button class="save" onclick="savePersona()">保存</button>
 </div>
-
 </div>
 </div>
 
 <script>
+const personaBtn=document.getElementById('personaBtn');
 const personaModal=document.getElementById('personaModal');
-document.getElementById('personaBtn').onclick=()=>personaModal.style.display='flex';
+personaBtn.onclick=()=>personaModal.style.display='flex';
 function closePersona(){personaModal.style.display='none'}
 
 const ME_G=[
@@ -305,30 +331,31 @@ const ME_G=[
 'linear-gradient(135deg,#ffd6e9,#e7b6ff)',
 'linear-gradient(135deg,#e6f2ff,#cfe5ff)',
 'linear-gradient(135deg,#e7f7ec,#cdeedd)',
-'linear-gradient(135deg,#fff1dc,#ffe2b8)',
-'linear-gradient(135deg,#f0f0f0,#e2e2e2)'
+'linear-gradient(135deg,#f3ecff,#e1d6ff)',
+'linear-gradient(135deg,#edf7ff,#dbeeff)'
 ];
 const AI_G=[
 'linear-gradient(135deg,#f6f1ff,#ebe3ff)',
 'linear-gradient(135deg,#fff1f7,#f0dcff)',
 'linear-gradient(135deg,#eef6ff,#ddeaff)',
 'linear-gradient(135deg,#f0fbf4,#dcf3e6)',
-'linear-gradient(135deg,#fff7e8,#ffeac7)',
-'linear-gradient(135deg,#f5f5f5,#ebebeb)'
+'linear-gradient(135deg,#faf7ff,#ede7ff)',
+'linear-gradient(135deg,#f3fff8,#def5ea)'
 ];
 
-function mark(row,i){
-  [...row.children].forEach((d,idx)=>d.classList.toggle('active',idx===i));
+function markActive(row,i){
+  [...row.children].forEach((c,idx)=>c.classList.toggle('active',idx===i));
 }
+
 function setMe(i){
   document.documentElement.style.setProperty('--bubble-me',ME_G[i]);
   localStorage.setItem('meBubble',ME_G[i]);
-  mark(meRow,i);
+  markActive(meRow,i);
 }
 function setAI(i){
   document.documentElement.style.setProperty('--bubble-ai',AI_G[i]);
   localStorage.setItem('aiBubble',AI_G[i]);
-  mark(aiRow,i);
+  markActive(aiRow,i);
 }
 
 aiAvatarInput.onchange=e=>{
@@ -341,26 +368,51 @@ aiAvatarInput.onchange=e=>{
 
 function savePersona(){
   localStorage.setItem('persona',JSON.stringify({
+    name:p_name.value,
+    gender:p_gender.value,
+    persona:p_persona.value,
+    style:p_style.value,
     limit:+p_limit.value,
     act:actSwitch.checked
   }));
   closePersona();
 }
 
+(function init(){
+  const d=JSON.parse(localStorage.getItem('persona')||'{}');
+  if(d.name)p_name.value=d.name;
+  if(d.gender)p_gender.value=d.gender;
+  if(d.persona)p_persona.value=d.persona;
+  if(d.style)p_style.value=d.style;
+  if(d.limit)p_limit.value=d.limit;
+  if(typeof d.act==='boolean') actSwitch.checked=d.act;
+
+  if(localStorage.getItem('meBubble'))
+    document.documentElement.style.setProperty('--bubble-me',localStorage.getItem('meBubble'));
+  if(localStorage.getItem('aiBubble'))
+    document.documentElement.style.setProperty('--bubble-ai',localStorage.getItem('aiBubble'));
+})();
+
+/* 聊天记录 */
+const KEY='chat_'+location.search;
 const messagesEl=document.getElementById('messages');
-const KEY='chat';
+
 function render(){
   messagesEl.innerHTML='';
   JSON.parse(localStorage.getItem(KEY)||'[]').forEach(m=>{
     const row=document.createElement('div');
     row.className='msgRow '+m.type;
     row.innerHTML=`
-      ${m.type==='ai'?`<img class="avatar" src="${localStorage.getItem('aiAvatar')||''}">`:''}
+      ${m.type==='ai'
+        ? `<img class="avatar" src="${localStorage.getItem('aiAvatar')||'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}">`
+        : ''
+      }
       <div class="msg">${m.text}</div>
       ${m.type==='me'?'<div class="avatar"></div>':''}
     `;
     messagesEl.appendChild(row);
   });
+  messagesEl.scrollTop=messagesEl.scrollHeight;
 }
 render();
 
@@ -373,14 +425,17 @@ sendBtn.onclick=()=>{
   render();
 
   const p=JSON.parse(localStorage.getItem('persona')||'{}');
-  const n=p.limit||1;
-  for(let i=0;i<n;i++){
+  const replies=p.limit||1;
+
+  for(let i=0;i<replies;i++){
     setTimeout(()=>{
-      const t=p.act?'（他想了想）这是第 '+(i+1)+' 条回复。':'这是第 '+(i+1)+' 条回复。';
+      const t=p.act
+        ? `（他想了想）这是第 ${i+1} 条回复。`
+        : `这是第 ${i+1} 条回复。`;
       list.push({type:'ai',text:t});
       localStorage.setItem(KEY,JSON.stringify(list));
       render();
-    },500*(i+1));
+    },600*(i+1));
   }
 };
 </script>
