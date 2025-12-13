@@ -39,7 +39,7 @@ html,body{
   flex-direction:column;
 }
 
-/* header */
+/* ===== header ===== */
 .header{
   display:flex;
   align-items:center;
@@ -62,7 +62,7 @@ html,body{
   margin:0;
 }
 
-/* chat */
+/* ===== chat ===== */
 .chatCard{
   flex:1;
   background:var(--card);
@@ -80,6 +80,7 @@ html,body{
   gap:10px;
 }
 
+/* message row */
 .msgRow{
   display:flex;
   gap:8px;
@@ -93,6 +94,7 @@ html,body{
   height:34px;
   border-radius:50%;
   background:#ddd;
+  object-fit:cover;
   flex-shrink:0;
 }
 
@@ -107,11 +109,12 @@ html,body{
   background:var(--bubble-me);
   color:white;
 }
+
 .ai .msg{
   background:var(--bubble-ai);
 }
 
-/* input */
+/* ===== input ===== */
 .composer{
   display:flex;
   gap:8px;
@@ -131,7 +134,7 @@ html,body{
   color:white;
 }
 
-/* bottom */
+/* ===== bottom ===== */
 .bottomNav{
   display:flex;
   gap:10px;
@@ -145,7 +148,7 @@ html,body{
   font-weight:700;
 }
 
-/* modal */
+/* ===== modal ===== */
 .modalMask{
   position:fixed;
   inset:0;
@@ -155,6 +158,7 @@ html,body{
   justify-content:center;
   z-index:99;
 }
+
 .modal{
   background:white;
   width:92%;
@@ -162,22 +166,26 @@ html,body{
   border-radius:20px;
   padding:16px;
 }
+
 .modal h3{
   text-align:center;
   margin:0 0 12px;
 }
+
 .modal label{
   font-size:13px;
   color:var(--muted);
-  margin-top:8px;
+  margin-top:10px;
   display:block;
 }
+
 .modal input,.modal textarea,.modal select{
   width:100%;
   padding:10px;
   border-radius:12px;
   border:1px solid #e6def5;
 }
+
 .modal textarea{resize:none}
 
 .modalActions{
@@ -185,6 +193,7 @@ html,body{
   gap:10px;
   margin-top:14px;
 }
+
 .modalActions button{
   flex:1;
   padding:12px;
@@ -192,54 +201,43 @@ html,body{
   border:none;
   font-weight:700;
 }
+
 .cancel{background:#f2eefc}
 .save{
   background:linear-gradient(135deg,#9b8cff,#7c68e6);
   color:white;
 }
 
-/* gradients */
-.gradRow{display:flex;gap:10px;margin:6px 0}
-.grad{
-  width:48px;height:28px;border-radius:999px;cursor:pointer;
+/* ===== gradient picker ===== */
+.gradRow{
+  display:flex;
+  gap:10px;
+  margin:6px 0;
 }
+
+.grad{
+  width:46px;
+  height:26px;
+  border-radius:999px;
+  cursor:pointer;
+  border:2px solid transparent;
+}
+
+.grad.active{
+  border-color:#9b86e6;
+}
+
+/* 我的气泡 */
 .grad.me1{background:linear-gradient(135deg,#cbb8ff,#9b86e6)}
 .grad.me2{background:linear-gradient(135deg,#ffd6e9,#e7b6ff)}
-.grad.me3{background:linear-gradient(135deg,#f2ecff,#d8ccff)}
+.grad.me3{background:linear-gradient(135deg,#dff1ff,#b9ddff)}
+.grad.me4{background:linear-gradient(135deg,#e6f7e8,#bfe7c8)}
 
+/* AI 气泡 */
 .grad.ai1{background:linear-gradient(135deg,#f6f1ff,#ebe3ff)}
 .grad.ai2{background:linear-gradient(135deg,#fff1f7,#f0dcff)}
-.grad.ai3{background:linear-gradient(135deg,#f7f5fb,#e6e1f5)}
-
-/* switch */
-.switchWrap{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-top:12px;
-}
-.switch{
-  display:flex;
-  align-items:center;
-}
-.switch input{display:none}
-.switchUI{
-  width:44px;height:24px;border-radius:999px;background:#ddd;position:relative;
-}
-.switchUI::after{
-  content:'';width:20px;height:20px;background:white;border-radius:50%;
-  position:absolute;top:2px;left:2px;transition:.2s;
-}
-.switch input:checked + .switchUI{
-  background:linear-gradient(135deg,#b8a6ff,#8f7be8);
-}
-.switch input:checked + .switchUI::after{left:22px}
-
-.switchDesc{
-  font-size:14px;
-  color:#6f6399;
-  line-height:1.5;
-}
+.grad.ai3{background:linear-gradient(135deg,#eef6ff,#ddeaff)}
+.grad.ai4{background:linear-gradient(135deg,#f2fbf3,#dff3e5)}
 </style>
 </head>
 
@@ -248,12 +246,13 @@ html,body{
 
 <div class="header">
   <button onclick="location.href='chat.html'">←</button>
-  <h1 id="chatTitle">聊天</h1>
+  <h1>聊天</h1>
   <button onclick="location.href='feed.html'">☁</button>
 </div>
 
 <div class="chatCard">
   <div class="messages" id="messages"></div>
+
   <div class="composer">
     <textarea id="input" placeholder="输入消息…"></textarea>
     <button class="sendBtn" id="sendBtn">➤</button>
@@ -267,7 +266,7 @@ html,body{
 
 </div>
 
-<!-- 人设 -->
+<!-- 人设设定 -->
 <div class="modalMask" id="personaModal">
 <div class="modal">
 <h3>人设设定</h3>
@@ -276,7 +275,11 @@ html,body{
 <input id="p_name">
 
 <label>性别</label>
-<select id="p_gender"><option>中性</option><option>男性</option><option>女性</option></select>
+<select id="p_gender">
+  <option>中性</option>
+  <option>男性</option>
+  <option>女性</option>
+</select>
 
 <label>人设（生成提示）</label>
 <textarea id="p_persona"></textarea>
@@ -285,29 +288,21 @@ html,body{
 <textarea id="p_style"></textarea>
 
 <label>回复条数（1–30）</label>
-<input id="p_limit" type="number" min="1" max="30">
+<input id="p_limit" type="number" min="1" max="30" value="10">
+
+<label>AI 头像</label>
+<input type="file" accept="image/*" onchange="pickAvatar(this)">
 
 <label>我的气泡</label>
-<div class="gradRow">
-  <div class="grad me1" onclick="setMe(0)"></div>
-  <div class="grad me2" onclick="setMe(1)"></div>
-  <div class="grad me3" onclick="setMe(2)"></div>
-</div>
+<div class="gradRow" id="meRow"></div>
 
 <label>AI 气泡</label>
-<div class="gradRow">
-  <div class="grad ai1" onclick="setAI(0)"></div>
-  <div class="grad ai2" onclick="setAI(1)"></div>
-  <div class="grad ai3" onclick="setAI(2)"></div>
-</div>
+<div class="gradRow" id="aiRow"></div>
 
-<div class="switchWrap">
-  <label class="switch">
-    <input type="checkbox" id="actSwitch">
-    <span class="switchUI"></span>
-  </label>
-  <div class="switchDesc">回复中带动作 / 心理描写</div>
-</div>
+<label>
+  <input type="checkbox" id="actSwitch">
+  回复中带动作 / 心理描写
+</label>
 
 <div class="modalActions">
   <button class="cancel" onclick="closePersona()">取消</button>
@@ -323,18 +318,55 @@ personaBtn.onclick=()=>personaModal.style.display='flex';
 function closePersona(){personaModal.style.display='none'}
 
 const ME_G=[
-'linear-gradient(135deg,#cbb8ff,#9b86e6)',
-'linear-gradient(135deg,#ffd6e9,#e7b6ff)',
-'linear-gradient(135deg,#f2ecff,#d8ccff)'
+  'linear-gradient(135deg,#cbb8ff,#9b86e6)',
+  'linear-gradient(135deg,#ffd6e9,#e7b6ff)',
+  'linear-gradient(135deg,#dff1ff,#b9ddff)',
+  'linear-gradient(135deg,#e6f7e8,#bfe7c8)'
 ];
 const AI_G=[
-'linear-gradient(135deg,#f6f1ff,#ebe3ff)',
-'linear-gradient(135deg,#fff1f7,#f0dcff)',
-'linear-gradient(135deg,#f7f5fb,#e6e1f5)'
+  'linear-gradient(135deg,#f6f1ff,#ebe3ff)',
+  'linear-gradient(135deg,#fff1f7,#f0dcff)',
+  'linear-gradient(135deg,#eef6ff,#ddeaff)',
+  'linear-gradient(135deg,#f2fbf3,#dff3e5)'
 ];
 
-function setMe(i){document.documentElement.style.setProperty('--bubble-me',ME_G[i]);localStorage.setItem('meBubble',ME_G[i]);}
-function setAI(i){document.documentElement.style.setProperty('--bubble-ai',AI_G[i]);localStorage.setItem('aiBubble',AI_G[i]);}
+function renderGrads(){
+  meRow.innerHTML='';
+  aiRow.innerHTML='';
+  ME_G.forEach((g,i)=>{
+    const d=document.createElement('div');
+    d.className='grad me'+(i+1);
+    if(localStorage.getItem('meBubble')===g)d.classList.add('active');
+    d.onclick=()=>{setMe(i)};
+    meRow.appendChild(d);
+  });
+  AI_G.forEach((g,i)=>{
+    const d=document.createElement('div');
+    d.className='grad ai'+(i+1);
+    if(localStorage.getItem('aiBubble')===g)d.classList.add('active');
+    d.onclick=()=>{setAI(i)};
+    aiRow.appendChild(d);
+  });
+}
+
+function setMe(i){
+  localStorage.setItem('meBubble',ME_G[i]);
+  document.documentElement.style.setProperty('--bubble-me',ME_G[i]);
+  renderGrads();
+}
+function setAI(i){
+  localStorage.setItem('aiBubble',AI_G[i]);
+  document.documentElement.style.setProperty('--bubble-ai',AI_G[i]);
+  renderGrads();
+}
+
+function pickAvatar(input){
+  const f=input.files[0];
+  if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>localStorage.setItem('aiAvatar',r.result);
+  r.readAsDataURL(f);
+}
 
 function savePersona(){
   localStorage.setItem('persona',JSON.stringify({
@@ -349,27 +381,35 @@ function savePersona(){
 }
 
 (function init(){
-  const d=JSON.parse(localStorage.getItem('persona')||'{}');
-  p_name.value=d.name||'小NIE';
-  p_gender.value=d.gender||'中性';
-  p_persona.value=d.persona||'';
-  p_style.value=d.style||'';
-  p_limit.value=d.limit||10;
-  actSwitch.checked=d.act!==false;
+  const p=JSON.parse(localStorage.getItem('persona')||'{}');
+  if(p.name)p_name.value=p.name;
+  if(p.gender)p_gender.value=p.gender;
+  if(p.persona)p_persona.value=p.persona;
+  if(p.style)p_style.value=p.style;
+  if(p.limit)p_limit.value=p.limit;
+  if(p.act)actSwitch.checked=true;
+
   if(localStorage.getItem('meBubble'))document.documentElement.style.setProperty('--bubble-me',localStorage.getItem('meBubble'));
   if(localStorage.getItem('aiBubble'))document.documentElement.style.setProperty('--bubble-ai',localStorage.getItem('aiBubble'));
+  renderGrads();
 })();
 
+/* 聊天 */
 const KEY='chat_'+location.search;
 const messagesEl=document.getElementById('messages');
 
 function render(){
   messagesEl.innerHTML='';
-  JSON.parse(localStorage.getItem(KEY)||'[]').forEach(m=>{
-    const r=document.createElement('div');
-    r.className='msgRow '+m.type;
-    r.innerHTML=`${m.type==='ai'?'<div class="avatar"></div>':''}<div class="msg">${m.text}</div>${m.type==='me'?'<div class="avatar"></div>':''}`;
-    messagesEl.appendChild(r);
+  const list=JSON.parse(localStorage.getItem(KEY)||'[]');
+  list.forEach(m=>{
+    const row=document.createElement('div');
+    row.className='msgRow '+m.type;
+    row.innerHTML=`
+      ${m.type==='ai'?`<img class="avatar" src="${localStorage.getItem('aiAvatar')||''}">`:''}
+      <div class="msg">${m.text}</div>
+      ${m.type==='me'?'<div class="avatar"></div>':''}
+    `;
+    messagesEl.appendChild(row);
   });
   messagesEl.scrollTop=messagesEl.scrollHeight;
 }
@@ -383,16 +423,13 @@ sendBtn.onclick=()=>{
   localStorage.setItem(KEY,JSON.stringify(list));
   render();
 
-  const p=JSON.parse(localStorage.getItem('persona')||'{}');
-  const count=p.limit||1;
-  for(let i=0;i<count;i++){
-    setTimeout(()=>{
-      const t=p.act===false?'我明白你的意思。':'（他想了想）我明白你的意思。';
-      list.push({type:'ai',text:t});
-      localStorage.setItem(KEY,JSON.stringify(list));
-      render();
-    },500*(i+1));
-  }
+  setTimeout(()=>{
+    const p=JSON.parse(localStorage.getItem('persona')||'{}');
+    const t=p.act?'（他想了想）我明白你的意思。':'我明白你的意思。';
+    list.push({type:'ai',text:t});
+    localStorage.setItem(KEY,JSON.stringify(list));
+    render();
+  },600);
 };
 </script>
 </body>
