@@ -16,8 +16,8 @@
   --muted:#8b7c9b;
   --accent:#9b86e6;
 
-  --bubble-me:linear-gradient(135deg,#f6c1dc,#c9b8ff);
-  --bubble-other:linear-gradient(135deg,#f3effa,#e6dcff);
+  --bubble-me:linear-gradient(135deg,#b9a6ff,#9b86e6);
+  --bubble-other:linear-gradient(135deg,#f6f1ff,#ebe3ff);
 }
 
 *{box-sizing:border-box}
@@ -26,6 +26,7 @@ html,body{
   height:100%;
   font-family:"Quicksand",system-ui;
   background:linear-gradient(180deg,var(--bg1),var(--bg2));
+  color:var(--text);
 }
 
 .app{
@@ -39,28 +40,41 @@ html,body{
 }
 
 /* header */
-.header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.header button{width:42px;height:42px;border-radius:12px;border:none;background:white}
+.header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+.header button{
+  width:42px;height:42px;border-radius:12px;border:none;background:white;font-size:18px
+}
 .header h1{flex:1;text-align:center;margin:0}
 
 /* chat */
-.chatCard{flex:1;background:white;border-radius:18px;padding:14px;display:flex;flex-direction:column}
-.messages{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.chatCard{
+  flex:1;
+  background:white;
+  border-radius:18px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+}
+.messages{
+  flex:1;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
 
 /* message row */
-.msgRow{
-  display:flex;
-  align-items:flex-end;
-  gap:8px;
-}
-.msgRow.me{justify-content:flex-end}
-.msgRow.other{justify-content:flex-start}
+.row{display:flex;align-items:flex-end;gap:8px}
+.row.me{justify-content:flex-end}
+.row.other{justify-content:flex-start}
 
 .avatar{
-  width:34px;
-  height:34px;
-  border-radius:10px;
-  object-fit:cover;
+  width:34px;height:34px;border-radius:10px;object-fit:cover
 }
 
 .msg{
@@ -70,49 +84,57 @@ html,body{
   font-size:14px;
   line-height:1.4;
 }
-.me .msg{background:var(--bubble-me);color:white}
-.other .msg{background:var(--bubble-other)}
+.msg.me{background:var(--bubble-me);color:white}
+.msg.other{background:var(--bubble-other)}
 
-/* composer */
+/* input */
 .composer{display:flex;gap:8px;margin-top:10px}
-.composer textarea{flex:1;border-radius:14px;padding:10px}
+.composer textarea{
+  flex:1;border-radius:14px;padding:10px;border:1px solid #e6def5
+}
 .sendBtn{
-  width:54px;
-  border:none;
-  border-radius:14px;
-  background:linear-gradient(135deg,#b8a6ff,#8f7be8);
-  color:white;
+  width:54px;border:none;border-radius:14px;
+  background:linear-gradient(135deg,#b8a6ff,#8f7be8);color:white
 }
 
 /* bottom */
 .bottomNav{display:flex;gap:10px;margin-top:12px}
-.bottomNav button{flex:1;border:none;border-radius:999px;padding:10px;font-weight:700}
+.bottomNav button{
+  flex:1;border:none;border-radius:999px;padding:10px;font-weight:700
+}
 
 /* modal */
 .modalMask{
   position:fixed;inset:0;
   background:rgba(0,0,0,.45);
-  display:none;align-items:center;justify-content:center
+  display:none;align-items:center;justify-content:center;z-index:99
 }
 .modal{
   background:white;width:92%;max-width:380px;
   border-radius:20px;padding:16px
 }
 .modal h3{text-align:center;margin:0 0 12px}
-.modal label{font-size:13px;color:#8b7c9b;margin-top:10px;display:block}
-.modal input{width:100%;padding:10px;border-radius:12px;border:1px solid #e6def5}
+.modal label{
+  font-size:13px;color:var(--muted);
+  display:block;margin-top:10px
+}
+.modal input,.modal textarea,.modal select{
+  width:100%;padding:10px;border-radius:12px;border:1px solid #e6def5
+}
+.modal textarea{resize:none}
 
-.switch{display:flex;align-items:center;gap:10px;margin-top:12px}
+/* switch */
+.switch{display:flex;align-items:center;gap:10px;margin-top:10px}
 .switch input{display:none}
 .switch span{
-  width:42px;height:22px;background:#ddd;border-radius:999px;position:relative
+  width:44px;height:24px;background:#ddd;border-radius:999px;position:relative
 }
 .switch span::after{
   content:'';width:18px;height:18px;background:white;
-  border-radius:50%;position:absolute;top:2px;left:2px;transition:.2s
+  border-radius:50%;position:absolute;top:3px;left:3px;transition:.2s
 }
-.switch input:checked+span{background:#9b86e6}
-.switch input:checked+span::after{left:22px}
+.switch input:checked+span{background:var(--accent)}
+.switch input:checked+span::after{left:23px}
 
 .modalActions{display:flex;gap:10px;margin-top:16px}
 .modalActions button{
@@ -126,24 +148,25 @@ html,body{
 <body>
 <div class="app">
 
-  <div class="header">
-    <button onclick="location.href='chat.html'">←</button>
-    <h1 id="chatTitle">聊天</h1>
-    <button onclick="location.href='feed.html'">☁</button>
-  </div>
+<div class="header">
+  <button onclick="location.href='chat.html'">←</button>
+  <h1>聊天</h1>
+  <button onclick="location.href='feed.html'">☁</button>
+</div>
 
-  <div class="chatCard">
-    <div class="messages" id="messages"></div>
-    <div class="composer">
-      <textarea id="input" placeholder="输入消息…"></textarea>
-      <button class="sendBtn" id="sendBtn">➤</button>
-    </div>
+<div class="chatCard">
+  <div class="messages" id="messages"></div>
+  <div class="composer">
+    <textarea id="input" placeholder="输入消息…"></textarea>
+    <button class="sendBtn" id="sendBtn">➤</button>
   </div>
+</div>
 
-  <div class="bottomNav">
-    <button id="personaBtn">人设设定</button>
-    <button>我的设置</button>
-  </div>
+<div class="bottomNav">
+  <button id="personaBtn">人设设定</button>
+  <button>我的设置</button>
+</div>
+
 </div>
 
 <!-- 人设设定 -->
@@ -151,11 +174,30 @@ html,body{
   <div class="modal">
     <h3>人设设定</h3>
 
-    <label>聊天气泡（我）</label>
+    <label>AI 名称</label>
+    <input id="aiName" placeholder="小NIE">
+
+    <label>性别</label>
+    <select id="aiGender">
+      <option>中性</option>
+      <option>男性</option>
+      <option>女性</option>
+    </select>
+
+    <label>人设（生成提示）</label>
+    <textarea id="aiPersona" placeholder="性格、身份、背景…"></textarea>
+
+    <label>风格 / 习惯（生成提示）</label>
+    <textarea id="aiStyle" placeholder="说话风格、口癖、行为习惯…"></textarea>
+
+    <label>回复条数（1–30｜API 生效）</label>
+    <input type="number" id="replyCount" min="1" max="30" value="10">
+
+    <label>我的气泡渐变</label>
     <input type="color" onchange="me1=this.value;updateMe()">
     <input type="color" onchange="me2=this.value;updateMe()">
 
-    <label>聊天气泡（AI）</label>
+    <label>AI 气泡渐变</label>
     <input type="color" onchange="ai1=this.value;updateAI()">
     <input type="color" onchange="ai2=this.value;updateAI()">
 
@@ -166,29 +208,42 @@ html,body{
     </div>
 
     <div class="modalActions">
-      <button class="cancel" onclick="personaModal.style.display='none'">取消</button>
-      <button class="save" onclick="personaModal.style.display='none'">保存</button>
+      <button class="cancel" onclick="closePersona()">取消</button>
+      <button class="save" onclick="savePersona()">保存</button>
     </div>
   </div>
 </div>
 
 <script>
-/* ===== 初始化 ===== */
-const params=new URLSearchParams(location.search);
-const cid=params.get('id')||'default';
-const STORAGE_KEY='chat_'+cid;
+/* ===== 人设存储 ===== */
+const PERSONA_KEY = 'nie_persona_single';
 
-const messagesEl=document.getElementById('messages');
-const personaModal=document.getElementById('personaModal');
-personaBtn.onclick=()=>personaModal.style.display='flex';
+function savePersona(){
+  const data = {
+    name: aiName.value,
+    gender: aiGender.value,
+    persona: aiPersona.value,
+    style: aiStyle.value,
+    replyCount: replyCount.value,
+    action: actSwitch.checked
+  };
+  localStorage.setItem(PERSONA_KEY,JSON.stringify(data));
+  closePersona();
+}
 
-/* 头像（暂时写死，后面可接联系人头像） */
-const myAvatar='https://i.imgur.com/1X4H6jY.png';
-const aiAvatar='https://i.imgur.com/8Km9tLL.png';
+function loadPersona(){
+  const data = JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
+  aiName.value = data.name||'';
+  aiGender.value = data.gender||'中性';
+  aiPersona.value = data.persona||'';
+  aiStyle.value = data.style||'';
+  replyCount.value = data.replyCount||10;
+  actSwitch.checked = data.action!==false;
+}
 
-/* 气泡渐变 */
-let me1='#f6c1dc',me2='#c9b8ff';
-let ai1='#f3effa',ai2='#e6dcff';
+/* ===== 气泡渐变 ===== */
+let me1='#b9a6ff',me2='#9b86e6';
+let ai1='#f6f1ff',ai2='#ebe3ff';
 function updateMe(){
   document.documentElement.style.setProperty('--bubble-me',`linear-gradient(135deg,${me1},${me2})`);
 }
@@ -197,47 +252,64 @@ function updateAI(){
 }
 
 /* ===== 聊天存储 ===== */
+const CHAT_KEY='nie_chat_single';
+const messagesEl=document.getElementById('messages');
+const meAvatar='https://i.imgur.com/1XKQp1H.png';
+const aiAvatar='https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png';
+
 function loadChat(){
-  return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
-}
-function saveChat(list){
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(list));
+  const data=JSON.parse(localStorage.getItem(CHAT_KEY)||'[]');
+  data.forEach(m=>renderMsg(m.role,m.text));
 }
 
-/* 渲染 */
-function render(){
-  messagesEl.innerHTML='';
-  loadChat().forEach(m=>{
-    const row=document.createElement('div');
-    row.className='msgRow '+m.type;
-    row.innerHTML=`
-      ${m.type==='other'?`<img class="avatar" src="${aiAvatar}">`:''}
-      <div class="msg">${m.text}</div>
-      ${m.type==='me'?`<img class="avatar" src="${myAvatar}">`:''}
-    `;
-    messagesEl.appendChild(row);
-  });
+function saveMsg(role,text){
+  const data=JSON.parse(localStorage.getItem(CHAT_KEY)||'[]');
+  data.push({role,text});
+  localStorage.setItem(CHAT_KEY,JSON.stringify(data));
+}
+
+function renderMsg(role,text){
+  const row=document.createElement('div');
+  row.className='row '+(role==='me'?'me':'other');
+
+  const avatar=document.createElement('img');
+  avatar.className='avatar';
+  avatar.src=role==='me'?meAvatar:aiAvatar;
+
+  const msg=document.createElement('div');
+  msg.className='msg '+(role==='me'?'me':'other');
+  msg.textContent=text;
+
+  role==='me'
+    ? (row.append(msg),row.append(avatar))
+    : (row.append(avatar),row.append(msg));
+
+  messagesEl.appendChild(row);
   messagesEl.scrollTop=messagesEl.scrollHeight;
 }
 
-/* 发送 */
+/* ===== 发送 ===== */
 sendBtn.onclick=()=>{
   if(!input.value.trim())return;
-  const list=loadChat();
-  list.push({type:'me',text:input.value});
-  saveChat(list);
-  input.value='';
-  render();
+  renderMsg('me',input.value);
+  saveMsg('me',input.value);
+
+  const act=actSwitch.checked?'（他想了想）':'';
+  const reply=act+'我明白你的意思。';
 
   setTimeout(()=>{
-    const act=actSwitch.checked?'（他想了想）':'';
-    list.push({type:'other',text:act+'我明白你的意思。'});
-    saveChat(list);
-    render();
+    renderMsg('ai',reply);
+    saveMsg('ai',reply);
   },600);
+
+  input.value='';
 };
 
-render();
+/* ===== 初始化 ===== */
+personaBtn.onclick=()=>personaModal.style.display='flex';
+function closePersona(){personaModal.style.display='none'}
+loadPersona();
+loadChat();
 </script>
 </body>
 </html>
