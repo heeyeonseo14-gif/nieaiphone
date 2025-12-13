@@ -65,17 +65,19 @@ html,body{
 /* ===== chat ===== */
 .chatCard{
   flex:1;
+  min-height:0;                 /* ★修复：允许内部滚动 */
   background:var(--card);
   border-radius:18px;
   padding:14px;
   display:flex;
   flex-direction:column;
-  margin-bottom:12px; /* ★ 修复：给底部按钮让位 */
+  margin-bottom:12px;
 }
 
 .messages{
   flex:1;
-  overflow-y:auto;
+  min-height:0;                 /* ★修复 */
+  overflow-y:auto;              /* ★修复：只滚动白卡片 */
   display:flex;
   flex-direction:column;
   gap:10px;
@@ -94,7 +96,10 @@ html,body{
   width:34px;
   height:34px;
   border-radius:50%;
-  background:#ddd center/cover no-repeat; /* ★ 修复：用 background 显示头像 */
+  background:#ddd;
+  background-position:center;
+  background-size:cover;
+  background-repeat:no-repeat;
   flex-shrink:0;
 }
 
@@ -110,7 +115,6 @@ html,body{
   background:var(--bubble-me);
   color:white;
 }
-
 .ai .msg{
   background:var(--bubble-ai);
 }
@@ -210,12 +214,7 @@ html,body{
 }
 
 /* ===== gradient picker ===== */
-.gradRow{
-  display:flex;
-  gap:10px;
-  margin:6px 0;
-}
-
+.gradRow{display:flex;gap:10px;margin:6px 0}
 .grad{
   width:48px;
   height:28px;
@@ -225,21 +224,21 @@ html,body{
 }
 .grad.active{border-color:#9b86e6}
 
-/* 我的气泡（原 4 + ★新增 2） */
+/* 我的气泡 */
 .me1{background:linear-gradient(135deg,#cbb8ff,#9b86e6)}
 .me2{background:linear-gradient(135deg,#ffd6e9,#e7b6ff)}
 .me3{background:linear-gradient(135deg,#e6f2ff,#cfe5ff)}
 .me4{background:linear-gradient(135deg,#e7f7ec,#cdeedd)}
-.me5{background:linear-gradient(135deg,#fff7e6,#ffe1b3)} /* ★新增 奶杏 */
-.me6{background:linear-gradient(135deg,#f1f0ff,#dcd9ff)} /* ★新增 淡雾紫 */
+.me5{background:linear-gradient(135deg,#fff7e6,#ffe1b3)} /* ★新增 */
+.me6{background:linear-gradient(135deg,#f1f0ff,#dcd9ff)} /* ★新增 */
 
-/* AI 气泡（原 4 + ★新增 2） */
+/* AI 气泡 */
 .ai1{background:linear-gradient(135deg,#f6f1ff,#ebe3ff)}
 .ai2{background:linear-gradient(135deg,#fff1f7,#f0dcff)}
 .ai3{background:linear-gradient(135deg,#eef6ff,#ddeaff)}
 .ai4{background:linear-gradient(135deg,#f0fbf4,#dcf3e6)}
-.ai5{background:linear-gradient(135deg,#fff7fa,#ffe6f0)} /* ★新增 奶粉 */
-.ai6{background:linear-gradient(135deg,#f6fffb,#e2f7ef)} /* ★新增 薄荷白 */
+.ai5{background:linear-gradient(135deg,#fff7fa,#ffe6f0)} /* ★新增 */
+.ai6{background:linear-gradient(135deg,#f6fffb,#e2f7ef)} /* ★新增 */
 </style>
 </head>
 
@@ -268,7 +267,7 @@ html,body{
 
 </div>
 
-<!-- 人设设定（结构完全没删） -->
+<!-- ===== 人设设定（你原本的，完整保留） ===== -->
 <div class="modalMask" id="personaModal">
 <div class="modal">
 <h3>人设设定</h3>
@@ -301,8 +300,8 @@ html,body{
   <div class="grad me2" onclick="setMe(1)"></div>
   <div class="grad me3" onclick="setMe(2)"></div>
   <div class="grad me4" onclick="setMe(3)"></div>
-  <div class="grad me5" onclick="setMe(4)"></div> <!-- ★新增 -->
-  <div class="grad me6" onclick="setMe(5)"></div> <!-- ★新增 -->
+  <div class="grad me5" onclick="setMe(4)"></div>
+  <div class="grad me6" onclick="setMe(5)"></div>
 </div>
 
 <label>AI 气泡</label>
@@ -311,8 +310,8 @@ html,body{
   <div class="grad ai2" onclick="setAI(1)"></div>
   <div class="grad ai3" onclick="setAI(2)"></div>
   <div class="grad ai4" onclick="setAI(3)"></div>
-  <div class="grad ai5" onclick="setAI(4)"></div> <!-- ★新增 -->
-  <div class="grad ai6" onclick="setAI(5)"></div> <!-- ★新增 -->
+  <div class="grad ai5" onclick="setAI(4)"></div>
+  <div class="grad ai6" onclick="setAI(5)"></div>
 </div>
 
 <label>
@@ -328,44 +327,44 @@ html,body{
 </div>
 
 <script>
+/* ===== 人设弹窗 ===== */
 const personaBtn=document.getElementById('personaBtn');
 const personaModal=document.getElementById('personaModal');
 personaBtn.onclick=()=>personaModal.style.display='flex';
 function closePersona(){personaModal.style.display='none'}
 
-const ME_G=[
+const ME_G=[ /* 原有 + 新增 */
 'linear-gradient(135deg,#cbb8ff,#9b86e6)',
 'linear-gradient(135deg,#ffd6e9,#e7b6ff)',
 'linear-gradient(135deg,#e6f2ff,#cfe5ff)',
 'linear-gradient(135deg,#e7f7ec,#cdeedd)',
-'linear-gradient(135deg,#fff7e6,#ffe1b3)', // ★新增
-'linear-gradient(135deg,#f1f0ff,#dcd9ff)'  // ★新增
+'linear-gradient(135deg,#fff7e6,#ffe1b3)',
+'linear-gradient(135deg,#f1f0ff,#dcd9ff)'
 ];
 const AI_G=[
 'linear-gradient(135deg,#f6f1ff,#ebe3ff)',
 'linear-gradient(135deg,#fff1f7,#f0dcff)',
 'linear-gradient(135deg,#eef6ff,#ddeaff)',
 'linear-gradient(135deg,#f0fbf4,#dcf3e6)',
-'linear-gradient(135deg,#fff7fa,#ffe6f0)', // ★新增
-'linear-gradient(135deg,#f6fffb,#e2f7ef)'  // ★新增
+'linear-gradient(135deg,#fff7fa,#ffe6f0)',
+'linear-gradient(135deg,#f6fffb,#e2f7ef)'
 ];
 
 function markActive(row,i){
   [...row.children].forEach((c,idx)=>c.classList.toggle('active',idx===i));
 }
-
 function setMe(i){
   document.documentElement.style.setProperty('--bubble-me',ME_G[i]);
   localStorage.setItem('meBubble',ME_G[i]);
-  markActive(document.getElementById('meRow'),i);
+  markActive(meRow,i);
 }
 function setAI(i){
   document.documentElement.style.setProperty('--bubble-ai',AI_G[i]);
   localStorage.setItem('aiBubble',AI_G[i]);
-  markActive(document.getElementById('aiRow'),i);
+  markActive(aiRow,i);
 }
 
-/* ★修复：保存并显示 AI 头像 */
+/* ★修复：AI 头像保存 */
 aiAvatarInput.onchange=e=>{
   const f=e.target.files[0];
   if(!f)return;
@@ -383,10 +382,11 @@ function savePersona(){
     limit:+p_limit.value,
     act:actSwitch.checked
   }));
+  document.getElementById('chatTitle').textContent=p_name.value || '聊天'; /* ★修复 */
   closePersona();
 }
 
-/* 初始化 */
+/* 初始化（人设不丢） */
 (function init(){
   const d=JSON.parse(localStorage.getItem('persona')||'{}');
   if(d.name)p_name.value=d.name;
@@ -395,27 +395,26 @@ function savePersona(){
   if(d.style)p_style.value=d.style;
   if(d.limit)p_limit.value=d.limit;
   if(d.act)actSwitch.checked=true;
+  if(d.name) chatTitle.textContent=d.name;
 
-  if(d.name) document.getElementById('chatTitle').textContent=d.name; /* ★修复：标题 */
-
-  if(localStorage.getItem('meBubble'))
-    document.documentElement.style.setProperty('--bubble-me',localStorage.getItem('meBubble'));
-  if(localStorage.getItem('aiBubble'))
-    document.documentElement.style.setProperty('--bubble-ai',localStorage.getItem('aiBubble'));
+  if(localStorage.getItem('meBubble')) document.documentElement.style.setProperty('--bubble-me',localStorage.getItem('meBubble'));
+  if(localStorage.getItem('aiBubble')) document.documentElement.style.setProperty('--bubble-ai',localStorage.getItem('aiBubble'));
 })();
 
-/* 聊天记录 */
+/* ===== 聊天 ===== */
 const KEY='chat_'+location.search;
 const messagesEl=document.getElementById('messages');
 
 function render(){
   messagesEl.innerHTML='';
+  const aiAvatar=localStorage.getItem('aiAvatar');
+
   JSON.parse(localStorage.getItem(KEY)||'[]').forEach(m=>{
     const row=document.createElement('div');
     row.className='msgRow '+m.type;
     row.innerHTML=`
       ${m.type==='ai'
-        ? `<div class="avatar" style="background-image:url('${localStorage.getItem('aiAvatar')||''}')"></div>`
+        ? `<div class="avatar" ${aiAvatar?`style="background-image:url('${aiAvatar}')"`:''}></div>`
         : ''
       }
       <div class="msg">${m.text}</div>
@@ -440,10 +439,12 @@ sendBtn.onclick=()=>{
 
   for(let i=0;i<replies;i++){
     setTimeout(()=>{
-      const t=p.act
-        ? `（他想了想）这是第 ${i+1} 条回复。`
-        : `这是第 ${i+1} 条回复。`;
-      list.push({type:'ai',text:t});
+      list.push({
+        type:'ai',
+        text:p.act
+          ? `（他想了想）这是第 ${i+1} 条回复。`
+          : `这是第 ${i+1} 条回复。`
+      });
       localStorage.setItem(KEY,JSON.stringify(list));
       render();
     },600*(i+1));
