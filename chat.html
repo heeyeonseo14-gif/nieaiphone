@@ -13,20 +13,36 @@
   --text:#2f2436;
   --muted:#8a7f99;
 }
+
 *{box-sizing:border-box}
+
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
   background:linear-gradient(180deg,#f5edff,#efe7fb);
   color:var(--text);
 }
+
+/* ===== 背景层 ===== */
+#bgLayer{
+  position:fixed;
+  inset:0;
+  background-size:cover;
+  background-position:center;
+  opacity:.35;
+  z-index:-1;
+}
+
 .app{
   max-width:430px;
   margin:0 auto;
   min-height:100vh;
   display:flex;
   flex-direction:column;
+  backdrop-filter: blur(12px);
 }
+
+/* header */
 .header{
   padding:14px;
   display:flex;
@@ -46,6 +62,8 @@ body{
   font-size:18px;
   cursor:pointer;
 }
+
+/* contacts */
 .contacts{
   flex:1;
   padding:12px;
@@ -56,7 +74,8 @@ body{
   gap:12px;
 }
 .card{
-  background:var(--card);
+  background:rgba(255,255,255,.75);
+  backdrop-filter: blur(10px);
   border-radius:16px;
   padding:12px 8px;
   display:flex;
@@ -95,12 +114,13 @@ body{
   font-size:14px;
   color:#c66;
 }
+
+/* bottom */
 .bottom{
   padding:12px;
-  display:flex;
 }
 .bottom button{
-  flex:1;
+  width:100%;
   padding:10px;
   border-radius:999px;
   border:none;
@@ -110,76 +130,117 @@ body{
   cursor:pointer;
 }
 
-/* modal */
+/* ===== modal ===== */
 .modalMask{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.35);
+  background:rgba(0,0,0,.45);
+  backdrop-filter: blur(2px);
   display:none;
   align-items:center;
   justify-content:center;
   z-index:99;
 }
 .modal{
-  background:white;
-  width:90%;
+  background:rgba(255,255,255,.9);
+  backdrop-filter: blur(14px);
+  width:92%;
   max-width:360px;
-  border-radius:16px;
-  padding:16px;
+  border-radius:20px;
+  padding:18px 16px 16px;
+  box-shadow:0 20px 50px rgba(40,20,60,.25);
 }
 .modal h3{
-  margin:0 0 12px 0;
+  margin:0 0 14px;
+  font-size:18px;
+  text-align:center;
 }
 .modal input{
   width:100%;
-  padding:8px;
-  margin-bottom:10px;
-  border-radius:8px;
-  border:1px solid #ddd;
+  padding:12px 14px;
+  margin-bottom:12px;
+  border-radius:12px;
+  border:1px solid #e3dcf3;
+  font-size:14px;
 }
 .modal label{
   display:flex;
   align-items:center;
-  gap:6px;
+  gap:8px;
   font-size:14px;
-  margin-bottom:10px;
-}
-.modalActions{
-  display:flex;
-  justify-content:flex-end;
-  gap:10px;
+  margin-bottom:14px;
 }
 .avatarPreview{
-  width:64px;
-  height:64px;
-  border-radius:16px;
+  width:72px;
+  height:72px;
+  border-radius:18px;
   background:#eee;
   object-fit:cover;
   display:none;
-  margin:6px auto 10px;
+  margin:6px auto 12px;
+}
+.pickBtn{
+  width:100%;
+  padding:12px;
+  border-radius:14px;
+  border:1px dashed #d8d0f0;
+  background:#faf8ff;
+  font-weight:600;
+  cursor:pointer;
+  margin-bottom:12px;
+}
+.modalActions{
+  display:flex;
+  gap:10px;
+}
+.modalActions button{
+  flex:1;
+  padding:12px;
+  border-radius:999px;
+  border:none;
+  font-weight:700;
+  cursor:pointer;
+}
+.modalActions button:first-child{
+  background:#f2eefc;
+  color:#6b5fa6;
+}
+.modalActions button:last-child{
+  background:linear-gradient(135deg,#9b8cff,#7c68e6);
+  color:white;
 }
 </style>
 </head>
 
 <body>
+
+<!-- 背景层 -->
+<div id="bgLayer"></div>
+
 <div class="app">
 
+  <!-- header -->
   <div class="header">
     <button class="iconBtn" onclick="location.href='home.html'">←</button>
     <h1>聊天</h1>
-    <button class="iconBtn" onclick="openAdd()">＋</button>
+    <div style="display:flex;gap:6px">
+      <button class="iconBtn" onclick="pickBg()">🖼</button>
+      <button class="iconBtn" onclick="openAdd()">＋</button>
+    </div>
   </div>
 
+  <!-- contacts -->
   <div class="contacts">
     <div class="grid" id="contactGrid"></div>
   </div>
 
+  <!-- bottom -->
   <div class="bottom">
     <button onclick="location.href='feed.html'">朋友圈</button>
   </div>
 </div>
 
-<!-- 添加联系人 / 群聊 -->
+<!-- 添加聊天 -->
 <div class="modalMask" id="addModal">
   <div class="modal">
     <h3>添加聊天</h3>
@@ -189,17 +250,11 @@ body{
 
     <img id="avatarPreview" class="avatarPreview">
 
-    <button type="button" onclick="pickAvatar()"
-      style="width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:1px dashed #ccc;background:#fafafa;">
-      选择本地头像
-    </button>
-
+    <button class="pickBtn" onclick="pickAvatar()">选择本地头像</button>
     <input type="file" id="addAvatarFile" accept="image/*" style="display:none">
 
-    <!-- ★ 群聊开关 -->
     <label>
-      <input type="checkbox" id="isGroup">
-      这是一个群聊
+      <input type="checkbox" id="isGroup"> 这是一个群聊
     </label>
 
     <div class="modalActions">
@@ -209,88 +264,96 @@ body{
   </div>
 </div>
 
-<script>
-const KEY = 'nie_contacts_v1';
-let selectedAvatarData = '';
+<input type="file" id="bgPicker" accept="image/*" style="display:none">
 
-function load(){ return JSON.parse(localStorage.getItem(KEY)||'[]'); }
-function save(list){ localStorage.setItem(KEY,JSON.stringify(list)); }
+<script>
+const KEY='nie_contacts_v1';
+let selectedAvatarData='';
+
+const bgLayer=document.getElementById('bgLayer');
+const savedBg=localStorage.getItem('nie_bg');
+if(savedBg) bgLayer.style.backgroundImage=`url(${savedBg})`;
+
+function pickBg(){ bgPicker.click(); }
+bgPicker.onchange=e=>{
+  const f=e.target.files[0];
+  if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    localStorage.setItem('nie_bg',r.result);
+    bgLayer.style.backgroundImage=`url(${r.result})`;
+  };
+  r.readAsDataURL(f);
+};
+
+function load(){return JSON.parse(localStorage.getItem(KEY)||'[]')}
+function save(l){localStorage.setItem(KEY,JSON.stringify(l))}
 
 function render(){
-  const grid=document.getElementById('contactGrid');
-  grid.innerHTML='';
+  contactGrid.innerHTML='';
   load().forEach(c=>{
-    const el=document.createElement('div');
-    el.className='card';
-    el.innerHTML=`
+    const d=document.createElement('div');
+    d.className='card';
+    d.innerHTML=`
       <button class="del" onclick="del('${c.id}',event)">✕</button>
       <img src="${c.avatar||'https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png'}">
       <span>${c.name}</span>
-      ${c.type==='group' ? '<div class="badge">群</div>' : ''}
+      ${c.type==='group'?'<div class="badge">群</div>':''}
     `;
-    el.onclick=()=>openChat(c.id);
-    grid.appendChild(el);
+    d.onclick=()=>location.href='chat_ui.html?id='+c.id;
+    contactGrid.appendChild(d);
   });
-}
-
-function openChat(id){
-  location.href='chat_ui.html?id='+id;
 }
 
 function openAdd(){
   addName.value='';
   addAvatar.value='';
   isGroup.checked=false;
-  selectedAvatarData='';
   avatarPreview.style.display='none';
+  selectedAvatarData='';
   addModal.style.display='flex';
 }
-function closeAdd(){ addModal.style.display='none'; }
+function closeAdd(){addModal.style.display='none'}
 
-function pickAvatar(){ addAvatarFile.click(); }
-
-function compressImage(file, callback){
-  const img=new Image();
-  const reader=new FileReader();
-  reader.onload=e=>img.src=e.target.result;
-  img.onload=()=>{
+function pickAvatar(){addAvatarFile.click()}
+function compressImage(file,cb){
+  const i=new Image(),r=new FileReader();
+  r.onload=e=>i.src=e.target.result;
+  i.onload=()=>{
     const c=document.createElement('canvas');
     c.width=c.height=256;
-    c.getContext('2d').drawImage(img,0,0,256,256);
-    callback(c.toDataURL('image/jpeg',0.7));
+    c.getContext('2d').drawImage(i,0,0,256,256);
+    cb(c.toDataURL('image/jpeg',0.7));
   };
-  reader.readAsDataURL(file);
+  r.readAsDataURL(file);
 }
-
 addAvatarFile.onchange=e=>{
-  const file=e.target.files[0];
-  if(!file) return;
-  compressImage(file,data=>{
-    selectedAvatarData=data;
-    avatarPreview.src=data;
+  const f=e.target.files[0];
+  if(!f) return;
+  compressImage(f,d=>{
+    selectedAvatarData=d;
+    avatarPreview.src=d;
     avatarPreview.style.display='block';
   });
 };
 
 function saveContact(){
-  const name=addName.value.trim();
-  if(!name) return;
-
-  const list=load();
-  list.push({
+  const n=addName.value.trim();
+  if(!n) return;
+  const l=load();
+  l.push({
     id:(isGroup.checked?'g':'c')+Date.now(),
-    name,
+    name:n,
     avatar:selectedAvatarData||addAvatar.value.trim(),
     type:isGroup.checked?'group':'single'
   });
-  save(list);
+  save(l);
   closeAdd();
   render();
 }
-
 function del(id,e){
   e.stopPropagation();
-  if(!confirm('删除？')) return;
+  if(!confirm('删除？'))return;
   save(load().filter(c=>c.id!==id));
   render();
 }
