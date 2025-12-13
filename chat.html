@@ -77,6 +77,15 @@ body{
   font-weight:600;
   text-align:center;
 }
+.badge{
+  position:absolute;
+  bottom:6px;
+  right:6px;
+  font-size:11px;
+  background:#eee;
+  padding:2px 6px;
+  border-radius:999px;
+}
 .del{
   position:absolute;
   top:6px;
@@ -128,13 +137,18 @@ body{
   border-radius:8px;
   border:1px solid #ddd;
 }
+.modal label{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:14px;
+  margin-bottom:10px;
+}
 .modalActions{
   display:flex;
   justify-content:flex-end;
   gap:10px;
 }
-
-/* 头像预览 */
 .avatarPreview{
   width:64px;
   height:64px;
@@ -150,33 +164,29 @@ body{
 <body>
 <div class="app">
 
-  <!-- 顶部 -->
   <div class="header">
     <button class="iconBtn" onclick="location.href='home.html'">←</button>
     <h1>聊天</h1>
     <button class="iconBtn" onclick="openAdd()">＋</button>
   </div>
 
-  <!-- 联系人 -->
   <div class="contacts">
     <div class="grid" id="contactGrid"></div>
   </div>
 
-  <!-- 底部 -->
   <div class="bottom">
     <button onclick="location.href='feed.html'">朋友圈</button>
   </div>
 </div>
 
-<!-- 添加联系人 -->
+<!-- 添加联系人 / 群聊 -->
 <div class="modalMask" id="addModal">
   <div class="modal">
-    <h3>添加联系人</h3>
+    <h3>添加聊天</h3>
 
-    <input id="addName" placeholder="名字">
+    <input id="addName" placeholder="名字 / 群名">
     <input id="addAvatar" placeholder="头像图片 URL（可空）">
 
-    <!-- 头像预览 -->
     <img id="avatarPreview" class="avatarPreview">
 
     <button type="button" onclick="pickAvatar()"
@@ -186,9 +196,15 @@ body{
 
     <input type="file" id="addAvatarFile" accept="image/*" style="display:none">
 
+    <!-- ★ 群聊开关 -->
+    <label>
+      <input type="checkbox" id="isGroup">
+      这是一个群聊
+    </label>
+
     <div class="modalActions">
       <button onclick="closeAdd()">取消</button>
-      <button onclick="saveContact()" class="primary">保存</button>
+      <button onclick="saveContact()">保存</button>
     </div>
   </div>
 </div>
@@ -197,12 +213,8 @@ body{
 const KEY = 'nie_contacts_v1';
 let selectedAvatarData = '';
 
-function load(){
-  return JSON.parse(localStorage.getItem(KEY)||'[]');
-}
-function save(list){
-  localStorage.setItem(KEY,JSON.stringify(list));
-}
+function load(){ return JSON.parse(localStorage.getItem(KEY)||'[]'); }
+function save(list){ localStorage.setItem(KEY,JSON.stringify(list)); }
 
 function render(){
   const grid=document.getElementById('contactGrid');
@@ -214,6 +226,7 @@ function render(){
       <button class="del" onclick="del('${c.id}',event)">✕</button>
       <img src="${c.avatar||'https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png'}">
       <span>${c.name}</span>
+      ${c.type==='group' ? '<div class="badge">群</div>' : ''}
     `;
     el.onclick=()=>openChat(c.id);
     grid.appendChild(el);
@@ -225,65 +238,51 @@ function openChat(id){
 }
 
 function openAdd(){
-  selectedAvatarData = '';
-  avatarPreview.style.display = 'none';
-  addName.value = '';
-  addAvatar.value = '';
-  document.getElementById('addModal').style.display='flex';
+  addName.value='';
+  addAvatar.value='';
+  isGroup.checked=false;
+  selectedAvatarData='';
+  avatarPreview.style.display='none';
+  addModal.style.display='flex';
 }
+function closeAdd(){ addModal.style.display='none'; }
 
-function closeAdd(){
-  document.getElementById('addModal').style.display='none';
-}
+function pickAvatar(){ addAvatarFile.click(); }
 
-function pickAvatar(){
-  document.getElementById('addAvatarFile').click();
-}
-
-/* 图片压缩 + 预览 */
 function compressImage(file, callback){
-  const img = new Image();
-  const reader = new FileReader();
-
-  reader.onload = e => img.src = e.target.result;
-
-  img.onload = () => {
-    const size = 256;
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    canvas.getContext('2d').drawImage(img, 0, 0, size, size);
-    const data = canvas.toDataURL('image/jpeg', 0.7);
-    callback(data);
+  const img=new Image();
+  const reader=new FileReader();
+  reader.onload=e=>img.src=e.target.result;
+  img.onload=()=>{
+    const c=document.createElement('canvas');
+    c.width=c.height=256;
+    c.getContext('2d').drawImage(img,0,0,256,256);
+    callback(c.toDataURL('image/jpeg',0.7));
   };
-
   reader.readAsDataURL(file);
 }
 
-addAvatarFile.addEventListener('change', e=>{
-  const file = e.target.files[0];
+addAvatarFile.onchange=e=>{
+  const file=e.target.files[0];
   if(!file) return;
-
-  compressImage(file, data=>{
-    selectedAvatarData = data;
-    avatarPreview.src = data;
-    avatarPreview.style.display = 'block';
+  compressImage(file,data=>{
+    selectedAvatarData=data;
+    avatarPreview.src=data;
+    avatarPreview.style.display='block';
   });
-});
+};
 
 function saveContact(){
-  const name = addName.value.trim();
+  const name=addName.value.trim();
   if(!name) return;
 
-  const avatar = selectedAvatarData || addAvatar.value.trim();
-  const list = load();
-
+  const list=load();
   list.push({
-    id:'c'+Date.now(),
+    id:(isGroup.checked?'g':'c')+Date.now(),
     name,
-    avatar
+    avatar:selectedAvatarData||addAvatar.value.trim(),
+    type:isGroup.checked?'group':'single'
   });
-
   save(list);
   closeAdd();
   render();
@@ -291,7 +290,7 @@ function saveContact(){
 
 function del(id,e){
   e.stopPropagation();
-  if(!confirm('删除联系人？')) return;
+  if(!confirm('删除？')) return;
   save(load().filter(c=>c.id!==id));
   render();
 }
