@@ -27,7 +27,7 @@ body{
   background-size:cover;
   background-position:center;
   z-index:-1;
-  filter: brightness(var(--bg-bright,1)) blur(var(--bg-blur,0px));
+  filter: brightness(1) blur(0px);
   transition: filter .2s;
 }
 
@@ -84,7 +84,6 @@ body{
   align-items:center;
   gap:6px;
   cursor:pointer;
-  position:relative;
 }
 .card img{
   width:56px;
@@ -95,24 +94,6 @@ body{
 .card span{
   font-size:13px;
   font-weight:600;
-}
-.badge{
-  position:absolute;
-  bottom:6px;
-  right:6px;
-  font-size:11px;
-  background:#eee;
-  padding:2px 6px;
-  border-radius:999px;
-}
-.del{
-  position:absolute;
-  top:6px;
-  right:6px;
-  border:none;
-  background:none;
-  font-size:14px;
-  color:#c66;
 }
 
 /* ===== 底部 ===== */
@@ -133,7 +114,7 @@ body{
 .modalMask{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.45);
+  background:rgba(0,0,0,.25);
   backdrop-filter: blur(2px);
   display:none;
   align-items:center;
@@ -152,13 +133,6 @@ body{
   text-align:center;
   margin:0 0 14px;
 }
-.modal input{
-  width:100%;
-  padding:12px;
-  margin-bottom:12px;
-  border-radius:12px;
-  border:1px solid #ddd;
-}
 .pickBtn{
   width:100%;
   padding:12px;
@@ -167,29 +141,8 @@ body{
   background:#fafafa;
   margin-bottom:12px;
 }
-.groupSelect{
-  border:1.5px solid #ddd;
-  border-radius:14px;
-  padding:14px;
-  text-align:center;
-  margin-bottom:14px;
-}
-.groupSelect.on{
-  border-color:#9b8cff;
-  background:rgba(155,140,255,.12);
-}
-.modalActions{
-  display:flex;
-  gap:10px;
-}
-.modalActions button{
-  flex:1;
-  padding:12px;
-  border-radius:999px;
-  border:none;
-}
 
-/* ===== 背景设置弹窗 ===== */
+/* ===== 背景设置 ===== */
 .settingRow{
   margin-bottom:14px;
 }
@@ -198,8 +151,19 @@ body{
   display:block;
   margin-bottom:6px;
 }
-.settingRow input[type=range]{
+.settingRow input{
   width:100%;
+}
+.resetBtn{
+  width:100%;
+  padding:12px;
+  border-radius:999px;
+  border:none;
+  background:#f2eefc;
+  color:#6b5fa6;
+  font-weight:600;
+  margin-bottom:12px;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -213,10 +177,7 @@ body{
   <div class="header">
     <button class="iconBtn" onclick="location.href='home.html'">←</button>
     <h1>聊天</h1>
-    <div style="display:flex;gap:6px">
-      <button class="iconBtn" onclick="openBg()">自定义</button>
-      <button class="iconBtn" onclick="openAdd()">＋</button>
-    </div>
+    <button class="iconBtn" onclick="openBg()">自定义</button>
   </div>
 
   <div class="contacts">
@@ -225,20 +186,6 @@ body{
 
   <div class="bottom">
     <button onclick="location.href='feed.html'">朋友圈</button>
-  </div>
-</div>
-
-<!-- 添加聊天 -->
-<div class="modalMask" id="addModal">
-  <div class="modal">
-    <h3>添加聊天</h3>
-    <input id="addName" placeholder="名字 / 群名">
-    <button class="pickBtn">选择头像</button>
-    <div class="groupSelect">这是一个群聊</div>
-    <div class="modalActions">
-      <button onclick="closeAdd()">取消</button>
-      <button onclick="closeAdd()">保存</button>
-    </div>
   </div>
 </div>
 
@@ -256,59 +203,75 @@ body{
 
     <div class="settingRow">
       <label>模糊</label>
-      <input type="range" min="0" max="10" step="1" id="blurRange">
+      <input type="range" min="0" max="6" step="0.5" id="blurRange">
     </div>
 
-    <div class="modalActions">
-      <button onclick="closeBg()">关闭</button>
-    </div>
+    <button class="resetBtn" onclick="resetBg()">恢复默认芋泥紫</button>
+
+    <button class="pickBtn" onclick="closeBg()">关闭</button>
   </div>
 </div>
 
 <input type="file" id="bgPicker" accept="image/*" hidden>
 
 <script>
-const bg=document.getElementById('bgLayer');
-const br=document.getElementById('brightRange');
-const bl=document.getElementById('blurRange');
+const bg = document.getElementById('bgLayer');
+const br = document.getElementById('brightRange');
+const bl = document.getElementById('blurRange');
 
 /* 初始化 */
-const bgImg=localStorage.getItem('bg_img');
-if(bgImg) bg.style.backgroundImage=`url(${bgImg})`;
+const bgImg = localStorage.getItem('bg_img');
+if(bgImg) bg.style.backgroundImage = `url(${bgImg})`;
 
-br.value=localStorage.getItem('bg_bright')||1;
-bl.value=localStorage.getItem('bg_blur')||0;
-document.documentElement.style.setProperty('--bg-bright',br.value);
-document.documentElement.style.setProperty('--bg-blur',bl.value+'px');
+br.value = localStorage.getItem('bg_bright') || 1;
+bl.value = localStorage.getItem('bg_blur') || 0;
+applyFilter();
 
-/* 背景弹窗 */
-function openBg(){bgModal.style.display='flex'}
-function closeBg(){bgModal.style.display='none'}
+/* 弹窗 */
+function openBg(){ bgModal.style.display='flex'; }
+function closeBg(){ bgModal.style.display='none'; }
 
-function pickBg(){bgPicker.click()}
-bgPicker.onchange=e=>{
-  const f=e.target.files[0];
+/* 选背景 */
+function pickBg(){ bgPicker.click(); }
+bgPicker.onchange = e=>{
+  const f = e.target.files[0];
   if(!f) return;
-  const r=new FileReader();
-  r.onload=()=>{
-    localStorage.setItem('bg_img',r.result);
-    bg.style.backgroundImage=`url(${r.result})`;
+  const r = new FileReader();
+  r.onload = ()=>{
+    localStorage.setItem('bg_img', r.result);
+    bg.style.backgroundImage = `url(${r.result})`;
   };
   r.readAsDataURL(f);
 };
 
-br.oninput=()=>{
-  document.documentElement.style.setProperty('--bg-bright',br.value);
-  localStorage.setItem('bg_bright',br.value);
+/* 滑杆 */
+br.oninput = ()=>{
+  localStorage.setItem('bg_bright', br.value);
+  applyFilter();
 };
-bl.oninput=()=>{
-  document.documentElement.style.setProperty('--bg-blur',bl.value+'px');
-  localStorage.setItem('bg_blur',bl.value);
+bl.oninput = ()=>{
+  localStorage.setItem('bg_blur', bl.value);
+  applyFilter();
 };
 
-/* 其他弹窗 */
-function openAdd(){addModal.style.display='flex'}
-function closeAdd(){addModal.style.display='none'}
+function applyFilter(){
+  bg.style.filter = `brightness(${br.value}) blur(${bl.value}px)`;
+}
+
+/* 恢复默认 */
+function resetBg(){
+  localStorage.removeItem('bg_img');
+  localStorage.removeItem('bg_bright');
+  localStorage.removeItem('bg_blur');
+
+  bg.style.backgroundImage = '';
+  bg.style.background = 'linear-gradient(180deg,#f5edff,#efe7fb)';
+
+  br.value = 1;
+  bl.value = 0;
+  applyFilter();
+}
 </script>
+
 </body>
 </html>
