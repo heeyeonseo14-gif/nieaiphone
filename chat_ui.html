@@ -22,102 +22,224 @@
 
 *{box-sizing:border-box}
 html,body{
-  margin:0;height:100%;
+  margin:0;
+  height:100%;
   font-family:"Quicksand",system-ui;
-  background:linear-gradient(180deg,var(--bg1),var(--bg2));
+  background:linear-gradient(180
+180deg,var(--bg1),var(--bg2));
   color:var(--text);
 }
 
 .app{
-  width:96%;max-width:420px;
-  margin:10px auto;padding:14px;
+  width:96%;
+  max-width:420px;
+  margin:10px auto;
+  padding:14px;
   min-height:88vh;
-  display:flex;flex-direction:column;
+  display:flex;
+  flex-direction:column;
 }
 
-/* header */
-.header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.header button{width:42px;height:42px;border-radius:12px;border:none;background:white;font-size:18px}
-.header h1{flex:1;font-size:18px;font-weight:700;text-align:center;margin:0}
+/* ===== header ===== */
+.header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+.header button{
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  border:none;
+  background:white;
+  font-size:18px;
+}
+.header h1{
+  flex:1;
+  font-size:18px;
+  font-weight:700;
+  text-align:center;
+  margin:0;
+}
 
-/* chat */
+/* ===== chat ===== */
 .chatCard{
-  flex:1;background:var(--card);
-  border-radius:18px;padding:14px;
-  display:flex;flex-direction:column;
+  flex:1;
+  background:var(--card);
+  border-radius:18px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
 }
-.messages{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+
+.messages{
+  flex:1;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
 
 /* message row */
-.msgRow{display:flex;gap:8px;align-items:flex-end}
+.msgRow{
+  display:flex;
+  gap:8px;
+  align-items:flex-end;
+}
 .msgRow.me{justify-content:flex-end}
 .msgRow.ai{justify-content:flex-start}
 
 .avatar{
-  width:34px;height:34px;border-radius:50%;
-  object-fit:cover;background:#ddd;flex-shrink:0;
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  background:#ddd;
+  object-fit:cover;
+  flex-shrink:0;
 }
 
-.msg{max-width:70%;padding:10px 12px;border-radius:14px;line-height:1.4}
-.me .msg{background:var(--bubble-me);color:white}
-.ai .msg{background:var(--bubble-ai)}
+.msg{
+  max-width:70%;
+  padding:10px 12px;
+  border-radius:14px;
+  line-height:1.45;
+  font-size:14px;
+}
 
-/* input */
-.composer{display:flex;gap:8px;margin-top:10px}
-.composer textarea{flex:1;border-radius:14px;padding:10px;border:1px solid #e6def5}
-.sendBtn{width:54px;border:none;border-radius:14px;
-  background:linear-gradient(135deg,#b8a6ff,#8f7be8);color:white}
+.me .msg{
+  background:var(--bubble-me);
+  color:white;
+}
 
-/* bottom */
-.bottomNav{display:flex;gap:10px;margin-top:12px}
-.bottomNav button{flex:1;border:none;border-radius:999px;padding:10px;font-weight:700}
+.ai .msg{
+  background:var(--bubble-ai);
+}
 
-/* modal */
+/* ===== input ===== */
+.composer{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+}
+.composer textarea{
+  flex:1;
+  border-radius:14px;
+  padding:10px;
+  border:1px solid #e6def5;
+}
+.sendBtn{
+  width:54px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(135deg,#b8a6ff,#8f7be8);
+  color:white;
+}
+
+/* ===== bottom ===== */
+.bottomNav{
+  display:flex;
+  gap:10px;
+  margin-top:12px;
+}
+.bottomNav button{
+  flex:1;
+  border:none;
+  border-radius:999px;
+  padding:10px;
+  font-weight:700;
+}
+
+/* ===== modal ===== */
 .modalMask{
-  position:fixed;inset:0;
+  position:fixed;
+  inset:0;
   background:rgba(0,0,0,.45);
-  display:none;align-items:center;justify-content:center;
+  display:none;
+  align-items:center;
+  justify-content:center;
   z-index:99;
 }
-.modal{
-  background:white;width:92%;max-width:380px;
-  border-radius:20px;padding:16px;
-}
-.modal h3{text-align:center;margin:0 0 12px}
-.modal label{font-size:13px;color:var(--muted);margin-top:8px;display:block}
-.modal input,.modal textarea,.modal select{
-  width:100%;padding:10px;border-radius:12px;border:1px solid #e6def5
-}
-.modal textarea{resize:none}
-.modalActions{display:flex;gap:10px;margin-top:14px}
-.modalActions button{flex:1;padding:12px;border-radius:999px;border:none;font-weight:700}
-.cancel{background:#f2eefc}
-.save{background:linear-gradient(135deg,#9b8cff,#7c68e6);color:white}
 
-/* gradient picker */
-.gradRow{display:flex;gap:10px;margin:6px 0;flex-wrap:wrap}
-.grad{
-  width:48px;height:28px;border-radius:999px;
-  cursor:pointer;border:2px solid transparent;
+.modal{
+  background:white;
+  width:92%;
+  max-width:380px;
+  border-radius:20px;
+  padding:16px;
 }
-.grad.active{border-color:#9b86e6}
+
+.modal h3{
+  text-align:center;
+  margin:0 0 12px;
+}
+
+.modal label{
+  font-size:13px;
+  color:var(--muted);
+  margin-top:10px;
+  display:block;
+}
+
+.modal input,.modal textarea,.modal select{
+  width:100%;
+  padding:10px;
+  border-radius:12px;
+  border:1px solid #e6def5;
+}
+
+.modal textarea{resize:none}
+
+.modalActions{
+  display:flex;
+  gap:10px;
+  margin-top:14px;
+}
+
+.modalActions button{
+  flex:1;
+  padding:12px;
+  border-radius:999px;
+  border:none;
+  font-weight:700;
+}
+
+.cancel{background:#f2eefc}
+.save{
+  background:linear-gradient(135deg,#9b8cff,#7c68e6);
+  color:white;
+}
+
+/* ===== gradient picker ===== */
+.gradRow{
+  display:flex;
+  gap:10px;
+  margin:6px 0;
+}
+
+.grad{
+  width:48px;
+  height:28px;
+  border-radius:999px;
+  cursor:pointer;
+  border:2px solid transparent;
+}
+
+.grad.active{
+  border-color:#9b86e6;
+}
 
 /* 我的气泡 */
-.grad.me1{background:linear-gradient(135deg,#cbb8ff,#9b86e6)}
-.grad.me2{background:linear-gradient(135deg,#ffd6e9,#e7b6ff)}
-.grad.me3{background:linear-gradient(135deg,#f2ecff,#d8ccff)}
-.grad.me4{background:linear-gradient(135deg,#eef4ff,#d6e3ff)}
-.grad.me5{background:linear-gradient(135deg,#eefaf5,#d9f1e6)}
+.me1{background:linear-gradient(135deg,#cbb8ff,#9b86e6)}
+.me2{background:linear-gradient(135deg,#ffd6e9,#e7b6ff)}
+.me3{background:linear-gradient(135deg,#e6f2ff,#cfe5ff)}
+.me4{background:linear-gradient(135deg,#e7f7ec,#cdeedd)}
 
 /* AI 气泡 */
-.grad.ai1{background:linear-gradient(135deg,#f6f1ff,#ebe3ff)}
-.grad.ai2{background:linear-gradient(135deg,#fff1f7,#f0dcff)}
-.grad.ai3{background:linear-gradient(135deg,#f7f5fb,#e6e1f5)}
-.grad.ai4{background:linear-gradient(135deg,#eef4ff,#dfe9ff)}
-.grad.ai5{background:linear-gradient(135deg,#eefaf5,#e2f3ea)}
-
-/* checkbox */
-.checkRow{display:flex;align-items:center;gap:10px;margin-top:12px}
+.ai1{background:linear-gradient(135deg,#f6f1ff,#ebe3ff)}
+.ai2{background:linear-gradient(135deg,#fff1f7,#f0dcff)}
+.ai3{background:linear-gradient(135deg,#eef6ff,#ddeaff)}
+.ai4{background:linear-gradient(135deg,#f0fbf4,#dcf3e6)}
 </style>
 </head>
 
@@ -132,6 +254,7 @@ html,body{
 
 <div class="chatCard">
   <div class="messages" id="messages"></div>
+
   <div class="composer">
     <textarea id="input" placeholder="输入消息…"></textarea>
     <button class="sendBtn" id="sendBtn">➤</button>
@@ -154,7 +277,11 @@ html,body{
 <input id="p_name">
 
 <label>性别</label>
-<select id="p_gender"><option>中性</option><option>男性</option><option>女性</option></select>
+<select id="p_gender">
+  <option>中性</option>
+  <option>男性</option>
+  <option>女性</option>
+</select>
 
 <label>人设（生成提示）</label>
 <textarea id="p_persona"></textarea>
@@ -163,21 +290,31 @@ html,body{
 <textarea id="p_style"></textarea>
 
 <label>回复条数（1–30）</label>
-<input id="p_limit" type="number" min="1" max="30">
+<input id="p_limit" type="number" min="1" max="30" value="3">
 
 <label>AI 头像</label>
-<input type="file" accept="image/*" onchange="pickAvatar(this)">
+<input type="file" accept="image/*" id="aiAvatarInput">
 
 <label>我的气泡</label>
-<div class="gradRow" id="meGrads"></div>
+<div class="gradRow" id="meRow">
+  <div class="grad me1" onclick="setMe(0)"></div>
+  <div class="grad me2" onclick="setMe(1)"></div>
+  <div class="grad me3" onclick="setMe(2)"></div>
+  <div class="grad me4" onclick="setMe(3)"></div>
+</div>
 
 <label>AI 气泡</label>
-<div class="gradRow" id="aiGrads"></div>
-
-<div class="checkRow">
-  <input type="checkbox" id="actSwitch">
-  <span>回复中带动作 / 心理描写</span>
+<div class="gradRow" id="aiRow">
+  <div class="grad ai1" onclick="setAI(0)"></div>
+  <div class="grad ai2" onclick="setAI(1)"></div>
+  <div class="grad ai3" onclick="setAI(2)"></div>
+  <div class="grad ai4" onclick="setAI(3)"></div>
 </div>
+
+<label>
+  <input type="checkbox" id="actSwitch">
+  回复中带动作 / 心理描写
+</label>
 
 <div class="modalActions">
   <button class="cancel" onclick="closePersona()">取消</button>
@@ -187,69 +324,46 @@ html,body{
 </div>
 
 <script>
-const personaBtn=document.getElementById('personaBtn');
-const personaModal=document.getElementById('personaModal');
-personaBtn.onclick=()=>personaModal.style.display='flex';
+const personaBtn = document.getElementById('personaBtn');
+const personaModal = document.getElementById('personaModal');
+personaBtn.onclick = ()=> personaModal.style.display='flex';
 function closePersona(){personaModal.style.display='none'}
 
-let AI_AVATAR=localStorage.getItem('aiAvatar')||'';
-
-function pickAvatar(input){
-  const f=input.files[0];
-  if(!f)return;
-  const r=new FileReader();
-  r.onload=()=>{
-    localStorage.setItem('aiAvatar',r.result);
-    AI_AVATAR=r.result;
-  };
-  r.readAsDataURL(f);
-}
-
 const ME_G=[
- 'linear-gradient(135deg,#cbb8ff,#9b86e6)',
- 'linear-gradient(135deg,#ffd6e9,#e7b6ff)',
- 'linear-gradient(135deg,#f2ecff,#d8ccff)',
- 'linear-gradient(135deg,#eef4ff,#d6e3ff)',
- 'linear-gradient(135deg,#eefaf5,#d9f1e6)'
+'linear-gradient(135deg,#cbb8ff,#9b86e6)',
+'linear-gradient(135deg,#ffd6e9,#e7b6ff)',
+'linear-gradient(135deg,#e6f2ff,#cfe5ff)',
+'linear-gradient(135deg,#e7f7ec,#cdeedd)'
 ];
 const AI_G=[
- 'linear-gradient(135deg,#f6f1ff,#ebe3ff)',
- 'linear-gradient(135deg,#fff1f7,#f0dcff)',
- 'linear-gradient(135deg,#f7f5fb,#e6e1f5)',
- 'linear-gradient(135deg,#eef4ff,#dfe9ff)',
- 'linear-gradient(135deg,#eefaf5,#e2f3ea)'
+'linear-gradient(135deg,#f6f1ff,#ebe3ff)',
+'linear-gradient(135deg,#fff1f7,#f0dcff)',
+'linear-gradient(135deg,#eef6ff,#ddeaff)',
+'linear-gradient(135deg,#f0fbf4,#dcf3e6)'
 ];
 
-function renderGrads(){
-  meGrads.innerHTML='';
-  ME_G.forEach((g,i)=>{
-    const d=document.createElement('div');
-    d.className='grad me'+(i+1);
-    if(localStorage.getItem('meBubble')===g)d.classList.add('active');
-    d.onclick=()=>{setMe(i)};
-    meGrads.appendChild(d);
-  });
-  aiGrads.innerHTML='';
-  AI_G.forEach((g,i)=>{
-    const d=document.createElement('div');
-    d.className='grad ai'+(i+1);
-    if(localStorage.getItem('aiBubble')===g)d.classList.add('active');
-    d.onclick=()=>{setAI(i)};
-    aiGrads.appendChild(d);
-  });
+function markActive(row,i){
+  [...row.children].forEach((c,idx)=>c.classList.toggle('active',idx===i));
 }
-renderGrads();
 
 function setMe(i){
   document.documentElement.style.setProperty('--bubble-me',ME_G[i]);
   localStorage.setItem('meBubble',ME_G[i]);
-  renderGrads();
+  markActive(document.getElementById('meRow'),i);
 }
 function setAI(i){
   document.documentElement.style.setProperty('--bubble-ai',AI_G[i]);
   localStorage.setItem('aiBubble',AI_G[i]);
-  renderGrads();
+  markActive(document.getElementById('aiRow'),i);
 }
+
+aiAvatarInput.onchange=e=>{
+  const f=e.target.files[0];
+  if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>localStorage.setItem('aiAvatar',r.result);
+  r.readAsDataURL(f);
+};
 
 function savePersona(){
   localStorage.setItem('persona',JSON.stringify({
@@ -257,25 +371,28 @@ function savePersona(){
     gender:p_gender.value,
     persona:p_persona.value,
     style:p_style.value,
-    limit:p_limit.value,
+    limit:+p_limit.value,
     act:actSwitch.checked
   }));
   closePersona();
 }
 
 (function init(){
-  const p=JSON.parse(localStorage.getItem('persona')||'{}');
-  p_name.value=p.name||'小NIE';
-  p_gender.value=p.gender||'中性';
-  p_persona.value=p.persona||'';
-  p_style.value=p.style||'';
-  p_limit.value=p.limit||10;
-  actSwitch.checked=p.act!==false;
-  if(localStorage.getItem('meBubble'))document.documentElement.style.setProperty('--bubble-me',localStorage.getItem('meBubble'));
-  if(localStorage.getItem('aiBubble'))document.documentElement.style.setProperty('--bubble-ai',localStorage.getItem('aiBubble'));
+  const d=JSON.parse(localStorage.getItem('persona')||'{}');
+  if(d.name)p_name.value=d.name;
+  if(d.gender)p_gender.value=d.gender;
+  if(d.persona)p_persona.value=d.persona;
+  if(d.style)p_style.value=d.style;
+  if(d.limit)p_limit.value=d.limit;
+  if(d.act)actSwitch.checked=true;
+
+  if(localStorage.getItem('meBubble'))
+    document.documentElement.style.setProperty('--bubble-me',localStorage.getItem('meBubble'));
+  if(localStorage.getItem('aiBubble'))
+    document.documentElement.style.setProperty('--bubble-ai',localStorage.getItem('aiBubble'));
 })();
 
-/* 聊天 */
+/* 聊天记录 */
 const KEY='chat_'+location.search;
 const messagesEl=document.getElementById('messages');
 
@@ -285,7 +402,7 @@ function render(){
     const row=document.createElement('div');
     row.className='msgRow '+m.type;
     row.innerHTML=`
-      ${m.type==='ai'?`<img class="avatar" src="${AI_AVATAR||localStorage.getItem('aiAvatar')||''}">`:''}
+      ${m.type==='ai'?`<img class="avatar" src="${localStorage.getItem('aiAvatar')||''}">`:''}
       <div class="msg">${m.text}</div>
       ${m.type==='me'?'<div class="avatar"></div>':''}
     `;
@@ -303,13 +420,19 @@ sendBtn.onclick=()=>{
   localStorage.setItem(KEY,JSON.stringify(list));
   render();
 
-  setTimeout(()=>{
-    const p=JSON.parse(localStorage.getItem('persona')||'{}');
-    const t=p.act===false?'我明白你的意思。':'（他想了想）我明白你的意思。';
-    list.push({type:'ai',text:t});
-    localStorage.setItem(KEY,JSON.stringify(list));
-    render();
-  },600);
+  const p=JSON.parse(localStorage.getItem('persona')||'{}');
+  const replies=p.limit||1;
+
+  for(let i=0;i<replies;i++){
+    setTimeout(()=>{
+      const t=p.act
+        ? `（他想了想）这是第 ${i+1} 条回复。`
+        : `这是第 ${i+1} 条回复。`;
+      list.push({type:'ai',text:t});
+      localStorage.setItem(KEY,JSON.stringify(list));
+      render();
+    },600*(i+1));
+  }
 };
 </script>
 </body>
