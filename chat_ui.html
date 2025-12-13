@@ -17,7 +17,7 @@
   --accent:#9b86e6;
 
   --bubble-me:linear-gradient(135deg,#cbb8ff,#9b86e6);
-  --bubble-ai:linear-gradient(135deg,#f6f1ff,#ebe3ff);
+  --bubble-other:linear-gradient(135deg,#f6f1ff,#ebe3ff);
 }
 
 *{box-sizing:border-box}
@@ -39,7 +39,7 @@ html,body{
   flex-direction:column;
 }
 
-/* ===== header ===== */
+/* header */
 .header{
   display:flex;
   align-items:center;
@@ -62,7 +62,7 @@ html,body{
   margin:0;
 }
 
-/* ===== chat ===== */
+/* chat */
 .chatCard{
   flex:1;
   background:var(--card);
@@ -71,7 +71,6 @@ html,body{
   display:flex;
   flex-direction:column;
 }
-
 .messages{
   flex:1;
   overflow-y:auto;
@@ -79,41 +78,23 @@ html,body{
   flex-direction:column;
   gap:10px;
 }
-
-/* message row */
-.msgRow{
-  display:flex;
-  gap:8px;
-  align-items:flex-end;
-}
-.msgRow.me{justify-content:flex-end}
-.msgRow.ai{justify-content:flex-start}
-
-.avatar{
-  width:34px;
-  height:34px;
-  border-radius:50%;
-  background:#ddd;
-  flex-shrink:0;
-}
-
 .msg{
-  max-width:70%;
+  max-width:75%;
   padding:10px 12px;
   border-radius:14px;
   line-height:1.4;
 }
-
-.me .msg{
+.me{
+  align-self:flex-end;
   background:var(--bubble-me);
   color:white;
 }
-
-.ai .msg{
-  background:var(--bubble-ai);
+.other{
+  align-self:flex-start;
+  background:var(--bubble-other);
 }
 
-/* ===== input ===== */
+/* input */
 .composer{
   display:flex;
   gap:8px;
@@ -133,7 +114,7 @@ html,body{
   color:white;
 }
 
-/* ===== bottom ===== */
+/* bottom */
 .bottomNav{
   display:flex;
   gap:10px;
@@ -147,7 +128,7 @@ html,body{
   font-weight:700;
 }
 
-/* ===== modal ===== */
+/* modal */
 .modalMask{
   position:fixed;
   inset:0;
@@ -157,7 +138,6 @@ html,body{
   justify-content:center;
   z-index:99;
 }
-
 .modal{
   background:white;
   width:92%;
@@ -165,90 +145,56 @@ html,body{
   border-radius:20px;
   padding:16px;
 }
-
 .modal h3{
   text-align:center;
   margin:0 0 12px;
 }
-
 .modal label{
   font-size:13px;
   color:var(--muted);
   margin-top:8px;
   display:block;
 }
-
 .modal input,.modal textarea,.modal select{
   width:100%;
   padding:10px;
   border-radius:12px;
   border:1px solid #e6def5;
 }
-
 .modal textarea{resize:none}
 
-.modalActions{
-  display:flex;
-  gap:10px;
-  margin-top:14px;
-}
-
-.modalActions button{
-  flex:1;
-  padding:12px;
-  border-radius:999px;
-  border:none;
-  font-weight:700;
-}
-
-.cancel{background:#f2eefc}
-.save{
-  background:linear-gradient(135deg,#9b8cff,#7c68e6);
-  color:white;
-}
-
-/* ===== gradient picker ===== */
+/* 渐变选择 */
 .gradRow{
   display:flex;
   gap:10px;
-  margin:6px 0;
+  margin-top:8px;
 }
-
 .grad{
-  width:48px;
-  height:28px;
+  width:42px;
+  height:22px;
   border-radius:999px;
   cursor:pointer;
-  border:2px solid rgba(0,0,0,.05);
+  border:2px solid #eee;
 }
 
-.grad.me1{background:linear-gradient(135deg,#cbb8ff,#9b86e6)}
-.grad.me2{background:linear-gradient(135deg,#ffd6e9,#e7b6ff)}
-.grad.me3{background:linear-gradient(135deg,#f2ecff,#d8ccff)}
-
-.grad.ai1{background:linear-gradient(135deg,#f6f1ff,#ebe3ff)}
-.grad.ai2{background:linear-gradient(135deg,#fff1f7,#f0dcff)}
-.grad.ai3{background:linear-gradient(135deg,#f7f5fb,#e6e1f5)}
-
-/* ===== switch ===== */
+/* switch */
 .switch{
   display:flex;
   align-items:center;
-  gap:10px;
-  margin-top:10px;
+  gap:12px;
+  margin-top:14px;
   cursor:pointer;
 }
 .switch input{display:none}
 .switchUI{
-  width:44px;
-  height:24px;
+  width:42px;height:22px;
   background:#ddd;
   border-radius:999px;
   position:relative;
 }
 .switchUI::after{
   content:'';
-  width:20px;height:20px;
+  width:18px;height:18px;
   background:white;
   border-radius:50%;
   position:absolute;
@@ -256,10 +202,32 @@ html,body{
   transition:.2s;
 }
 .switch input:checked + .switchUI{
-  background:linear-gradient(135deg,#b8a6ff,#8f7be8);
+  background:var(--accent);
 }
 .switch input:checked + .switchUI::after{
   left:22px;
+}
+.switchText{
+  font-size:14px;
+  color:#6f6399;
+}
+
+.modalActions{
+  display:flex;
+  gap:10px;
+  margin-top:16px;
+}
+.modalActions button{
+  flex:1;
+  padding:12px;
+  border-radius:999px;
+  border:none;
+  font-weight:700;
+}
+.cancel{background:#f2eefc}
+.save{
+  background:linear-gradient(135deg,#9b8cff,#7c68e6);
+  color:white;
 }
 </style>
 </head>
@@ -269,13 +237,12 @@ html,body{
 
 <div class="header">
   <button onclick="location.href='chat.html'">←</button>
-  <h1 id="chatTitle">聊天</h1>
+  <h1>聊天</h1>
   <button onclick="location.href='feed.html'">☁</button>
 </div>
 
 <div class="chatCard">
   <div class="messages" id="messages"></div>
-
   <div class="composer">
     <textarea id="input" placeholder="输入消息…"></textarea>
     <button class="sendBtn" id="sendBtn">➤</button>
@@ -294,128 +261,75 @@ html,body{
 <div class="modal">
 <h3>人设设定</h3>
 
-<label>AI 名称</label>
-<input id="p_name" value="小NIE">
-
-<label>性别</label>
-<select id="p_gender">
-  <option>中性</option>
-  <option>男性</option>
-  <option>女性</option>
-</select>
-
-<label>人设（生成提示）</label>
-<textarea id="p_persona"></textarea>
-
-<label>风格 / 习惯（生成提示）</label>
-<textarea id="p_style"></textarea>
-
-<label>回复条数（1–30）</label>
-<input id="p_limit" type="number" min="1" max="30" value="10">
+<label>回复条数（1–30 | API 生效）</label>
+<input type="number" min="1" max="30" value="10">
 
 <label>我的气泡</label>
 <div class="gradRow">
-  <div class="grad me1" onclick="setMe(0)"></div>
-  <div class="grad me2" onclick="setMe(1)"></div>
-  <div class="grad me3" onclick="setMe(2)"></div>
+  <div class="grad" style="background:linear-gradient(135deg,#cbb8ff,#9b86e6)" onclick="setMe(0)"></div>
+  <div class="grad" style="background:linear-gradient(135deg,#e6dcff,#c7b8ff)" onclick="setMe(1)"></div>
+  <div class="grad" style="background:linear-gradient(135deg,#f3eaff,#dccfff)" onclick="setMe(2)"></div>
 </div>
 
 <label>AI 气泡</label>
 <div class="gradRow">
-  <div class="grad ai1" onclick="setAI(0)"></div>
-  <div class="grad ai2" onclick="setAI(1)"></div>
-  <div class="grad ai3" onclick="setAI(2)"></div>
+  <div class="grad" style="background:linear-gradient(135deg,#f6f1ff,#ebe3ff)" onclick="setAI(0)"></div>
+  <div class="grad" style="background:linear-gradient(135deg,#fff5fa,#f2e6ff)" onclick="setAI(1)"></div>
+  <div class="grad" style="background:linear-gradient(135deg,#f7f7fb,#ececf6)" onclick="setAI(2)"></div>
 </div>
 
 <label class="switch">
   <input type="checkbox" id="actSwitch" checked>
   <span class="switchUI"></span>
-  回复中带动作 / 心理描写
+  <span class="switchText">回复中带动作 / 心理描写</span>
 </label>
 
 <div class="modalActions">
   <button class="cancel" onclick="closePersona()">取消</button>
-  <button class="save" onclick="savePersona()">保存</button>
+  <button class="save" onclick="closePersona()">保存</button>
 </div>
 </div>
 </div>
 
 <script>
-const personaBtn = document.getElementById('personaBtn');
-const personaModal = document.getElementById('personaModal');
-personaBtn.onclick = ()=> personaModal.style.display='flex';
+const personaModal=document.getElementById('personaModal');
+personaBtn.onclick=()=>personaModal.style.display='flex';
 function closePersona(){personaModal.style.display='none'}
 
-const ME_G=['linear-gradient(135deg,#cbb8ff,#9b86e6)','linear-gradient(135deg,#ffd6e9,#e7b6ff)','linear-gradient(135deg,#f2ecff,#d8ccff)'];
-const AI_G=['linear-gradient(135deg,#f6f1ff,#ebe3ff)','linear-gradient(135deg,#fff1f7,#f0dcff)','linear-gradient(135deg,#f7f5fb,#e6e1f5)'];
+/* 渐变预设 */
+const ME=[
+  'linear-gradient(135deg,#cbb8ff,#9b86e6)',
+  'linear-gradient(135deg,#e6dcff,#c7b8ff)',
+  'linear-gradient(135deg,#f3eaff,#dccfff)'
+];
+const AI=[
+  'linear-gradient(135deg,#f6f1ff,#ebe3ff)',
+  'linear-gradient(135deg,#fff5fa,#f2e6ff)',
+  'linear-gradient(135deg,#f7f7fb,#ececf6)'
+];
+function setMe(i){document.documentElement.style.setProperty('--bubble-me',ME[i])}
+function setAI(i){document.documentElement.style.setProperty('--bubble-other',AI[i])}
 
-function setMe(i){
-  document.documentElement.style.setProperty('--bubble-me',ME_G[i]);
-  localStorage.setItem('meBubble',ME_G[i]);
-}
-function setAI(i){
-  document.documentElement.style.setProperty('--bubble-ai',AI_G[i]);
-  localStorage.setItem('aiBubble',AI_G[i]);
-}
+/* 动作开关 */
+let actionEnabled=true;
+actSwitch.onchange=()=>actionEnabled=actSwitch.checked;
 
-function savePersona(){
-  localStorage.setItem('persona',JSON.stringify({
-    name:p_name.value,
-    gender:p_gender.value,
-    persona:p_persona.value,
-    style:p_style.value,
-    limit:p_limit.value,
-    act:actSwitch.checked
-  }));
-  closePersona();
-}
-
-(function init(){
-  const d=JSON.parse(localStorage.getItem('persona')||'{}');
-  if(d.name)p_name.value=d.name;
-  if(d.gender)p_gender.value=d.gender;
-  if(d.persona)p_persona.value=d.persona;
-  if(d.style)p_style.value=d.style;
-  if(d.limit)p_limit.value=d.limit;
-  if(d.act===false)actSwitch.checked=false;
-  if(localStorage.getItem('meBubble'))document.documentElement.style.setProperty('--bubble-me',localStorage.getItem('meBubble'));
-  if(localStorage.getItem('aiBubble'))document.documentElement.style.setProperty('--bubble-ai',localStorage.getItem('aiBubble'));
-})();
-
-/* 聊天记录 */
-const KEY='chat_'+location.search;
-const messagesEl=document.getElementById('messages');
-
-function render(){
-  messagesEl.innerHTML='';
-  JSON.parse(localStorage.getItem(KEY)||'[]').forEach(m=>{
-    const row=document.createElement('div');
-    row.className='msgRow '+m.type;
-    row.innerHTML=`
-      ${m.type==='ai'?'<div class="avatar"></div>':''}
-      <div class="msg">${m.text}</div>
-      ${m.type==='me'?'<div class="avatar"></div>':''}
-    `;
-    messagesEl.appendChild(row);
-  });
-  messagesEl.scrollTop=messagesEl.scrollHeight;
-}
-render();
-
+/* 假聊天 */
 sendBtn.onclick=()=>{
   if(!input.value.trim())return;
-  const list=JSON.parse(localStorage.getItem(KEY)||'[]');
-  list.push({type:'me',text:input.value});
+  const m=document.createElement('div');
+  m.className='msg me';
+  m.textContent=input.value;
+  messages.appendChild(m);
   input.value='';
-  localStorage.setItem(KEY,JSON.stringify(list));
-  render();
-
   setTimeout(()=>{
-    const p=JSON.parse(localStorage.getItem('persona')||'{}');
-    const t=p.act===false?'我明白你的意思。':'（他想了想）我明白你的意思。';
-    list.push({type:'ai',text:t});
-    localStorage.setItem(KEY,JSON.stringify(list));
-    render();
+    const r=document.createElement('div');
+    r.className='msg other';
+    r.textContent=actionEnabled
+      ? '（他想了想）我明白你的意思。'
+      : '我明白你的意思。';
+    messages.appendChild(r);
+    messages.scrollTop=messages.scrollHeight;
   },600);
 };
 </script>
