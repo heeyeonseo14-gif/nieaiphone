@@ -65,7 +65,7 @@ html,body{
 /* ===== chat ===== */
 .chatCard{
   flex:1;
-  min-height:0;                 /* ★ 修复：允许内部滚动 */
+  min-height:0;
   background:var(--card);
   border-radius:18px;
   padding:14px;
@@ -75,7 +75,7 @@ html,body{
 
 .messages{
   flex:1;
-  min-height:0;                 /* ★ 修复：只滚动白色卡片 */
+  min-height:0;
   overflow-y:auto;
   display:flex;
   flex-direction:column;
@@ -115,7 +115,7 @@ html,body{
   background:var(--bubble-ai);
 }
 
-/* ===== input（固定底部） ===== */
+/* ===== input ===== */
 .composer{
   display:flex;
   gap:8px;
@@ -135,7 +135,7 @@ html,body{
   color:white;
 }
 
-/* ===== 人设弹窗 ===== */
+/* ===== modal ===== */
 .modalMask{
   position:fixed;
   inset:0;
@@ -174,7 +174,6 @@ html,body{
 }
 .grad.active{border-color:#9b86e6}
 
-/* 气泡预设 */
 .me1{background:linear-gradient(135deg,#cbb8ff,#9b86e6)}
 .me2{background:linear-gradient(135deg,#ffd6e9,#e7b6ff)}
 .me3{background:linear-gradient(135deg,#e6f2ff,#cfe5ff)}
@@ -270,24 +269,17 @@ html,body{
 </div>
 
 <script>
-/* =========================
-   ★ 核心修复 1：联系人 ID
-========================= */
-const params = new URLSearchParams(location.search);
-const CHAT_ID = params.get('id');
+/* ===== 联系人隔离 ===== */
+const params=new URLSearchParams(location.search);
+const CHAT_ID=params.get('id')||'default';
+const CHAT_KEY='chat_'+CHAT_ID;
+const PERSONA_KEY='persona_'+CHAT_ID;
+const AVATAR_KEY='avatar_'+CHAT_ID;
 
-/* =========================
-   ★ 核心修复 2：KEY 按联系人区分
-========================= */
-const CHAT_KEY   = 'chat_'   + CHAT_ID;
-const PERSONA_KEY= 'persona_'+ CHAT_ID;
-const AVATAR_KEY = 'avatar_' + CHAT_ID;
-
-/* ===== 人设弹窗 ===== */
+/* ===== 人设 ===== */
 function openPersona(){personaModal.style.display='flex'}
 function closePersona(){personaModal.style.display='none'}
 
-/* ===== 气泡 ===== */
 const ME_G=[
 'linear-gradient(135deg,#cbb8ff,#9b86e6)',
 'linear-gradient(135deg,#ffd6e9,#e7b6ff)',
@@ -315,16 +307,18 @@ function setAI(i){
   mark(aiRow,i);
 }
 
-/* ===== 头像（修复） ===== */
+/* ===== ★ 唯一修复：AI 头像立即生效 ===== */
 aiAvatarInput.onchange=e=>{
   const f=e.target.files[0];
   if(!f)return;
   const r=new FileReader();
-  r.onload=()=>localStorage.setItem(AVATAR_KEY,r.result);
+  r.onload=()=>{
+    localStorage.setItem(AVATAR_KEY,r.result);
+    render(); // ★ 关键修复：立刻刷新聊天区
+  };
   r.readAsDataURL(f);
 };
 
-/* ===== 保存人设（修复：不再串） ===== */
 function savePersona(){
   localStorage.setItem(PERSONA_KEY,JSON.stringify({
     name:p_name.value,
@@ -338,7 +332,6 @@ function savePersona(){
   closePersona();
 }
 
-/* ===== 初始化 ===== */
 (function init(){
   const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
   if(p.name)p_name.value=p.name;
