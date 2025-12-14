@@ -458,15 +458,28 @@ sendBtn.onclick=async()=>{
     msgs.push({role:m.type==='me'?'user':'assistant',content:m.text});
   });
 
-  const reply=await callApi(msgs);
-  reply.split(/\n+/).forEach((t,i)=>{
-    setTimeout(()=>{
-      list.push({type:'ai',text:t});
-      localStorage.setItem(CHAT_KEY,JSON.stringify(list));
-      render();
-      chatTitle.textContent=BASE_TITLE;
-    },300*(i+1));
+const reply = await callApi(msgs);
+
+/* ★ 修复：API 兜底，防止 JS 中断 */
+if(!reply || typeof reply !== 'string'){
+  list.push({
+    type:'ai',
+    text:'……我刚刚有点走神了，可以再说一次吗？'
   });
+  localStorage.setItem(CHAT_KEY,JSON.stringify(list));
+  render();
+  chatTitle.textContent = BASE_TITLE;
+  return;
+}
+
+reply.split(/\n+/).forEach((t,i)=>{
+  setTimeout(()=>{
+    list.push({type:'ai',text:t});
+    localStorage.setItem(CHAT_KEY,JSON.stringify(list));
+    render();
+    chatTitle.textContent=BASE_TITLE;
+  },300*(i+1));
+});
 };
 
 const messagesEl=document.getElementById('messages');
