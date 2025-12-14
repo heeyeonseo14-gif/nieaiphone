@@ -146,9 +146,12 @@ button.ghost{
     <label>模型</label>
     <select id="api_model">
       <option value="">请选择模型</option>
-      <option value="gpt-4o-mini">gpt-4o-mini</option>
-      <option value="gpt-4.1-mini">gpt-4.1-mini</option>
     </select>
+
+    <!-- ★ 新增：拉取模型按钮（不影响你原按钮） -->
+    <div class="actions">
+      <button class="ghost" onclick="fetchModels()">拉取模型</button>
+    </div>
 
     <div class="actions">
       <button class="ghost" onclick="saveApi(false)">仅保存</button>
@@ -160,9 +163,57 @@ button.ghost{
 
 <script>
 /* =========================
-   API 配置存储
+   API 配置存储（你原本的）
 ========================= */
 const API_KEY = 'nie_api_config_v1';
+
+/* =========================
+   ★ 新增：拉取模型函数
+   兼容 api.521 / 反代 OpenAI
+========================= */
+async function fetchModels(){
+  const base = api_base.value.trim();
+  const key  = api_key.value.trim();
+
+  if(!base || !key){
+    alert('请先填写 API 地址和 Key');
+    return;
+  }
+
+  api_model.innerHTML = '<option>加载中...</option>';
+
+  try{
+    const res = await fetch(base + '/v1/models', {
+      headers:{
+        'Authorization':'Bearer ' + key
+      }
+    });
+
+    if(!res.ok){
+      throw new Error('接口返回错误');
+    }
+
+    const data = await res.json();
+
+    api_model.innerHTML = '<option value="">请选择模型</option>';
+
+    (data.data || []).forEach(m=>{
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = m.id;
+      api_model.appendChild(opt);
+    });
+
+    if(!data.data || !data.data.length){
+      alert('未获取到模型，请确认该 API 是否支持 /v1/models');
+    }
+
+  }catch(e){
+    console.error(e);
+    alert('拉取模型失败，请检查 API 地址 / Key / 是否支持 models 接口');
+    api_model.innerHTML = '<option value="">拉取失败</option>';
+  }
+}
 
 function saveApi(useNow){
   const data = {
@@ -179,6 +230,11 @@ function saveApi(useNow){
     return;
   }
 
+  if(!data.model){
+    alert('请选择模型');
+    return;
+  }
+
   localStorage.setItem(API_KEY, JSON.stringify(data));
 
   if(useNow){
@@ -188,7 +244,7 @@ function saveApi(useNow){
   alert('API 配置已保存');
 }
 
-/* 初始化 */
+/* 初始化（你原本的，未删） */
 (function init(){
   const raw = localStorage.getItem(API_KEY);
   if(!raw) return;
@@ -198,7 +254,9 @@ function saveApi(useNow){
   api_type.value = d.type || 'proxy';
   api_base.value = d.baseUrl || '';
   api_key.value = d.apiKey || '';
-  api_model.value = d.model || '';
+  if(d.model){
+    api_model.innerHTML = `<option value="${d.model}">${d.model}</option>`;
+  }
 })();
 </script>
 </body>
