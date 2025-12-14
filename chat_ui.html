@@ -115,6 +115,12 @@ html,body{
   background:var(--bubble-ai);
 }
 
+/* ★【新增】动作 / 心理描写斜体样式 */
+.msg em{
+  font-style:italic;
+  opacity:.9;
+}
+
 /* ===== input ===== */
 .composer{
   display:flex;
@@ -300,9 +306,19 @@ function savePersona(){
     limit:+p_limit.value,
     act:actSwitch.checked
   }));
-  chatTitle.textContent = p_name.value || chatTitle.textContent;
   closePersona();
 }
+
+/* ★【新增】人设初始化回填（修复刷新变空） */
+(function initPersona(){
+  const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
+  if(p.name)p_name.value=p.name;
+  if(p.gender)p_gender.value=p.gender;
+  if(p.persona)p_persona.value=p.persona;
+  if(p.style)p_style.value=p.style;
+  if(p.limit)p_limit.value=p.limit;
+  if(p.act)actSwitch.checked=true;
+})();
 
 /* ===== API ===== */
 function getApiConfig(){
@@ -331,36 +347,35 @@ async function callApi(messages){
   return data.choices[0].message.content;
 }
 
-/* ===== ★【修改】确保回复条数一定 >= limit ===== */
+/* ===== 确保回复条数尽量接近 limit ===== */
 function splitReply(text, limit){
-  let parts = text
-    .split(/\n{2,}/)
-    .map(t=>t.trim())
-    .filter(Boolean);
-
-  if(parts.length < limit){
-    parts = text
-      .split(/(?<=[。！？!?])/)
-      .map(t=>t.trim())
-      .filter(Boolean);
+  let parts=text.split(/\n{2,}/).map(t=>t.trim()).filter(Boolean);
+  if(parts.length<limit){
+    parts=text.split(/(?<=[。！？!?])/).map(t=>t.trim()).filter(Boolean);
   }
-
-  return parts.slice(0, limit);
+  return parts.slice(0,limit);
 }
 
-/* ===== system prompt ===== */
+/* ===== system prompt（重描写取向） ===== */
 function buildSystemPrompt(p){
-  return `
-你正在与用户进行一对一的私密聊天。
+  let base=`
+你正在与用户进行一对一私密聊天。
 人设：${p.persona||''}
 风格：${p.style||''}
 `.trim();
+
+  if(p.act){
+    base+=`
+交流方式偏向情绪、动作与心理描写。
+描写是主要表达方式，语言自然，不必每条都有，但一旦出现要详细、有画面感。
+`.trim();
+  }
+  return base;
 }
 
 /* ===== 发送 ===== */
-sendBtn.onclick = async () => {
-  if(!input.value.trim()) return;
-
+sendBtn.onclick=async()=>{
+  if(!input.value.trim())return;
   const text=input.value;
   input.value='';
 
@@ -370,7 +385,7 @@ sendBtn.onclick = async () => {
   render();
 
   const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
-  const title=document.getElementById('chatTitle');
+  const title=chatTitle;
   const old=title.textContent;
   title.textContent='对方正在输入…';
 
@@ -392,7 +407,7 @@ sendBtn.onclick = async () => {
 const messagesEl=document.getElementById('messages');
 function render(){
 
-  /* ★【新增】每次渲染强制同步气泡颜色 */
+  /* ★【修复 A】每次渲染强制同步气泡 */
   const mb=localStorage.getItem('meBubble_'+CHAT_ID);
   const ab=localStorage.getItem('aiBubble_'+CHAT_ID);
   if(mb)document.documentElement.style.setProperty('--bubble-me',mb);
@@ -403,9 +418,13 @@ function render(){
   JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{
     const row=document.createElement('div');
     row.className='msgRow '+m.type;
+
+    /* ★【新增】括号内容斜体 */
+    let html=m.text.replace(/（([^）]+)）/g,'（<em>$1</em>）');
+
     row.innerHTML=`
-      ${m.type==='ai' && avatar ? `<img class="avatar" src="${avatar}">` : ''}
-      <div class="msg">${m.text}</div>
+      ${m.type==='ai'&&avatar?`<img class="avatar" src="${avatar}">`:''}
+      <div class="msg">${html}</div>
       ${m.type==='me'?'<div class="avatar"></div>':''}
     `;
     messagesEl.appendChild(row);
