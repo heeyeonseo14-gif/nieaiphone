@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>NIEaiphone · 我的设定</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg1:#f4e8fb;
+  --bg2:#f0e7fb;
+  --card:#ffffff;
+  --text:#2f2436;
+  --muted:#8b7c9b;
+  --accent:#9b86e6;
+}
+
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  height:100%;
+  font-family:"Quicksand",system-ui;
+  background:linear-gradient(180deg,var(--bg1),var(--bg2));
+  color:var(--text);
+}
+
+.app{
+  width:96%;
+  max-width:420px;
+  margin:0 auto;
+  padding:14px;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ===== header ===== */
+.header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+.header button{
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  border:none;
+  background:white;
+  font-size:18px;
+}
+.header h1{
+  flex:1;
+  font-size:18px;
+  font-weight:700;
+  text-align:center;
+  margin:0;
+}
+
+/* ===== card ===== */
+.card{
+  background:var(--card);
+  border-radius:18px;
+  padding:16px;
+}
+
+/* ===== form ===== */
+label{
+  font-size:13px;
+  color:var(--muted);
+  margin-top:14px;
+  display:block;
+}
+
+input,textarea,select{
+  width:100%;
+  padding:12px;
+  border-radius:14px;
+  border:1px solid #e6def5;
+  font-size:14px;
+  margin-top:6px;
+  font-family:inherit;
+}
+
+textarea{resize:none}
+
+/* ===== avatar ===== */
+.avatarRow{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-top:8px;
+}
+.avatar{
+  width:64px;
+  height:64px;
+  border-radius:50%;
+  background:#eee;
+  object-fit:cover;
+  flex-shrink:0;
+}
+.upload input{
+  font-size:13px;
+  padding:8px;
+}
+
+/* ===== actions ===== */
+.actions{
+  display:flex;
+  gap:12px;
+  margin-top:22px;
+}
+.actions button{
+  flex:1;
+  padding:14px;
+  border-radius:999px;
+  border:none;
+  font-weight:700;
+  font-size:15px;
+}
+.cancel{
+  background:#f2eefc;
+}
+.save{
+  background:linear-gradient(135deg,#9b8cff,#7c68e6);
+  color:white;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<div class="header">
+  <button onclick="history.back()">←</button>
+  <h1>我的设定</h1>
+  <div style="width:42px"></div>
+</div>
+
+<div class="card">
+
+<label>我的名字</label>
+<input id="u_name" placeholder="请输入你的名字">
+
+<label>性别</label>
+<select id="u_gender">
+  <option value="">未选择</option>
+  <option>女性</option>
+  <option>男性</option>
+  <option>中性</option>
+</select>
+
+<label>我的人设</label>
+<textarea id="u_persona" rows="3" placeholder="例如：大学生，性格慢热，情绪内敛"></textarea>
+
+<label>我与 AI 的关系</label>
+<textarea id="u_relation" rows="3" placeholder="例如：我们是正在慢慢靠近的关系"></textarea>
+
+<label>我的头像（仅本地）</label>
+<div class="avatarRow">
+  <img id="avatarPreview" class="avatar">
+  <div class="upload">
+    <input type="file" accept="image/*" id="avatarInput">
+  </div>
+</div>
+
+<div class="actions">
+  <button class="cancel" onclick="history.back()">取消</button>
+  <button class="save" onclick="saveProfile()">保存</button>
+</div>
+
+</div>
+</div>
+
+<script>
+const KEY = 'nie_user_profile_v1';
+
+const u_name = document.getElementById('u_name');
+const u_gender = document.getElementById('u_gender');
+const u_persona = document.getElementById('u_persona');
+const u_relation = document.getElementById('u_relation');
+const avatarInput = document.getElementById('avatarInput');
+const avatarPreview = document.getElementById('avatarPreview');
+
+/* load */
+(function(){
+  const data = JSON.parse(localStorage.getItem(KEY) || '{}');
+  if(data.name) u_name.value = data.name;
+  if(data.gender) u_gender.value = data.gender;
+  if(data.persona) u_persona.value = data.persona;
+  if(data.relation) u_relation.value = data.relation;
+  if(data.avatar) avatarPreview.src = data.avatar;
+})();
+
+/* avatar upload */
+avatarInput.onchange = ()=>{
+  const file = avatarInput.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    avatarPreview.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+/* save */
+function saveProfile(){
+  const profile = {
+    name: u_name.value.trim(),
+    gender: u_gender.value,
+    persona: u_persona.value.trim(),
+    relation: u_relation.value.trim(),
+    avatar: avatarPreview.src || ''
+  };
+  localStorage.setItem(KEY, JSON.stringify(profile));
+  history.back();
+}
+</script>
+
+</body>
+</html>
