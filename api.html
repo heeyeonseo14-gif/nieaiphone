@@ -259,6 +259,11 @@ function saveApi(useNow){
     api_model.innerHTML = `<option value="${d.model}">${d.model}</option>`;
   }
 })();
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js');
+}
 </script>
+
 </body>
 </html>
