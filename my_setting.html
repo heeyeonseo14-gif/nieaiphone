@@ -187,6 +187,10 @@ function saveSetting(){
 function goBack(){
   location.href = `chat_ui.html?cid=${CHAT_ID}`;
 }
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js');
+}
 </script>
 
 </body>
