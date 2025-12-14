@@ -323,6 +323,16 @@ function savePersona(){
   const ab=localStorage.getItem('aiBubble_'+CHAT_ID);
   if(mb)document.documentElement.style.setProperty('--bubble-me',mb);
   if(ab)document.documentElement.style.setProperty('--bubble-ai',ab);
+
+  /* ★【新增】同步气泡选中状态（修复颜色不一致） */
+  if(mb){
+    const i = ME_G.indexOf(mb);
+    if(i>-1) mark(meRow,i);
+  }
+  if(ab){
+    const i = AI_G.indexOf(ab);
+    if(i>-1) mark(aiRow,i);
+  }
 })();
 
 /* ===== API ===== */
@@ -352,9 +362,13 @@ async function callApi(messages){
   return data.choices[0].message.content;
 }
 
-/* ===== 拆分 ===== */
+/* ===== ★【修改】拆分：只按空行，避免括号被拆 ===== */
 function splitReply(text, limit){
-  return text.split(/[\n。！？!?]/).map(t=>t.trim()).filter(Boolean).slice(0, limit);
+  return text
+    .split(/\n{2,}/)
+    .map(t=>t.trim())
+    .filter(Boolean)
+    .slice(0, limit);
 }
 
 /* ===== system prompt ===== */
@@ -377,7 +391,7 @@ function buildSystemPrompt(p){
   return prompt.trim();
 }
 
-/* ===== 发送（★ 此处已【去掉“他想了想”】【仅此一改】） ===== */
+/* ===== 发送 ===== */
 sendBtn.onclick = async () => {
   if(!input.value.trim()) return;
 
@@ -400,7 +414,7 @@ sendBtn.onclick = async () => {
   const reply=await callApi(msgs);
   splitReply(reply,p.limit||1).forEach((t,i)=>{
     setTimeout(()=>{
-      list.push({type:'ai',text:t}); <!-- ★ 不再拼接任何固定前缀 -->
+      list.push({type:'ai',text:t});
       localStorage.setItem(CHAT_KEY,JSON.stringify(list));
       render();
       title.textContent=old;
