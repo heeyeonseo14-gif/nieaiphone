@@ -16,7 +16,7 @@
   --muted:#8b7c9b;
   --accent:#9b86e6;
 
-  /* ★【修复①】气泡唯一可信来源（只用 CSS 变量） */
+  /* ★【气泡变量：唯一可信来源（不再被任何地方覆盖）】 */
   --bubble-me:linear-gradient(135deg,#cbb8ff,#9b86e6);
   --bubble-ai:linear-gradient(135deg,#f6f1ff,#ebe3ff);
 }
@@ -106,14 +106,13 @@ html,body{
   border-radius:14px;
   line-height:1.45;
   font-size:14px;
-  /* ★【修复①】只吃 CSS 变量 */
   background:var(--bubble-ai);
 }
 .msgRow.me .msg{
   background:var(--bubble-me);
 }
 
-/* ★ 动作 / 心理描写斜体（保留） */
+/* ★ 动作 / 心理描写斜体（保持） */
 .msg em{
   font-style:italic;
   opacity:.9;
@@ -308,12 +307,16 @@ function setAI(i){
   syncBubbles();
 }
 
-/* ★【修复①】气泡唯一同步点 */
+/* ★【气泡唯一同步点：不会被 render 覆盖】 */
 function syncBubbles(){
-  document.documentElement.style.setProperty('--bubble-me',
-    localStorage.getItem('meBubble_'+CHAT_ID) || ME_G[0]);
-  document.documentElement.style.setProperty('--bubble-ai',
-    localStorage.getItem('aiBubble_'+CHAT_ID) || AI_G[0]);
+  document.documentElement.style.setProperty(
+    '--bubble-me',
+    localStorage.getItem('meBubble_'+CHAT_ID) || ME_G[0]
+  );
+  document.documentElement.style.setProperty(
+    '--bubble-ai',
+    localStorage.getItem('aiBubble_'+CHAT_ID) || AI_G[0]
+  );
 }
 
 function savePersona(){
@@ -375,47 +378,39 @@ async function callApi(messages){
   return data.choices[0].message.content;
 }
 
-/* ★【修复②】回复条数逻辑（与动作描写完全解耦） */
-function splitReplyByLimit(text, limit){
-  const parts = text
-    .replace(/【/g,'（').replace(/】/g,'）')
-    .split(/(?<=[。！？!?])/)
-    .map(t=>t.trim())
-    .filter(Boolean);
-
-  const min = Math.max(1, Math.ceil(limit * 0.5));
-  return parts.slice(0, Math.max(min, Math.min(limit, parts.length)));
-}
-
-/* ===== system prompt ===== */
+/* ★【核心修复】严格按设置条数输出（不拆、不猜、不少） */
 function buildSystemPrompt(p){
-  let base=`
-你正在与用户进行一对一私密聊天。
-你的名字是：${p.name||'未命名'}。
-你只能使用这个名字自称。
-人设：${p.persona||''}
-风格：${p.style||''}
+  const count = p.limit || 1;
 
-【强制规则】
-- 禁止使用任何 emoji 或表情符号
+  let base = `
+你正在与用户进行一对一私密聊天。
+你的名字是：${p.name||'未命名'}，只能用这个名字自称。
+
+【输出规则（绝对遵守）】
+- 你必须输出 ${count} 条回复
+- 每条回复单独一行
+- 不得合并，不得省略
+- 不得使用 emoji 或任何表情符号
 `.trim();
 
   if(p.act){
-    base+=`
-- 允许动作和心理描写
+    base += `
+- 允许动作 / 心理描写
 - 必须使用中文括号（）
+- 动作与对白必须在同一条
 `.trim();
   }else{
-    base+=`
+    base += `
 - 禁止任何动作或心理描写
 - 禁止使用括号
 `.trim();
   }
+
   return base;
 }
 
 /* ===== 发送 ===== */
-sendBtn.onclick=async()=>{
+sendBtn.onclick = async ()=>{
   if(!input.value.trim())return;
   const text=input.value;
   input.value='';
@@ -429,17 +424,22 @@ sendBtn.onclick=async()=>{
   chatTitle.textContent='对方正在输入…';
 
   const msgs=[{role:'system',content:buildSystemPrompt(p)}];
-  list.slice(-10).forEach(m=>msgs.push({role:m.type==='me'?'user':'assistant',content:m.text}));
+  list.slice(-10).forEach(m=>msgs.push({
+    role:m.type==='me'?'user':'assistant',
+    content:m.text
+  }));
 
-  const reply=await callApi(msgs);
+  const reply = await callApi(msgs);
 
-  splitReplyByLimit(reply, p.limit||1).forEach((t,i)=>{
+  const lines = reply.split(/\n+/).filter(Boolean);
+
+  lines.forEach((t,i)=>{
     setTimeout(()=>{
       list.push({type:'ai',text:t});
       localStorage.setItem(CHAT_KEY,JSON.stringify(list));
       render();
       chatTitle.textContent=BASE_TITLE;
-    },400*(i+1));
+    },300*(i+1));
   });
 };
 
