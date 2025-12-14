@@ -139,11 +139,17 @@ textarea{resize:none}
   <label>我的头像</label>
   <div class="avatarWrap">
     <img id="avatarPreview" class="avatarPreview">
-    <label>
-      <input type="file" accept="image/*" hidden onchange="onAvatarChange(this)">
-      <button class="uploadBtn" type="button">上传头像</button>
-    </label>
+    <button class="uploadBtn" type="button" onclick="triggerUpload()">上传头像</button>
   </div>
+
+  <!-- ★ 真正的 file input（独立存在） -->
+  <input
+    id="avatarInput"
+    type="file"
+    accept="image/*"
+    style="display:none"
+    onchange="onAvatarChange(this)"
+  >
 
   <label>我的名称</label>
   <input id="u_name" placeholder="请输入你的名字">
@@ -182,7 +188,12 @@ function goBack(){
   }
 }
 
-/* 读取已有用户信息 */
+/* 主动触发上传（关键修复点） */
+function triggerUpload(){
+  document.getElementById('avatarInput').click();
+}
+
+/* 读取已有数据 */
 (function(){
   const data = JSON.parse(localStorage.getItem(USER_KEY) || '{}');
   if(data.name) u_name.value = data.name;
@@ -190,10 +201,11 @@ function goBack(){
   if(data.persona) u_persona.value = data.persona;
   if(data.avatar){
     avatarPreview.src = data.avatar;
+    avatarPreview.dataset.base64 = data.avatar;
   }
 })();
 
-/* 头像上传（本地 → base64） */
+/* 头像上传 */
 function onAvatarChange(input){
   const file = input.files[0];
   if(!file) return;
@@ -206,7 +218,7 @@ function onAvatarChange(input){
   reader.readAsDataURL(file);
 }
 
-/* 保存并返回聊天 */
+/* 保存并返回 */
 function saveProfile(){
   const old = JSON.parse(localStorage.getItem(USER_KEY) || '{}');
 
@@ -219,7 +231,6 @@ function saveProfile(){
   };
 
   localStorage.setItem(USER_KEY, JSON.stringify(profile));
-
   goBack();
 }
 </script>
