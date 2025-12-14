@@ -408,10 +408,10 @@ function buildSystemPrompt(p){
 你正在与用户进行角色扮演式对话。
 
 【角色信息】
-姓名：${p.name||'未命名'}
-性别：${p.gender||'中性'}
-人设：${p.persona||'无'}
-性格与风格：${p.style||'自然'}
+姓名：${p.name || '未命名'}
+性别：${p.gender || '中性'}
+人设：${p.persona || '无'}
+性格与风格：${p.style || '自然'}
 
 【规则】
 - 只能使用第一人称“我”
@@ -421,7 +421,7 @@ function buildSystemPrompt(p){
 
 ${
   p.act
-    ? `每一条回复必须包含中文括号（）内的动作或心理描写。`
+    ? '每一条回复必须包含中文括号（）内的动作或心理描写。'
     : `禁止任何动作或心理描写。
 
 额外规则：
@@ -432,7 +432,7 @@ ${
 - 即使没有动作或心理描写，也必须自然、完整、像真实对话`
 }
 `).trim();
-    }
+}
 
 sendBtn.onclick=async()=>{
   if(!input.value.trim())return;
