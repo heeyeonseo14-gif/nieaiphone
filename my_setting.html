@@ -1,243 +1,244 @@
-<!doctype html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<title>我的设定</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
-
-<style>
-:root{
-  --bg1:#f4e8fb;
-  --bg2:#f0e7fb;
-  --card:#ffffff;
-  --text:#2f2436;
-  --muted:#8b7c9b;
-  --accent:#9b86e6;
-}
-
-*{box-sizing:border-box}
-html,body{
-  margin:0;
-  height:100%;
-  font-family:"Quicksand",system-ui;
-  background:linear-gradient(180deg,var(--bg1),var(--bg2));
-  color:var(--text);
-}
-
-.app{
-  width:96%;
-  max-width:420px;
-  margin:0 auto;
-  padding:14px;
-}
-
-.header{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-bottom:12px;
-}
-.header button{
-  width:42px;
-  height:42px;
-  border-radius:12px;
-  border:none;
-  background:white;
-  font-size:18px;
-}
-.header h1{
-  flex:1;
-  text-align:center;
-  font-size:18px;
-  margin:0;
-}
-
-.card{
-  background:white;
-  border-radius:20px;
-  padding:16px;
-}
-
-.section{
-  margin-bottom:14px;
-}
-
-.label{
-  font-size:13px;
-  color:var(--muted);
-  margin-bottom:6px;
-}
-
-input,select,textarea{
-  width:100%;
-  padding:12px;
-  border-radius:14px;
-  border:1px solid #e6def5;
-  font-size:14px;
-  font-family:inherit;
-}
-textarea{resize:none}
-
-.avatarRow{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-
-.avatar{
-  width:64px;
-  height:64px;
-  border-radius:50%;
-  background:#ddd;
-  object-fit:cover;
-}
-
-.uploadBtn{
-  padding:10px 16px;
-  border-radius:999px;
-  border:none;
-  background:linear-gradient(135deg,#b8a6ff,#8f7be8);
-  color:white;
-  font-size:14px;
-}
-
-.actions{
-  display:flex;
-  gap:10px;
-  margin-top:18px;
-}
-.actions button{
-  flex:1;
-  padding:14px;
-  border-radius:999px;
-  border:none;
-  font-weight:700;
-}
-.cancel{
-  background:#f2eefc;
-}
-.save{
-  background:linear-gradient(135deg,#9b8cff,#7c68e6);
-  color:white;
-}
-</style>
-</head>
-
-<body>
-<div class="app">
-
-  <div class="header">
-    <button onclick="goBack()">←</button>
-    <h1>我的设定</h1>
-    <div style="width:42px"></div>
-  </div>
-
-  <div class="card">
-
-    <div class="section">
-      <div class="label">我的头像</div>
-      <div class="avatarRow">
-        <img id="avatarPreview" class="avatar">
-        <input id="avatarInput" type="file" accept="image/*" hidden>
-        <button class="uploadBtn" onclick="avatarInput.click()">上传头像</button>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="label">我的名称</div>
-      <input id="u_name" placeholder="请输入你的名字">
-    </div>
-
-    <div class="section">
-      <div class="label">性别</div>
-      <select id="u_gender">
-        <option value="">未设定</option>
-        <option value="男性">男性</option>
-        <option value="女性">女性</option>
-        <option value="其他">其他</option>
-      </select>
-    </div>
-
-    <div class="section">
-      <div class="label">我的人设 / 身份</div>
-      <textarea id="u_persona" rows="3" placeholder="例如：温柔的普通人 / 学生 / 旁观者"></textarea>
-    </div>
-
-    <div class="actions">
-      <button class="cancel" onclick="goBack()">取消</button>
-      <button class="save" onclick="saveSetting()">保存</button>
-    </div>
-
-  </div>
-</div>
-
-<script>
-/* ===== cid & key ===== */
-const params = new URLSearchParams(location.search);
-const CHAT_ID = params.get('cid');
-if(!CHAT_ID){
-  alert('缺少 cid');
-  location.href = 'chat.html';
-}
-
-const USER_KEY = 'nie_user_' + CHAT_ID;
-
-/* ===== elements ===== */
-const avatarPreview = document.getElementById('avatarPreview');
-const avatarInput = document.getElementById('avatarInput');
-const u_name = document.getElementById('u_name');
-const u_gender = document.getElementById('u_gender');
-const u_persona = document.getElementById('u_persona');
-
-/* ===== load existing data (刷新不丢) ===== */
-(function(){
-  const old = JSON.parse(localStorage.getItem(USER_KEY) || '{}');
-
-  if(old.avatar){
-    avatarPreview.src = old.avatar;
-    avatarPreview.dataset.avatar = old.avatar;
-  }else{
-    avatarPreview.src = '';
-  }
-
-  if(old.name) u_name.value = old.name;
-  if(old.gender) u_gender.value = old.gender;
-  if(old.persona) u_persona.value = old.persona;
-})();
-
-/* ===== avatar upload ===== */
-avatarInput.onchange = ()=>{
-  const file = avatarInput.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e=>{
-    avatarPreview.src = e.target.result;
-    avatarPreview.dataset.avatar = e.target.result;
-  };
-  reader.readAsDataURL(file);
-};
-
-/* ===== save ===== */
-function saveSetting(){
-  const data = {
-    name: u_name.value || '',
-    gender: u_gender.value || '',
-    persona: u_persona.value || '',
-    avatar: avatarPreview.dataset.avatar || ''
-  };
-
-  localStorage.setItem(USER_KEY, JSON.stringify(data));
-
-  location.href = `chat_ui.html?cid=${CHAT_ID}`;
-}
-
-/* ===== back ===== */
-function goBack(){
-  location.href = `chat_ui.html?cid=${CHAT_ID}`;
-}
-</script>
-
-</body>
+<!doctype html>  
+<html lang="zh-CN">  
+<head>  
+<meta charset="utf-8"/>  
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>  
+<title>我的设定</title>  
+  
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">  
+  
+<style>  
+:root{  
+  --bg1:#f4e8fb;  
+  --bg2:#f0e7fb;  
+  --card:#ffffff;  
+  --text:#2f2436;  
+  --muted:#8b7c9b;  
+  --accent:#9b86e6;  
+}  
+  
+*{box-sizing:border-box}  
+html,body{  
+  margin:0;  
+  height:100%;  
+  font-family:"Quicksand",system-ui;  
+  background:linear-gradient(180deg,var(--bg1),var(--bg2));  
+  color:var(--text);  
+}  
+  
+.app{  
+  width:96%;  
+  max-width:420px;  
+  margin:0 auto;  
+  padding:14px;  
+}  
+  
+.header{  
+  display:flex;  
+  align-items:center;  
+  gap:10px;  
+  margin-bottom:12px;  
+}  
+.header button{  
+  width:42px;  
+  height:42px;  
+  border-radius:12px;  
+  border:none;  
+  background:white;  
+  font-size:18px;  
+}  
+.header h1{  
+  flex:1;  
+  text-align:center;  
+  font-size:18px;  
+  margin:0;  
+}  
+  
+.card{  
+  background:white;  
+  border-radius:20px;  
+  padding:16px;  
+}  
+  
+.section{  
+  margin-bottom:14px;  
+}  
+  
+.label{  
+  font-size:13px;  
+  color:var(--muted);  
+  margin-bottom:6px;  
+}  
+  
+input,select,textarea{  
+  width:100%;  
+  padding:12px;  
+  border-radius:14px;  
+  border:1px solid #e6def5;  
+  font-size:14px;  
+  font-family:inherit;  
+}  
+textarea{resize:none}  
+  
+.avatarRow{  
+  display:flex;  
+  align-items:center;  
+  gap:12px;  
+}  
+  
+.avatar{  
+  width:64px;  
+  height:64px;  
+  border-radius:50%;  
+  background:#ddd;  
+  object-fit:cover;  
+}  
+  
+.uploadBtn{  
+  padding:10px 16px;  
+  border-radius:999px;  
+  border:none;  
+  background:linear-gradient(135deg,#b8a6ff,#8f7be8);  
+  color:white;  
+  font-size:14px;  
+}  
+  
+.actions{  
+  display:flex;  
+  gap:10px;  
+  margin-top:18px;  
+}  
+.actions button{  
+  flex:1;  
+  padding:14px;  
+  border-radius:999px;  
+  border:none;  
+  font-weight:700;  
+}  
+.cancel{  
+  background:#f2eefc;  
+}  
+.save{  
+  background:linear-gradient(135deg,#9b8cff,#7c68e6);  
+  color:white;  
+}  
+</style>  
+</head>  
+  
+<body>  
+<div class="app">  
+  
+  <div class="header">  
+    <button onclick="goBack()">←</button>  
+    <h1>我的设定</h1>  
+    <div style="width:42px"></div>  
+  </div>  
+  
+  <div class="card">  
+  
+    <div class="section">  
+      <div class="label">我的头像</div>  
+      <div class="avatarRow">  
+        <img id="avatarPreview" class="avatar">  
+        <input id="avatarInput" type="file" accept="image/*" hidden>  
+        <button class="uploadBtn" type="button" onclick="avatarInput.click()">上传头像</button>  
+        <!-- ★ 修复：明确 type="button" -->  
+      </div>  
+    </div>  
+  
+    <div class="section">  
+      <div class="label">我的名称</div>  
+      <input id="u_name" placeholder="请输入你的名字">  
+    </div>  
+  
+    <div class="section">  
+      <div class="label">性别</div>  
+      <select id="u_gender">  
+        <option value="">未设定</option>  
+        <option value="男性">男性</option>  
+        <option value="女性">女性</option>  
+        <option value="其他">其他</option>  
+      </select>  
+    </div>  
+  
+    <div class="section">  
+      <div class="label">我的人设 / 身份</div>  
+      <textarea id="u_persona" rows="3" placeholder="例如：温柔的普通人 / 学生 / 旁观者"></textarea>  
+    </div>  
+  
+    <div class="actions">  
+      <button class="cancel" type="button" onclick="goBack()">取消</button>  
+      <button class="save" type="button" onclick="saveSetting()">保存</button>  
+      <!-- ★ 修复：两个按钮都明确 type="button" -->  
+    </div>  
+  
+  </div>  
+</div>  
+  
+<script>  
+/* ===== cid & key ===== */  
+const params = new URLSearchParams(location.search);  
+const CHAT_ID = params.get('cid');  
+if(!CHAT_ID){  
+  alert('缺少 cid');  
+  location.href = 'chat.html';  
+}  
+  
+const USER_KEY = 'nie_user_' + CHAT_ID;  
+  
+/* ===== elements ===== */  
+const avatarPreview = document.getElementById('avatarPreview');  
+const avatarInput = document.getElementById('avatarInput');  
+const u_name = document.getElementById('u_name');  
+const u_gender = document.getElementById('u_gender');  
+const u_persona = document.getElementById('u_persona');  
+  
+/* ===== load existing data (刷新不丢) ===== */  
+(function(){  
+  const old = JSON.parse(localStorage.getItem(USER_KEY) || '{}');  
+  
+  if(old.avatar){  
+    avatarPreview.src = old.avatar;  
+    avatarPreview.dataset.avatar = old.avatar;  
+  }  
+  // ★ 修复：没有 avatar 时不强行写空 src  
+  
+  if(old.name) u_name.value = old.name;  
+  if(old.gender) u_gender.value = old.gender;  
+  if(old.persona) u_persona.value = old.persona;  
+})();  
+  
+/* ===== avatar upload ===== */  
+avatarInput.onchange = ()=>{  
+  const file = avatarInput.files[0];  
+  if(!file) return;  
+  const reader = new FileReader();  
+  reader.onload = e=>{  
+    avatarPreview.src = e.target.result;  
+    avatarPreview.dataset.avatar = e.target.result;  
+  };  
+  reader.readAsDataURL(file);  
+};  
+  
+/* ===== save ===== */  
+function saveSetting(){  
+  const data = {  
+    name: u_name.value || '',  
+    gender: u_gender.value || '',  
+    persona: u_persona.value || '',  
+    avatar: avatarPreview.dataset.avatar || ''  
+  };  
+  
+  localStorage.setItem(USER_KEY, JSON.stringify(data));  
+  
+  location.href = `chat_ui.html?cid=${CHAT_ID}`;  
+}  
+  
+/* ===== back ===== */  
+function goBack(){  
+  location.href = `chat_ui.html?cid=${CHAT_ID}`;  
+}  
+</script>  
+  
+</body>  
 </html>
