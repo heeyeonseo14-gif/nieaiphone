@@ -107,14 +107,6 @@ html,body{
   font-size:14px;
 }
 
-.me .msg{
-  background:var(--bubble-me);
-  color:white;
-}
-.ai .msg{
-  background:var(--bubble-ai);
-}
-
 /* ★【修复 1】动作 / 心理描写统一斜体样式 */
 .msg em{
   font-style:italic;
@@ -280,7 +272,7 @@ if(!CHAT_ID){ alert('缺少 cid'); location.href='chat.html'; }
 const CHAT_KEY    = 'chat_'    + CHAT_ID;
 const PERSONA_KEY = 'persona_' + CHAT_ID;
 
-/* ★【修复 4】标题基准名（用于恢复） */
+/* ★【修复】标题基准名 */
 let BASE_TITLE = '聊天';
 
 /* ===== 联系人 ===== */
@@ -297,8 +289,23 @@ const ME_G=[...document.querySelectorAll('.me1,.me2,.me3,.me4')].map(e=>e.style.
 const AI_G=[...document.querySelectorAll('.ai1,.ai2,.ai3,.ai4')].map(e=>e.style.background);
 
 function mark(row,i){ [...row.children].forEach((c,idx)=>c.classList.toggle('active',idx===i)); }
-function setMe(i){ document.documentElement.style.setProperty('--bubble-me',ME_G[i]); localStorage.setItem('meBubble_'+CHAT_ID,ME_G[i]); mark(meRow,i); }
-function setAI(i){ document.documentElement.style.setProperty('--bubble-ai',AI_G[i]); localStorage.setItem('aiBubble_'+CHAT_ID,AI_G[i]); mark(aiRow,i); }
+
+function setMe(i){
+  localStorage.setItem('meBubble_'+CHAT_ID,ME_G[i]);
+  mark(meRow,i);
+}
+function setAI(i){
+  localStorage.setItem('aiBubble_'+CHAT_ID,AI_G[i]);
+  mark(aiRow,i);
+}
+
+/* ★【修复】强制气泡同步 */
+function syncBubbles(){
+  const mb=localStorage.getItem('meBubble_'+CHAT_ID)||ME_G[0];
+  const ab=localStorage.getItem('aiBubble_'+CHAT_ID)||AI_G[0];
+  document.documentElement.style.setProperty('--bubble-me',mb);
+  document.documentElement.style.setProperty('--bubble-ai',ab);
+}
 
 function savePersona(){
   localStorage.setItem(PERSONA_KEY,JSON.stringify({
@@ -309,21 +316,21 @@ function savePersona(){
     limit:+p_limit.value,
     act:actSwitch.checked
   }));
-  syncBubbles();
   if(p_name.value){
-    BASE_TITLE = p_name.value;
-    chatTitle.textContent = BASE_TITLE;
+    BASE_TITLE=p_name.value;
+    chatTitle.textContent=BASE_TITLE;
   }
+  syncBubbles();
   closePersona();
 }
 
-/* ★【修复 2】人设初始化回填 + 标题恢复 */
+/* ★【修复】人设初始化 */
 (function initPersona(){
   const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
   if(p.name){
-    p_name.value=p.name;
     BASE_TITLE=p.name;
     chatTitle.textContent=BASE_TITLE;
+    p_name.value=p.name;
   }
   if(p.gender)p_gender.value=p.gender;
   if(p.persona)p_persona.value=p.persona;
@@ -332,14 +339,6 @@ function savePersona(){
   if(p.act)actSwitch.checked=true;
   syncBubbles();
 })();
-
-/* ★【修复 5】气泡强制同步（防移动端失效） */
-function syncBubbles(){
-  const mb=localStorage.getItem('meBubble_'+CHAT_ID);
-  const ab=localStorage.getItem('aiBubble_'+CHAT_ID);
-  if(mb)document.documentElement.style.setProperty('--bubble-me',mb);
-  if(ab)document.documentElement.style.setProperty('--bubble-ai',ab);
-}
 
 /* ===== API ===== */
 function getApiConfig(){
@@ -368,10 +367,12 @@ async function callApi(messages){
   return data.choices[0].message.content;
 }
 
-/* ★【修复 3】避免括号被拆分 */
+/* ★【修复】安全拆分（不拆括号） */
 function splitReply(text, limit){
   let parts=text
-    .split(/\n{2,}(?![^\(（]*[)）])/)
+    .replace(/【/g,'（')
+    .replace(/】/g,'）')
+    .split(/\n{2,}(?![^\（]*\）)/)
     .map(t=>t.trim())
     .filter(Boolean);
 
@@ -381,19 +382,18 @@ function splitReply(text, limit){
   return parts.slice(0,limit);
 }
 
-/* ===== system prompt（强制括号 + 重描写兜底） ===== */
+/* ===== system prompt ===== */
 function buildSystemPrompt(p){
-  const actEnabled = p.act === true;
   let base=`
 你正在与用户进行一对一私密聊天。
 人设：${p.persona||''}
 风格：${p.style||''}
 `.trim();
 
-  if(actEnabled){
+  if(p.act){
     base+=`
-交流时请优先使用【括号】描述动作、心理、细节环境。
-描写偏重，不必每条都有，但一旦出现必须完整、自然、有画面感。
+请大量使用动作和心理描写，统一放在中文括号内。
+描写要完整、有画面感，不要拆开。
 `.trim();
   }
   return base;
@@ -438,14 +438,15 @@ function render(){
     const row=document.createElement('div');
     row.className='msgRow '+m.type;
 
-    /* ★【修复 1】中英文括号全部斜体 */
     let html=m.text
       .replace(/（([\s\S]*?)）/g,'（<em>$1</em>）')
-      .replace(/\(([\s\S]*?)\)/g,'(<em>$1</em>)');
+      .replace(/\(([\s\S]*?)\)/g,'（<em>$1</em>）');
 
     row.innerHTML=`
       ${m.type==='ai'&&avatar?`<img class="avatar" src="${avatar}">`:''}
-      <div class="msg">${html}</div>
+      <div class="msg" style="background:${m.type==='me'
+        ? localStorage.getItem('meBubble_'+CHAT_ID)
+        : localStorage.getItem('aiBubble_'+CHAT_ID)}">${html}</div>
       ${m.type==='me'?'<div class="avatar"></div>':''}
     `;
     messagesEl.appendChild(row);
