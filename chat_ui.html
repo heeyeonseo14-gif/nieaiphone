@@ -270,7 +270,37 @@ function getMyProfile(){
   return JSON.parse(localStorage.getItem('nie_user_' + CHAT_ID) || '{}');
 }
 
-/* ★ 新增：读取 AI 长期记忆 */
+/* ★ 新增 ①：长期记忆 Key + 读写 */
+const AI_MEMORY_KEY = 'ai_long_memory_' + CHAT_ID;
+
+function getLongMemory(){
+  return JSON.parse(localStorage.getItem(AI_MEMORY_KEY) || '[]');
+}
+
+function saveLongMemory(list){
+  localStorage.setItem(AI_MEMORY_KEY, JSON.stringify(list));
+}
+
+/* ★ 新增 ②：判断是否值得写入长期记忆 */
+function shouldRemember(text){
+  if(!text) return false;
+  if(text.length < 12) return false;
+  if(/记住|以后|永远|不要忘|我们是/.test(text)) return true;
+  if(/我喜欢|我讨厌|我害怕|我习惯/.test(text)) return true;
+  return false;
+}
+
+/* ★ 新增 ③：写入长期记忆 */
+function writeLongMemory(text){
+  const mem = getLongMemory();
+  mem.push({
+    text,
+    time: Date.now()
+  });
+  saveLongMemory(mem);
+}
+
+/* ★ 新增 ④：读取 AI 结构化记忆（你原本已有，未改） */
 function getAiMemory(){
   return {
     core: localStorage.getItem('ai_memory_core_' + CHAT_ID) || '',
@@ -279,30 +309,41 @@ function getAiMemory(){
   };
 }
 
-/* ★ 新增：构建“第二层 system prompt”（不修改原 prompt） */
+/* ★ 新增 ⑤：构建行为接管 Prompt（含长期记忆） */
 function buildBehaviorPrompt(){
   const user = getMyProfile();
   const mem = getAiMemory();
+  const longMemory = getLongMemory();
+
+  let memoryBlock = '';
+  if(longMemory.length){
+    memoryBlock = `
+【长期记忆（不可遗忘）】
+${longMemory.map(m=>'- '+m.text).join('\n')}
+`;
+  }
 
   return `
-【用户信息（必须牢记）】
+【用户信息】
 - 用户名：${user.name||'未设定'}
 - 性别：${user.gender||'未知'}
 - 用户人设：${user.persona||'无'}
 
-【长期记忆】
-${mem.core || '无'}
+【核心记忆】
+${mem.core||'无'}
 
 【关系状态】
 - 类型：${mem.relation.type||'未定义'}
 - 好感度：${mem.relation.affection||'50'}
 - 依赖度：${mem.relation.dependency||'50'}
-- 当前情绪：${mem.relation.mood||'温和'}
+- 情绪：${mem.relation.mood||'温和'}
 
 【不可违背规则】
-${mem.rules || '无'}
+${mem.rules||'无'}
 
-你必须基于以上信息回应，保持关系连续性与情绪一致性。
+${memoryBlock}
+
+你必须基于以上全部信息进行回应。
 `.trim();
 }
 
@@ -358,15 +399,6 @@ async function callApi(messages){
   return data.choices[0].message.content;
 }
 
-/* 强制条数 */
-function forceSplit(text,count){
-  let parts=text.split(/\n+/).map(s=>s.trim()).filter(Boolean);
-  while(parts.length<count){
-    parts.push(parts[parts.length-1]||text);
-  }
-  return parts.slice(0,count);
-}
-
 /* 原 Prompt（完全未改） */
 function buildSystemPrompt(p){
   const count=p.limit||1;
@@ -396,7 +428,6 @@ ${p.act?
 - 不得复述用户的原句
 - 不得使用“换一种说法”“换句话说”等形式
 - 即使没有动作或心理描写，也必须自然、完整、像真实对话
-`}
 `.trim();
 }
 
@@ -410,22 +441,25 @@ sendBtn.onclick=async()=>{
   localStorage.setItem(CHAT_KEY,JSON.stringify(list));
   render();
 
+  /* ★ 新增：自动决定是否写入长期记忆 */
+  if(shouldRemember(text)){
+    writeLongMemory(text);
+  }
+
   const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
   chatTitle.textContent='对方正在输入…';
 
-  const msgs=[{role:'system',content:buildSystemPrompt(p)}];
-
-  /* ★ 新增：追加“行为接管 system prompt” */
-  msgs.push({role:'system',content:buildBehaviorPrompt()});
+  const msgs=[
+    {role:'system',content:buildSystemPrompt(p)},
+    {role:'system',content:buildBehaviorPrompt()}
+  ];
 
   list.slice(-10).forEach(m=>{
     msgs.push({role:m.type==='me'?'user':'assistant',content:m.text});
   });
 
   const reply=await callApi(msgs);
-  const lines=forceSplit(reply,p.limit||1);
-
-  lines.forEach((t,i)=>{
+  reply.split(/\n+/).forEach((t,i)=>{
     setTimeout(()=>{
       list.push({type:'ai',text:t});
       localStorage.setItem(CHAT_KEY,JSON.stringify(list));
@@ -444,9 +478,7 @@ function render(){
   JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{
     const row=document.createElement('div');
     row.className='msgRow '+m.type;
-
     let html=m.text.replace(/（([\s\S]*?)）/g,'（<em>$1</em>）');
-
     row.innerHTML=`
       ${m.type==='ai'?`<img class="avatar" src="${aiAvatar}">`:''}
       <div class="msg">${html}</div>
