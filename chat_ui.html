@@ -115,7 +115,7 @@ html,body{
   background:var(--bubble-ai);
 }
 
-/* ★【新增】动作 / 心理描写斜体样式 */
+/* ★【修复 1】动作 / 心理描写统一斜体样式 */
 .msg em{
   font-style:italic;
   opacity:.9;
@@ -280,6 +280,9 @@ if(!CHAT_ID){ alert('缺少 cid'); location.href='chat.html'; }
 const CHAT_KEY    = 'chat_'    + CHAT_ID;
 const PERSONA_KEY = 'persona_' + CHAT_ID;
 
+/* ★【修复 4】标题基准名（用于恢复） */
+let BASE_TITLE = '聊天';
+
 /* ===== 联系人 ===== */
 function getContact(){
   const list = JSON.parse(localStorage.getItem('nie_contacts_v1')||'[]');
@@ -306,19 +309,37 @@ function savePersona(){
     limit:+p_limit.value,
     act:actSwitch.checked
   }));
+  syncBubbles();
+  if(p_name.value){
+    BASE_TITLE = p_name.value;
+    chatTitle.textContent = BASE_TITLE;
+  }
   closePersona();
 }
 
-/* ★【新增】人设初始化回填（修复刷新变空） */
+/* ★【修复 2】人设初始化回填 + 标题恢复 */
 (function initPersona(){
   const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
-  if(p.name)p_name.value=p.name;
+  if(p.name){
+    p_name.value=p.name;
+    BASE_TITLE=p.name;
+    chatTitle.textContent=BASE_TITLE;
+  }
   if(p.gender)p_gender.value=p.gender;
   if(p.persona)p_persona.value=p.persona;
   if(p.style)p_style.value=p.style;
   if(p.limit)p_limit.value=p.limit;
   if(p.act)actSwitch.checked=true;
+  syncBubbles();
 })();
+
+/* ★【修复 5】气泡强制同步（防移动端失效） */
+function syncBubbles(){
+  const mb=localStorage.getItem('meBubble_'+CHAT_ID);
+  const ab=localStorage.getItem('aiBubble_'+CHAT_ID);
+  if(mb)document.documentElement.style.setProperty('--bubble-me',mb);
+  if(ab)document.documentElement.style.setProperty('--bubble-ai',ab);
+}
 
 /* ===== API ===== */
 function getApiConfig(){
@@ -347,27 +368,32 @@ async function callApi(messages){
   return data.choices[0].message.content;
 }
 
-/* ===== 确保回复条数尽量接近 limit ===== */
+/* ★【修复 3】避免括号被拆分 */
 function splitReply(text, limit){
-  let parts=text.split(/\n{2,}/).map(t=>t.trim()).filter(Boolean);
+  let parts=text
+    .split(/\n{2,}(?![^\(（]*[)）])/)
+    .map(t=>t.trim())
+    .filter(Boolean);
+
   if(parts.length<limit){
     parts=text.split(/(?<=[。！？!?])/).map(t=>t.trim()).filter(Boolean);
   }
   return parts.slice(0,limit);
 }
 
-/* ===== system prompt（重描写取向） ===== */
+/* ===== system prompt（强制括号 + 重描写兜底） ===== */
 function buildSystemPrompt(p){
+  const actEnabled = p.act === true;
   let base=`
 你正在与用户进行一对一私密聊天。
 人设：${p.persona||''}
 风格：${p.style||''}
 `.trim();
 
-  if(p.act){
+  if(actEnabled){
     base+=`
-交流方式偏向情绪、动作与心理描写。
-描写是主要表达方式，语言自然，不必每条都有，但一旦出现要详细、有画面感。
+交流时请优先使用【括号】描述动作、心理、细节环境。
+描写偏重，不必每条都有，但一旦出现必须完整、自然、有画面感。
 `.trim();
   }
   return base;
@@ -385,9 +411,7 @@ sendBtn.onclick=async()=>{
   render();
 
   const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
-  const title=chatTitle;
-  const old=title.textContent;
-  title.textContent='对方正在输入…';
+  chatTitle.textContent='对方正在输入…';
 
   const msgs=[{role:'system',content:buildSystemPrompt(p)}];
   list.slice(-10).forEach(m=>msgs.push({role:m.type==='me'?'user':'assistant',content:m.text}));
@@ -398,7 +422,7 @@ sendBtn.onclick=async()=>{
       list.push({type:'ai',text:t});
       localStorage.setItem(CHAT_KEY,JSON.stringify(list));
       render();
-      title.textContent=old;
+      chatTitle.textContent=BASE_TITLE;
     },500*(i+1));
   });
 };
@@ -406,21 +430,18 @@ sendBtn.onclick=async()=>{
 /* ===== 渲染 ===== */
 const messagesEl=document.getElementById('messages');
 function render(){
-
-  /* ★【修复 A】每次渲染强制同步气泡 */
-  const mb=localStorage.getItem('meBubble_'+CHAT_ID);
-  const ab=localStorage.getItem('aiBubble_'+CHAT_ID);
-  if(mb)document.documentElement.style.setProperty('--bubble-me',mb);
-  if(ab)document.documentElement.style.setProperty('--bubble-ai',ab);
-
+  syncBubbles();
   messagesEl.innerHTML='';
   const avatar=getContact().avatar||'';
+
   JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{
     const row=document.createElement('div');
     row.className='msgRow '+m.type;
 
-    /* ★【新增】括号内容斜体 */
-    let html=m.text.replace(/（([^）]+)）/g,'（<em>$1</em>）');
+    /* ★【修复 1】中英文括号全部斜体 */
+    let html=m.text
+      .replace(/（([\s\S]*?)）/g,'（<em>$1</em>）')
+      .replace(/\(([\s\S]*?)\)/g,'(<em>$1</em>)');
 
     row.innerHTML=`
       ${m.type==='ai'&&avatar?`<img class="avatar" src="${avatar}">`:''}
