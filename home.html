@@ -403,7 +403,7 @@
     document.querySelectorAll('.icon').forEach(el=>{
       el.addEventListener('click', ()=>{
         const key = el.getAttribute('data-key');
-        const mapping = { chat: 'chat.html', diary: 'diary.html', forum: 'forum.html', api: 'api.html', theme: 'theme.html', more: 'ai_memory.html' };
+        const mapping = { chat: 'chat.html', diary: 'diary.html', forum: 'forum.html', api: 'api.html', theme: 'theme.html', more: 'ai_memory_v2.html' };
         const href = mapping[key] || '#';
         if(href === '#') { alert('该功能将来会开放（更多功能占位）。'); }
         else { location.href = href; }
