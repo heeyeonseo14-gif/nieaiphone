@@ -326,7 +326,7 @@ function savePersona(){
 })();
 
 /* =================================================
-   ★【新增】API 调用（只新增）
+   ★【新增】API 调用
 ================================================= */
 function getApiConfig(){
   const raw = localStorage.getItem('nie_api_config_v1');
@@ -353,12 +353,19 @@ async function callApi(messages){
     })
   });
 
-  if(!res.ok){
-    throw new Error(await res.text());
-  }
-
   const data = await res.json();
   return data.choices[0].message.content;
+}
+
+/* =================================================
+   ★【新增】按回复条数拆分
+================================================= */
+function splitReply(text, limit){
+  return text
+    .split(/[\n。！？!?]/)
+    .map(t=>t.trim())
+    .filter(Boolean)
+    .slice(0, limit);
 }
 
 /* ===== 聊天渲染（原逻辑，未动） ===== */
@@ -382,7 +389,7 @@ function render(){
 render();
 
 /* =================================================
-   ★【修改】发送消息 → 使用真实 API
+   ★【修改】发送消息（实现 3 个需求）
 ================================================= */
 sendBtn.onclick = async () => {
   if(!input.value.trim()) return;
@@ -397,11 +404,16 @@ sendBtn.onclick = async () => {
 
   const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
 
+  /* ★ 顶部显示“正在输入…” */
+  const titleEl = document.getElementById('chatTitle');
+  const oldTitle = titleEl.textContent;
+  titleEl.textContent = '对方正在输入…';
+
   const messages=[
     {
       role:'system',
       content:
-        `性别：${p.gender||'中性'}\n`+
+        `性别：${p.gender||''}\n`+
         `人设：${p.persona||''}\n`+
         `风格：${p.style||''}`
     }
@@ -416,17 +428,25 @@ sendBtn.onclick = async () => {
 
   try{
     const reply = await callApi(messages);
-    list.push({
-      type:'ai',
-      text:p.act?`（他想了想）${reply}`:reply
+    const parts = splitReply(reply, p.limit || 1);
+
+    parts.forEach((text,i)=>{
+      setTimeout(()=>{
+        list.push({
+          type:'ai',
+          text: p.act ? `（他想了想）${text}` : text
+        });
+        localStorage.setItem(CHAT_KEY,JSON.stringify(list));
+        render();
+        titleEl.textContent = oldTitle;
+      }, 500 * (i + 1));
     });
-    localStorage.setItem(CHAT_KEY,JSON.stringify(list));
-    render();
+
   }catch(e){
     list.push({type:'ai',text:'⚠️ API 调用失败'});
     localStorage.setItem(CHAT_KEY,JSON.stringify(list));
     render();
-    console.error(e);
+    titleEl.textContent = oldTitle;
   }
 };
 </script>
