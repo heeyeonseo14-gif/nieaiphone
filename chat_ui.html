@@ -16,6 +16,7 @@
   --muted:#8b7c9b;
   --accent:#9b86e6;
 
+  /* ★【气泡变量：唯一可信来源】 */
   --bubble-me:linear-gradient(135deg,#cbb8ff,#9b86e6);
   --bubble-ai:linear-gradient(135deg,#f6f1ff,#ebe3ff);
 }
@@ -107,7 +108,7 @@ html,body{
   font-size:14px;
 }
 
-/* ★【保留】动作 / 心理描写斜体 */
+/* ★【保留】动作 / 心理描写斜体（最终生效） */
 .msg em{
   font-style:italic;
   opacity:.9;
@@ -272,7 +273,7 @@ if(!CHAT_ID){ alert('缺少 cid'); location.href='chat.html'; }
 const CHAT_KEY    = 'chat_'    + CHAT_ID;
 const PERSONA_KEY = 'persona_' + CHAT_ID;
 
-/* ★【修复】标题基准名 */
+/* ★【标题基准名】 */
 let BASE_TITLE = '聊天';
 
 /* ===== 联系人 ===== */
@@ -288,18 +289,22 @@ function closePersona(){personaModal.style.display='none'}
 const ME_G=[...document.querySelectorAll('.me1,.me2,.me3,.me4')].map(e=>e.style.background);
 const AI_G=[...document.querySelectorAll('.ai1,.ai2,.ai3,.ai4')].map(e=>e.style.background);
 
-function mark(row,i){ [...row.children].forEach((c,idx)=>c.classList.toggle('active',idx===i)); }
+function mark(row,i){
+  [...row.children].forEach((c,idx)=>c.classList.toggle('active',idx===i));
+}
 
 function setMe(i){
   localStorage.setItem('meBubble_'+CHAT_ID,ME_G[i]);
   mark(meRow,i);
+  syncBubbles();
 }
 function setAI(i){
   localStorage.setItem('aiBubble_'+CHAT_ID,AI_G[i]);
   mark(aiRow,i);
+  syncBubbles();
 }
 
-/* ★【修复 1】气泡兜底 + 强制同步 */
+/* ★【修复 1】气泡唯一同步源 */
 function syncBubbles(){
   const mb = localStorage.getItem('meBubble_'+CHAT_ID) || ME_G[0];
   const ab = localStorage.getItem('aiBubble_'+CHAT_ID) || AI_G[0];
@@ -367,35 +372,38 @@ async function callApi(messages){
   return data.choices[0].message.content;
 }
 
-/* ===== 安全拆分 ===== */
+/* ★【核心修复】原子回复：只要有括号，整段不拆 */
 function splitReply(text, limit){
-  let parts=text
-    .replace(/【/g,'（')
-    .replace(/】/g,'）')
-    .split(/\n{2,}(?![^\（]*\）)/)
+  const normalized = text.replace(/【/g,'（').replace(/】/g,'）');
+
+  if(/（[\s\S]*?）/.test(normalized)){
+    return [normalized.trim()];
+  }
+
+  let parts = normalized
+    .split(/(?<=[。！？!?])/)
     .map(t=>t.trim())
     .filter(Boolean);
 
-  if(parts.length<limit){
-    parts=text.split(/(?<=[。！？!?])/).map(t=>t.trim()).filter(Boolean);
-  }
   return parts.slice(0,limit);
 }
 
-/* ★【修复 2】system prompt 注入 AI 名称 */
+/* ★【修复】system prompt：强制图二行为 */
 function buildSystemPrompt(p){
   let base=`
 你正在与用户进行一对一私密聊天。
-你的名字是：${p.name||'未命名'}
-在聊天中，请始终以「${p.name||'我'}」作为自称，不要使用其他名字。
+你的名字是：${p.name||'未命名'}。
+你只能使用这个名字自称。
 人设：${p.persona||''}
 风格：${p.style||''}
 `.trim();
 
   if(p.act){
     base+=`
-请大量使用动作和心理描写，统一放在中文括号内。
-描写必须完整、有画面感，不要拆开。
+当你使用动作或心理描写时：
+- 必须使用中文括号（）
+- 动作 + 对白必须在同一条回复中
+- 不允许拆成多条
 `.trim();
   }
   return base;
@@ -425,7 +433,7 @@ sendBtn.onclick=async()=>{
       localStorage.setItem(CHAT_KEY,JSON.stringify(list));
       render();
       chatTitle.textContent=BASE_TITLE;
-    },500*(i+1));
+    },400*(i+1));
   });
 };
 
@@ -436,20 +444,17 @@ function render(){
   messagesEl.innerHTML='';
   const avatar=getContact().avatar||'';
 
-  const meBg = localStorage.getItem('meBubble_'+CHAT_ID) || ME_G[0];
-  const aiBg = localStorage.getItem('aiBubble_'+CHAT_ID) || AI_G[0];
-
   JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{
     const row=document.createElement('div');
     row.className='msgRow '+m.type;
 
-    let html=m.text
-      .replace(/（([\s\S]*?)）/g,'（<em>$1</em>）')
-      .replace(/\(([\s\S]*?)\)/g,'（<em>$1</em>）');
+    let html = m.text.replace(/（([\s\S]*?)）/g,'（<em>$1</em>）');
 
     row.innerHTML=`
       ${m.type==='ai'&&avatar?`<img class="avatar" src="${avatar}">`:''}
-      <div class="msg" style="background:${m.type==='me'?meBg:aiBg}">${html}</div>
+      <div class="msg" style="background:${m.type==='me'
+        ? 'var(--bubble-me)'
+        : 'var(--bubble-ai)'}">${html}</div>
       ${m.type==='me'?'<div class="avatar"></div>':''}
     `;
     messagesEl.appendChild(row);
