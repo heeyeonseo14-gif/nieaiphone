@@ -106,6 +106,12 @@ html,body{
   border-radius:14px;
   line-height:1.45;
   font-size:14px;
+  /* ★【修复 1】气泡颜色只吃 CSS 变量 */
+  background:var(--bubble-ai);
+}
+
+.msgRow.me .msg{
+  background:var(--bubble-me);
 }
 
 /* ★ 动作 / 心理描写斜体（保持） */
@@ -275,7 +281,7 @@ const PERSONA_KEY = 'persona_' + CHAT_ID;
 
 let BASE_TITLE = '聊天';
 
-/* ===== 联系人（★头像同步修复点） ===== */
+/* ===== 联系人（头像同步保留） ===== */
 function getContact(){
   const list = JSON.parse(localStorage.getItem('nie_contacts_v1')||'[]');
   return list.find(c=>c.id===CHAT_ID) || {};
@@ -303,7 +309,7 @@ function setAI(i){
   syncBubbles();
 }
 
-/* ★【修复 1】气泡只在这里同步（render 不再改） */
+/* ★【修复 1】气泡唯一同步点 */
 function syncBubbles(){
   document.documentElement.style.setProperty(
     '--bubble-me',
@@ -374,17 +380,6 @@ async function callApi(messages){
   return data.choices[0].message.content;
 }
 
-/* ★【修复 2】回复条数最低保障 */
-function splitReply(text, limit){
-  const normalized=text.replace(/【/g,'（').replace(/】/g,'）');
-
-  const minCount = limit<=1 ? 1 : Math.max(Math.floor(limit*0.6), limit-2);
-
-  let parts = normalized.split(/(?<=[。！？!?])/).map(t=>t.trim()).filter(Boolean);
-
-  return parts.slice(0, Math.max(minCount, Math.min(limit, parts.length)));
-}
-
 /* ===== system prompt ===== */
 function buildSystemPrompt(p){
   let base=`
@@ -393,11 +388,22 @@ function buildSystemPrompt(p){
 你只能使用这个名字自称。
 人设：${p.persona||''}
 风格：${p.style||''}
+
+【强制规则】
+- 禁止使用任何 emoji、表情符号
 `.trim();
 
   if(p.act){
     base+=`
-动作和心理描写必须使用中文括号（），并与对白放在同一条回复中。
+- 允许使用动作和心理描写
+- 必须使用中文括号（）
+- 必须与对白在同一条回复中
+`.trim();
+  }else{
+    base+=`
+- 禁止任何动作描写
+- 禁止心理描写
+- 禁止使用括号（）
 `.trim();
   }
   return base;
@@ -421,7 +427,8 @@ sendBtn.onclick=async()=>{
   list.slice(-10).forEach(m=>msgs.push({role:m.type==='me'?'user':'assistant',content:m.text}));
 
   const reply=await callApi(msgs);
-  splitReply(reply,p.limit||1).forEach((t,i)=>{
+
+  reply.split(/\n+/).filter(Boolean).forEach((t,i)=>{
     setTimeout(()=>{
       list.push({type:'ai',text:t});
       localStorage.setItem(CHAT_KEY,JSON.stringify(list));
@@ -431,7 +438,7 @@ sendBtn.onclick=async()=>{
   });
 };
 
-/* ===== 渲染（★头像同步修复） ===== */
+/* ===== 渲染（头像同步保留） ===== */
 const messagesEl=document.getElementById('messages');
 function render(){
   messagesEl.innerHTML='';
@@ -445,9 +452,7 @@ function render(){
 
     row.innerHTML=`
       ${m.type==='ai'&&avatar?`<img class="avatar" src="${avatar}">`:''}
-      <div class="msg" style="background:${m.type==='me'
-        ? 'var(--bubble-me)'
-        : 'var(--bubble-ai)'}">${html}</div>
+      <div class="msg">${html}</div>
       ${m.type==='me'?'<div class="avatar"></div>':''}
     `;
     messagesEl.appendChild(row);
