@@ -106,15 +106,9 @@ html,body{
   border-radius:14px;
   line-height:1.45;
   font-size:14px;
-  background:var(--bubble-ai);
 }
 
-.msgRow.me .msg{
-  background:var(--bubble-me);
-  color:#fff;
-}
-
-/* ★ 动作 / 心理描写斜体 */
+/* ★ 动作 / 心理描写斜体（保持） */
 .msg em{
   font-style:italic;
   opacity:.9;
@@ -281,7 +275,13 @@ const PERSONA_KEY = 'persona_' + CHAT_ID;
 
 let BASE_TITLE = '聊天';
 
-/* ===== 人设弹窗 ===== */
+/* ===== 联系人（★头像同步修复点） ===== */
+function getContact(){
+  const list = JSON.parse(localStorage.getItem('nie_contacts_v1')||'[]');
+  return list.find(c=>c.id===CHAT_ID) || {};
+}
+
+/* ===== 人设 ===== */
 function openPersona(){personaModal.style.display='flex'}
 function closePersona(){personaModal.style.display='none'}
 
@@ -303,12 +303,16 @@ function setAI(i){
   syncBubbles();
 }
 
-/* ★【修复 1】气泡只从变量来 */
+/* ★【修复 1】气泡只在这里同步（render 不再改） */
 function syncBubbles(){
-  const mb = localStorage.getItem('meBubble_'+CHAT_ID);
-  const ab = localStorage.getItem('aiBubble_'+CHAT_ID);
-  if(mb) document.documentElement.style.setProperty('--bubble-me',mb);
-  if(ab) document.documentElement.style.setProperty('--bubble-ai',ab);
+  document.documentElement.style.setProperty(
+    '--bubble-me',
+    localStorage.getItem('meBubble_'+CHAT_ID) || ME_G[0]
+  );
+  document.documentElement.style.setProperty(
+    '--bubble-ai',
+    localStorage.getItem('aiBubble_'+CHAT_ID) || AI_G[0]
+  );
 }
 
 function savePersona(){
@@ -328,7 +332,6 @@ function savePersona(){
   closePersona();
 }
 
-/* ===== 初始化 ===== */
 (function initPersona(){
   const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
   if(p.name){
@@ -352,40 +355,34 @@ function getApiConfig(){
 
 async function callApi(messages){
   const api = getApiConfig();
-  const url = api.baseUrl.replace(/\/+$/,'') + '/v1/chat/completions';
-
-  const res = await fetch(url,{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization':'Bearer ' + api.apiKey
-    },
-    body:JSON.stringify({
-      model: api.model,
-      messages,
-      temperature:0.7
-    })
-  });
-
+  const res = await fetch(
+    api.baseUrl.replace(/\/+$/,'') + '/v1/chat/completions',
+    {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer ' + api.apiKey
+      },
+      body:JSON.stringify({
+        model: api.model,
+        messages,
+        temperature:0.7
+      })
+    }
+  );
   const data = await res.json();
   return data.choices[0].message.content;
 }
 
-/* ★【修复 2】回复条数：比例兜底，不再只回 1 条 */
+/* ★【修复 2】回复条数最低保障 */
 function splitReply(text, limit){
-  const normalized = text.replace(/【/g,'（').replace(/】/g,'）');
+  const normalized=text.replace(/【/g,'（').replace(/】/g,'）');
 
-  let parts = normalized
-    .split(/(?<=[。！？!?])/)
-    .map(t=>t.trim())
-    .filter(Boolean);
+  const minCount = limit<=1 ? 1 : Math.max(Math.floor(limit*0.6), limit-2);
 
-  const minCount = Math.max(1, Math.ceil(limit * 0.6));
+  let parts = normalized.split(/(?<=[。！？!?])/).map(t=>t.trim()).filter(Boolean);
 
-  if(parts.length < minCount){
-    return parts;
-  }
-  return parts.slice(0, limit);
+  return parts.slice(0, Math.max(minCount, Math.min(limit, parts.length)));
 }
 
 /* ===== system prompt ===== */
@@ -400,9 +397,7 @@ function buildSystemPrompt(p){
 
   if(p.act){
     base+=`
-当你使用动作或心理描写时：
-- 必须使用中文括号（）
-- 动作和对话必须在同一条回复中
+动作和心理描写必须使用中文括号（），并与对白放在同一条回复中。
 `.trim();
   }
   return base;
@@ -436,12 +431,11 @@ sendBtn.onclick=async()=>{
   });
 };
 
-/* ===== 渲染 ===== */
+/* ===== 渲染（★头像同步修复） ===== */
 const messagesEl=document.getElementById('messages');
 function render(){
-  syncBubbles();
   messagesEl.innerHTML='';
-  const avatar='';
+  const avatar = getContact().avatar || '';
 
   JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{
     const row=document.createElement('div');
@@ -451,7 +445,9 @@ function render(){
 
     row.innerHTML=`
       ${m.type==='ai'&&avatar?`<img class="avatar" src="${avatar}">`:''}
-      <div class="msg">${html}</div>
+      <div class="msg" style="background:${m.type==='me'
+        ? 'var(--bubble-me)'
+        : 'var(--bubble-ai)'}">${html}</div>
       ${m.type==='me'?'<div class="avatar"></div>':''}
     `;
     messagesEl.appendChild(row);
