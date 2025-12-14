@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>AI 记忆</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg1:#f4e8fb;
+  --bg2:#f0e7fb;
+  --card:#ffffff;
+  --text:#2f2436;
+  --muted:#8b7c9b;
+  --accent:#9b86e6;
+}
+
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  height:100%;
+  font-family:"Quicksand",system-ui;
+  background:linear-gradient(180deg,var(--bg1),var(--bg2));
+  color:var(--text);
+}
+
+.app{
+  width:96%;
+  max-width:420px;
+  margin:0 auto;
+  padding:14px;
+}
+
+.header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+}
+.header button{
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  border:none;
+  background:white;
+  font-size:18px;
+}
+.header h1{
+  flex:1;
+  text-align:center;
+  font-size:18px;
+  margin:0;
+}
+
+.card{
+  background:var(--card);
+  border-radius:20px;
+  padding:16px;
+  margin-bottom:14px;
+}
+
+.section{
+  margin-bottom:16px;
+}
+.sectionTitle{
+  font-size:14px;
+  font-weight:700;
+  margin-bottom:8px;
+}
+.label{
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+
+input, select, textarea{
+  width:100%;
+  padding:10px;
+  border-radius:12px;
+  border:1px solid #e6def5;
+  font-family:inherit;
+  font-size:14px;
+}
+textarea{resize:none}
+
+.row{
+  display:flex;
+  gap:8px;
+}
+
+.sliderRow{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.sliderRow input{
+  flex:1;
+}
+
+.memoryItem{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:6px;
+}
+.memoryItem span{
+  flex:1;
+  font-size:14px;
+}
+.memoryItem button{
+  border:none;
+  background:none;
+  color:#c44;
+  font-size:14px;
+  cursor:pointer;
+}
+
+.addRow{
+  display:flex;
+  gap:8px;
+  margin-top:8px;
+}
+.addRow button{
+  padding:10px 14px;
+  border-radius:999px;
+  border:none;
+  background:linear-gradient(135deg,#b8a6ff,#8f7be8);
+  color:white;
+  font-size:13px;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+}
+.actions button{
+  flex:1;
+  padding:14px;
+  border-radius:999px;
+  border:none;
+  font-weight:700;
+}
+.cancel{background:#f2eefc}
+.save{background:linear-gradient(135deg,#9b8cff,#7c68e6);color:white}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+  <div class="header">
+    <button onclick="goBack()">←</button>
+    <h1>AI 记忆</h1>
+    <div style="width:42px"></div>
+  </div>
+
+  <!-- 关系状态 -->
+  <div class="card">
+    <div class="section">
+      <div class="sectionTitle">关系状态</div>
+
+      <div class="label">关系阶段</div>
+      <select id="rel_stage">
+        <option>陌生</option>
+        <option>熟悉</option>
+        <option>信任</option>
+        <option>亲密</option>
+      </select>
+
+      <div class="label" style="margin-top:10px">信任值</div>
+      <div class="sliderRow">
+        <input type="range" id="rel_trust" min="0" max="100">
+        <span id="trustVal"></span>
+      </div>
+
+      <div class="label">亲密值</div>
+      <div class="sliderRow">
+        <input type="range" id="rel_intimacy" min="0" max="100">
+        <span id="intimacyVal"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI 对用户的认知 -->
+  <div class="card">
+    <div class="section">
+      <div class="sectionTitle">AI 对你的认知</div>
+
+      <div class="label">用户身份 / 印象</div>
+      <textarea id="mem_user_profile" rows="2"></textarea>
+
+      <div class="label" style="margin-top:8px">情绪与沟通偏好</div>
+      <textarea id="mem_emotion" rows="2"></textarea>
+    </div>
+  </div>
+
+  <!-- 长期记忆 -->
+  <div class="card">
+    <div class="section">
+      <div class="sectionTitle">长期记忆</div>
+
+      <div id="memoryList"></div>
+
+      <div class="addRow">
+        <input id="newMemory" placeholder="添加一条 AI 会记住的事">
+        <button onclick="addMemory()">添加</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 操作 -->
+  <div class="actions">
+    <button class="cancel" onclick="goBack()">取消</button>
+    <button class="save" onclick="saveMemory()">保存</button>
+  </div>
+
+</div>
+
+<script>
+/* ===== cid ===== */
+const params = new URLSearchParams(location.search);
+const CHAT_ID = params.get('cid');
+if(!CHAT_ID){
+  alert('缺少 cid');
+  location.href='home.html';
+}
+
+const MEM_KEY = 'ai_memory_' + CHAT_ID;
+
+/* ===== elements ===== */
+const rel_stage = document.getElementById('rel_stage');
+const rel_trust = document.getElementById('rel_trust');
+const rel_intimacy = document.getElementById('rel_intimacy');
+const trustVal = document.getElementById('trustVal');
+const intimacyVal = document.getElementById('intimacyVal');
+
+const mem_user_profile = document.getElementById('mem_user_profile');
+const mem_emotion = document.getElementById('mem_emotion');
+const memoryList = document.getElementById('memoryList');
+const newMemory = document.getElementById('newMemory');
+
+let memoryData;
+
+/* ===== load ===== */
+(function(){
+  memoryData = JSON.parse(localStorage.getItem(MEM_KEY) || '{}');
+
+  if(!memoryData.relationship){
+    memoryData = {
+      relationship:{ stage:'熟悉', trust:50, intimacy:30 },
+      user_profile:'',
+      emotion:'',
+      notes:[]
+    };
+  }
+
+  rel_stage.value = memoryData.relationship.stage;
+  rel_trust.value = memoryData.relationship.trust;
+  rel_intimacy.value = memoryData.relationship.intimacy;
+  trustVal.textContent = rel_trust.value;
+  intimacyVal.textContent = rel_intimacy.value;
+
+  mem_user_profile.value = memoryData.user_profile || '';
+  mem_emotion.value = memoryData.emotion || '';
+
+  renderMemory();
+})();
+
+rel_trust.oninput = ()=> trustVal.textContent = rel_trust.value;
+rel_intimacy.oninput = ()=> intimacyVal.textContent = rel_intimacy.value;
+
+/* ===== memory list ===== */
+function renderMemory(){
+  memoryList.innerHTML = '';
+  memoryData.notes.forEach((t,i)=>{
+    const div = document.createElement('div');
+    div.className = 'memoryItem';
+    div.innerHTML = `<span>${t}</span><button onclick="delMemory(${i})">删除</button>`;
+    memoryList.appendChild(div);
+  });
+}
+
+function addMemory(){
+  if(!newMemory.value.trim()) return;
+  memoryData.notes.push(newMemory.value.trim());
+  newMemory.value='';
+  renderMemory();
+}
+
+function delMemory(i){
+  memoryData.notes.splice(i,1);
+  renderMemory();
+}
+
+/* ===== save ===== */
+function saveMemory(){
+  memoryData.relationship = {
+    stage: rel_stage.value,
+    trust: +rel_trust.value,
+    intimacy: +rel_intimacy.value
+  };
+  memoryData.user_profile = mem_user_profile.value;
+  memoryData.emotion = mem_emotion.value;
+
+  localStorage.setItem(MEM_KEY, JSON.stringify(memoryData));
+  goBack();
+}
+
+/* ===== back ===== */
+function goBack(){
+  location.href = `home.html`;
+}
+</script>
+</body>
+</html>
