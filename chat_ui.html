@@ -16,7 +16,7 @@
   --muted:#8b7c9b;
   --accent:#9b86e6;
 
-  /* ★【气泡变量：唯一可信来源（不再被任何地方覆盖）】 */
+  /* ★ 气泡变量（唯一生效源） */
   --bubble-me:linear-gradient(135deg,#cbb8ff,#9b86e6);
   --bubble-ai:linear-gradient(135deg,#f6f1ff,#ebe3ff);
 }
@@ -112,7 +112,6 @@ html,body{
   background:var(--bubble-me);
 }
 
-/* ★ 动作 / 心理描写斜体（保持） */
 .msg em{
   font-style:italic;
   opacity:.9;
@@ -269,7 +268,6 @@ html,body{
 </div>
 
 <script>
-/* ===== cid 隔离 ===== */
 const params = new URLSearchParams(location.search);
 const CHAT_ID = params.get('cid');
 if(!CHAT_ID){ alert('缺少 cid'); location.href='chat.html'; }
@@ -277,48 +275,34 @@ if(!CHAT_ID){ alert('缺少 cid'); location.href='chat.html'; }
 const CHAT_KEY    = 'chat_'    + CHAT_ID;
 const PERSONA_KEY = 'persona_' + CHAT_ID;
 
-let BASE_TITLE = '聊天';
+let BASE_TITLE='聊天';
 
-/* ===== 联系人（头像同步保留） ===== */
+/* 联系人头像同步 */
 function getContact(){
-  const list = JSON.parse(localStorage.getItem('nie_contacts_v1')||'[]');
-  return list.find(c=>c.id===CHAT_ID) || {};
+  const list=JSON.parse(localStorage.getItem('nie_contacts_v1')||'[]');
+  return list.find(c=>c.id===CHAT_ID)||{};
 }
 
-/* ===== 人设 ===== */
-function openPersona(){personaModal.style.display='flex'}
-function closePersona(){personaModal.style.display='none'}
-
+/* 气泡 */
 const ME_G=[...document.querySelectorAll('.me1,.me2,.me3,.me4')].map(e=>e.style.background);
 const AI_G=[...document.querySelectorAll('.ai1,.ai2,.ai3,.ai4')].map(e=>e.style.background);
 
-function mark(row,i){
-  [...row.children].forEach((c,idx)=>c.classList.toggle('active',idx===i));
-}
-
 function setMe(i){
   localStorage.setItem('meBubble_'+CHAT_ID,ME_G[i]);
-  mark(meRow,i);
   syncBubbles();
 }
 function setAI(i){
   localStorage.setItem('aiBubble_'+CHAT_ID,AI_G[i]);
-  mark(aiRow,i);
   syncBubbles();
 }
-
-/* ★【气泡唯一同步点：不会被 render 覆盖】 */
 function syncBubbles(){
-  document.documentElement.style.setProperty(
-    '--bubble-me',
-    localStorage.getItem('meBubble_'+CHAT_ID) || ME_G[0]
-  );
-  document.documentElement.style.setProperty(
-    '--bubble-ai',
-    localStorage.getItem('aiBubble_'+CHAT_ID) || AI_G[0]
-  );
+  document.documentElement.style.setProperty('--bubble-me',localStorage.getItem('meBubble_'+CHAT_ID)||ME_G[0]);
+  document.documentElement.style.setProperty('--bubble-ai',localStorage.getItem('aiBubble_'+CHAT_ID)||AI_G[0]);
 }
 
+/* 人设 */
+function openPersona(){personaModal.style.display='flex'}
+function closePersona(){personaModal.style.display='none'}
 function savePersona(){
   localStorage.setItem(PERSONA_KEY,JSON.stringify({
     name:p_name.value,
@@ -328,21 +312,12 @@ function savePersona(){
     limit:+p_limit.value,
     act:actSwitch.checked
   }));
-  if(p_name.value){
-    BASE_TITLE=p_name.value;
-    chatTitle.textContent=BASE_TITLE;
-  }
-  syncBubbles();
-  closePersona();
+  if(p_name.value){BASE_TITLE=p_name.value;chatTitle.textContent=BASE_TITLE;}
+  syncBubbles();closePersona();
 }
-
-(function initPersona(){
+(function(){
   const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
-  if(p.name){
-    BASE_TITLE=p.name;
-    chatTitle.textContent=BASE_TITLE;
-    p_name.value=p.name;
-  }
+  if(p.name){BASE_TITLE=p.name;chatTitle.textContent=BASE_TITLE;p_name.value=p.name;}
   if(p.gender)p_gender.value=p.gender;
   if(p.persona)p_persona.value=p.persona;
   if(p.style)p_style.value=p.style;
@@ -351,104 +326,50 @@ function savePersona(){
   syncBubbles();
 })();
 
-/* ===== API ===== */
+/* API */
 function getApiConfig(){
-  const raw = localStorage.getItem('nie_api_config_v1');
-  return raw ? JSON.parse(raw) : null;
+  return JSON.parse(localStorage.getItem('nie_api_config_v1')||'null');
 }
-
 async function callApi(messages){
-  const api = getApiConfig();
-  const res = await fetch(
-    api.baseUrl.replace(/\/+$/,'') + '/v1/chat/completions',
-    {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization':'Bearer ' + api.apiKey
-      },
-      body:JSON.stringify({
-        model: api.model,
-        messages,
-        temperature:0.7
-      })
-    }
-  );
-  const data = await res.json();
+  const api=getApiConfig();
+  const res=await fetch(api.baseUrl.replace(/\/+$/,'')+'/v1/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+api.apiKey},
+    body:JSON.stringify({model:api.model,messages,temperature:0.7})
+  });
+  const data=await res.json();
   return data.choices[0].message.content;
 }
 
-/* ★【核心修复】严格按设置条数输出（不拆、不猜、不少） */
-function buildSystemPrompt(p){
-  const count = p.limit || 1;
-
-  let base = `
-你正在与用户进行一对一私密聊天。
-【身份与人称规则（最高优先级，不可违反）】
-- 你的名字是：{AI_NAME}
-- 在所有回复中，你必须始终使用第一人称「我」
-- 严禁使用第三人称自指（例如：“{AI_NAME}觉得 / {AI_NAME}看着你 / 他想”等）
-- 「{AI_NAME}」这个名字只允许由对方称呼，你自己绝不使用它指代自己
-
-【对话模式说明】
-- 这是“聊天”，不是小说
-- 每一条回复，都是你当下对用户说的话
-- 即使出现描写，也必须是“我”的即时感受或动作
-
-【人设】
-{PERSONA}
-
-【说话风格 / 习惯】
-{STYLE}
-
-【动作 / 心理描写规则】
-{ACT_RULES}
-
-【重要禁止事项】
-- 禁止使用任何 emoji、颜文字、表情符号
-- 禁止进入第三人称叙事视角
-- 禁止像旁白、作者或上帝视角那样描述自己
-
-【语气与互动要求】
-- 回复必须自然、有情绪、有交流感
-- 可以温柔、克制、暧昧、冷淡或亲近，取决于人设
-- 永远保持“正在和用户对话”的感觉，而不是讲故事
-
-【输出规则（绝对遵守）】
-- 你必须输出 ${count} 条回复
-- 每条回复单独一行
-- 不得合并，不得省略
-- 不得使用 emoji 或任何表情符号
-`.trim();
-
-  if(p.act){
-    base += `
-【强制规则（不可违反）】
-- 你输出的每一条回复，都必须包含动作或心理描写
-- 动作 / 心理描写必须使用中文括号（）
-- 描写长度不少于一句完整描写
-- 不允许出现“他想了想”“沉默了一下”等敷衍描述
-- 描写必须具体、有画面感、有状态变化
-- 允许动作 / 心理描写
-- 必须使用中文括号（）
-- 动作与对白必须在同一条，或动作 / 心理描写的时候自己一条，然后下一句回复就是对白
-`.trim();
-  }else{
-    base += `
-- 禁止任何动作或心理描写
-- 禁止使用括号
-`.trim();
+/* 强制拆条 */
+function forceSplit(text,count){
+  let parts=text.split(/\n+/).filter(Boolean);
+  if(parts.length<count){
+    parts=text.split(/(?<=[。！？!?])/).filter(Boolean);
   }
-
-  return base;
+  while(parts.length<count){
+    parts.push(parts[parts.length-1]||text);
+  }
+  return parts.slice(0,count);
 }
 
-/* ===== 发送 ===== */
-sendBtn.onclick = async ()=>{
-  if(!input.value.trim())return;
-  const text=input.value;
-  input.value='';
+/* prompt */
+function buildSystemPrompt(p){
+  return `
+你正在与用户聊天。
+你只能使用第一人称“我”，禁止自称名字。
+禁止 emoji。
 
+${p.act?
+`每一条回复必须包含中文括号（）的动作或心理描写，且描写必须具体、完整。`
+:`禁止任何动作或心理描写，禁止括号。`}
+`.trim();
+}
+
+/* 发送 */
+sendBtn.onclick=async()=>{
+  if(!input.value.trim())return;
+  const text=input.value;input.value='';
   const list=JSON.parse(localStorage.getItem(CHAT_KEY)||'[]');
   list.push({type:'me',text});
   localStorage.setItem(CHAT_KEY,JSON.stringify(list));
@@ -458,37 +379,29 @@ sendBtn.onclick = async ()=>{
   chatTitle.textContent='对方正在输入…';
 
   const msgs=[{role:'system',content:buildSystemPrompt(p)}];
-  list.slice(-10).forEach(m=>msgs.push({
-    role:m.type==='me'?'user':'assistant',
-    content:m.text
-  }));
+  list.slice(-10).forEach(m=>msgs.push({role:m.type==='me'?'user':'assistant',content:m.text}));
 
-  const reply = await callApi(msgs);
-
-  const lines = reply.split(/\n+/).filter(Boolean);
+  const reply=await callApi(msgs);
+  const lines=forceSplit(reply,p.limit||1);
 
   lines.forEach((t,i)=>{
     setTimeout(()=>{
       list.push({type:'ai',text:t});
       localStorage.setItem(CHAT_KEY,JSON.stringify(list));
-      render();
-      chatTitle.textContent=BASE_TITLE;
+      render();chatTitle.textContent=BASE_TITLE;
     },300*(i+1));
   });
 };
 
-/* ===== 渲染（头像同步保留） ===== */
+/* 渲染 */
 const messagesEl=document.getElementById('messages');
 function render(){
   messagesEl.innerHTML='';
-  const avatar = getContact().avatar || '';
-
+  const avatar=getContact().avatar||'';
   JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{
     const row=document.createElement('div');
     row.className='msgRow '+m.type;
-
     let html=m.text.replace(/（([\s\S]*?)）/g,'（<em>$1</em>）');
-
     row.innerHTML=`
       ${m.type==='ai'&&avatar?`<img class="avatar" src="${avatar}">`:''}
       <div class="msg">${html}</div>
