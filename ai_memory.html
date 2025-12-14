@@ -33,6 +33,7 @@ html,body{
   padding:14px;
 }
 
+/* header */
 .header{
   display:flex;
   align-items:center;
@@ -54,87 +55,61 @@ html,body{
   margin:0;
 }
 
+/* card */
 .card{
-  background:var(--card);
+  background:white;
   border-radius:20px;
   padding:16px;
   margin-bottom:14px;
 }
 
-.section{
-  margin-bottom:16px;
+/* contact list */
+.contact{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  border-radius:14px;
+  cursor:pointer;
 }
-.sectionTitle{
-  font-size:14px;
-  font-weight:700;
-  margin-bottom:8px;
+.contact:hover{background:#f6f2ff}
+.contact img{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  object-fit:cover;
+  background:#ddd;
 }
-.label{
-  font-size:12px;
-  color:var(--muted);
-  margin-bottom:6px;
-}
+.contact .name{font-weight:700}
+.contact .sub{font-size:12px;color:var(--muted)}
 
-input, select, textarea{
+/* sections */
+.section{margin-bottom:16px}
+.section h3{
+  font-size:14px;
+  margin:0 0 8px;
+}
+textarea,select,input[type="range"]{
   width:100%;
-  padding:10px;
   border-radius:12px;
   border:1px solid #e6def5;
+  padding:10px;
   font-family:inherit;
-  font-size:14px;
 }
 textarea{resize:none}
 
-.row{
+/* range label */
+.rangeRow{
   display:flex;
-  gap:8px;
+  justify-content:space-between;
+  font-size:12px;
+  color:var(--muted);
 }
 
-.sliderRow{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-.sliderRow input{
-  flex:1;
-}
-
-.memoryItem{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-bottom:6px;
-}
-.memoryItem span{
-  flex:1;
-  font-size:14px;
-}
-.memoryItem button{
-  border:none;
-  background:none;
-  color:#c44;
-  font-size:14px;
-  cursor:pointer;
-}
-
-.addRow{
-  display:flex;
-  gap:8px;
-  margin-top:8px;
-}
-.addRow button{
-  padding:10px 14px;
-  border-radius:999px;
-  border:none;
-  background:linear-gradient(135deg,#b8a6ff,#8f7be8);
-  color:white;
-  font-size:13px;
-}
-
+/* actions */
 .actions{
   display:flex;
   gap:10px;
-  margin-top:10px;
 }
 .actions button{
   flex:1;
@@ -143,8 +118,11 @@ textarea{resize:none}
   border:none;
   font-weight:700;
 }
+.save{
+  background:linear-gradient(135deg,#9b8cff,#7c68e6);
+  color:white;
+}
 .cancel{background:#f2eefc}
-.save{background:linear-gradient(135deg,#9b8cff,#7c68e6);color:white}
 </style>
 </head>
 
@@ -153,166 +131,141 @@ textarea{resize:none}
 
   <div class="header">
     <button onclick="goBack()">←</button>
-    <h1>AI 记忆</h1>
+    <h1 id="title">AI 记忆</h1>
     <div style="width:42px"></div>
   </div>
 
-  <!-- 关系状态 -->
-  <div class="card">
-    <div class="section">
-      <div class="sectionTitle">关系状态</div>
+  <!-- ===== 联系人选择（无 cid） ===== -->
+  <div id="listView" class="card"></div>
 
-      <div class="label">关系阶段</div>
-      <select id="rel_stage">
-        <option>陌生</option>
-        <option>熟悉</option>
-        <option>信任</option>
-        <option>亲密</option>
+  <!-- ===== 记忆编辑（有 cid） ===== -->
+  <div id="memoryView" style="display:none">
+
+    <div class="card section">
+      <h3>核心记忆（AI 永远记得）</h3>
+      <textarea id="coreMemory" rows="4" placeholder="例如：我们是在雨天认识的"></textarea>
+    </div>
+
+    <div class="card section">
+      <h3>关系状态</h3>
+
+      <label>关系类型</label>
+      <select id="relationType">
+        <option value="恋人">恋人</option>
+        <option value="陪伴">陪伴</option>
+        <option value="树洞">树洞</option>
       </select>
 
-      <div class="label" style="margin-top:10px">信任值</div>
-      <div class="sliderRow">
-        <input type="range" id="rel_trust" min="0" max="100">
-        <span id="trustVal"></span>
-      </div>
+      <br><br>
 
-      <div class="label">亲密值</div>
-      <div class="sliderRow">
-        <input type="range" id="rel_intimacy" min="0" max="100">
-        <span id="intimacyVal"></span>
-      </div>
+      <label>好感度</label>
+      <input type="range" id="affection" min="0" max="100">
+      <div class="rangeRow"><span>冷淡</span><span>亲密</span></div>
+
+      <br>
+
+      <label>依赖度</label>
+      <input type="range" id="dependency" min="0" max="100">
+      <div class="rangeRow"><span>独立</span><span>依赖</span></div>
+
+      <br>
+
+      <label>当前情绪</label>
+      <select id="mood">
+        <option>温和</option>
+        <option>冷淡</option>
+        <option>占有</option>
+        <option>敏感</option>
+      </select>
     </div>
-  </div>
 
-  <!-- AI 对用户的认知 -->
-  <div class="card">
-    <div class="section">
-      <div class="sectionTitle">AI 对你的认知</div>
-
-      <div class="label">用户身份 / 印象</div>
-      <textarea id="mem_user_profile" rows="2"></textarea>
-
-      <div class="label" style="margin-top:8px">情绪与沟通偏好</div>
-      <textarea id="mem_emotion" rows="2"></textarea>
+    <div class="card section">
+      <h3>行为 / 人格规则（不可违背）</h3>
+      <textarea id="rules" rows="4" placeholder="例如：必须对我保持偏爱，不得疏离"></textarea>
     </div>
-  </div>
 
-  <!-- 长期记忆 -->
-  <div class="card">
-    <div class="section">
-      <div class="sectionTitle">长期记忆</div>
-
-      <div id="memoryList"></div>
-
-      <div class="addRow">
-        <input id="newMemory" placeholder="添加一条 AI 会记住的事">
-        <button onclick="addMemory()">添加</button>
-      </div>
+    <div class="actions">
+      <button class="cancel" onclick="goBack()">返回</button>
+      <button class="save" onclick="saveMemory()">保存</button>
     </div>
-  </div>
 
-  <!-- 操作 -->
-  <div class="actions">
-    <button class="cancel" onclick="goBack()">取消</button>
-    <button class="save" onclick="saveMemory()">保存</button>
   </div>
 
 </div>
 
 <script>
-/* ===== cid ===== */
 const params = new URLSearchParams(location.search);
-const CHAT_ID = params.get('cid');
-if(!CHAT_ID){
-  alert('缺少 cid');
-  location.href='home.html';
-}
+const CID = params.get('cid');
 
-const MEM_KEY = 'ai_memory_' + CHAT_ID;
+const listView = document.getElementById('listView');
+const memoryView = document.getElementById('memoryView');
+const title = document.getElementById('title');
 
-/* ===== elements ===== */
-const rel_stage = document.getElementById('rel_stage');
-const rel_trust = document.getElementById('rel_trust');
-const rel_intimacy = document.getElementById('rel_intimacy');
-const trustVal = document.getElementById('trustVal');
-const intimacyVal = document.getElementById('intimacyVal');
+/* ===== keys ===== */
+const CORE_KEY = cid => 'ai_memory_core_' + cid;
+const REL_KEY  = cid => 'ai_memory_relation_' + cid;
+const RULE_KEY = cid => 'ai_memory_rules_' + cid;
 
-const mem_user_profile = document.getElementById('mem_user_profile');
-const mem_emotion = document.getElementById('mem_emotion');
-const memoryList = document.getElementById('memoryList');
-const newMemory = document.getElementById('newMemory');
+/* ===== 无 cid：联系人列表 ===== */
+if(!CID){
+  title.textContent = '选择 AI';
+  const list = JSON.parse(localStorage.getItem('nie_contacts_v1')||'[]');
 
-let memoryData;
-
-/* ===== load ===== */
-(function(){
-  memoryData = JSON.parse(localStorage.getItem(MEM_KEY) || '{}');
-
-  if(!memoryData.relationship){
-    memoryData = {
-      relationship:{ stage:'熟悉', trust:50, intimacy:30 },
-      user_profile:'',
-      emotion:'',
-      notes:[]
-    };
+  if(!list.length){
+    listView.innerHTML = '<div style="text-align:center;color:#999">暂无联系人</div>';
+  }else{
+    listView.innerHTML = list.map(c=>`
+      <div class="contact" onclick="openMemory('${c.id}')">
+        <img src="${c.avatar||''}">
+        <div>
+          <div class="name">${c.name||'未命名'}</div>
+          <div class="sub">点击查看记忆</div>
+        </div>
+      </div>
+    `).join('');
   }
+}else{
+  /* ===== 有 cid：记忆页 ===== */
+  listView.style.display='none';
+  memoryView.style.display='block';
+  title.textContent = 'AI 记忆';
 
-  rel_stage.value = memoryData.relationship.stage;
-  rel_trust.value = memoryData.relationship.trust;
-  rel_intimacy.value = memoryData.relationship.intimacy;
-  trustVal.textContent = rel_trust.value;
-  intimacyVal.textContent = rel_intimacy.value;
+  document.getElementById('coreMemory').value =
+    localStorage.getItem(CORE_KEY(CID)) || '';
 
-  mem_user_profile.value = memoryData.user_profile || '';
-  mem_emotion.value = memoryData.emotion || '';
+  const rel = JSON.parse(localStorage.getItem(REL_KEY(CID))||'{}');
+  relationType.value = rel.type || '恋人';
+  affection.value = rel.affection || 50;
+  dependency.value = rel.dependency || 50;
+  mood.value = rel.mood || '温和';
 
-  renderMemory();
-})();
-
-rel_trust.oninput = ()=> trustVal.textContent = rel_trust.value;
-rel_intimacy.oninput = ()=> intimacyVal.textContent = rel_intimacy.value;
-
-/* ===== memory list ===== */
-function renderMemory(){
-  memoryList.innerHTML = '';
-  memoryData.notes.forEach((t,i)=>{
-    const div = document.createElement('div');
-    div.className = 'memoryItem';
-    div.innerHTML = `<span>${t}</span><button onclick="delMemory(${i})">删除</button>`;
-    memoryList.appendChild(div);
-  });
+  rules.value = localStorage.getItem(RULE_KEY(CID)) || '';
 }
 
-function addMemory(){
-  if(!newMemory.value.trim()) return;
-  memoryData.notes.push(newMemory.value.trim());
-  newMemory.value='';
-  renderMemory();
+/* ===== actions ===== */
+function openMemory(cid){
+  location.href = 'ai_memory.html?cid=' + cid;
 }
 
-function delMemory(i){
-  memoryData.notes.splice(i,1);
-  renderMemory();
-}
-
-/* ===== save ===== */
 function saveMemory(){
-  memoryData.relationship = {
-    stage: rel_stage.value,
-    trust: +rel_trust.value,
-    intimacy: +rel_intimacy.value
-  };
-  memoryData.user_profile = mem_user_profile.value;
-  memoryData.emotion = mem_emotion.value;
+  localStorage.setItem(CORE_KEY(CID), coreMemory.value);
 
-  localStorage.setItem(MEM_KEY, JSON.stringify(memoryData));
-  goBack();
+  localStorage.setItem(REL_KEY(CID), JSON.stringify({
+    type: relationType.value,
+    affection: affection.value,
+    dependency: dependency.value,
+    mood: mood.value
+  }));
+
+  localStorage.setItem(RULE_KEY(CID), rules.value);
+  alert('已保存');
 }
 
-/* ===== back ===== */
 function goBack(){
-  location.href = `home.html`;
+  if(CID) location.href = 'ai_memory.html';
+  else location.href = 'home.html';
 }
 </script>
+
 </body>
 </html>
