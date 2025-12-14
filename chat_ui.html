@@ -283,27 +283,16 @@ function getContact(){
   return list.find(c=>c.id===CHAT_ID)||{};
 }
 
-/* ===== 新增：描边控制（★修复） ===== */
-function markActive(row,index){
-  [...row.children].forEach((el,i)=>{
-    el.classList.toggle('active',i===index);
-  });
-}
-
 /* 气泡 */
 const ME_G=[...document.querySelectorAll('.me1,.me2,.me3,.me4')].map(e=>e.style.background);
 const AI_G=[...document.querySelectorAll('.ai1,.ai2,.ai3,.ai4')].map(e=>e.style.background);
 
 function setMe(i){
   localStorage.setItem('meBubble_'+CHAT_ID,ME_G[i]);
-  localStorage.setItem('meBubbleIndex_'+CHAT_ID,i); // ★修复
-  markActive(meRow,i);                               // ★修复
   syncBubbles();
 }
 function setAI(i){
   localStorage.setItem('aiBubble_'+CHAT_ID,AI_G[i]);
-  localStorage.setItem('aiBubbleIndex_'+CHAT_ID,i); // ★修复
-  markActive(aiRow,i);                               // ★修复
   syncBubbles();
 }
 function syncBubbles(){
@@ -335,11 +324,6 @@ function savePersona(){
   if(p.limit)p_limit.value=p.limit;
   if(p.act)actSwitch.checked=true;
   syncBubbles();
-
-  const mi=+localStorage.getItem('meBubbleIndex_'+CHAT_ID);
-  const ai=+localStorage.getItem('aiBubbleIndex_'+CHAT_ID);
-  if(!isNaN(mi)) markActive(meRow,mi);
-  if(!isNaN(ai)) markActive(aiRow,ai);
 })();
 
 /* API */
