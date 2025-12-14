@@ -190,7 +190,6 @@ html,body{
 <body>
 <div class="app">
 <div class="header">
-  <!-- ★ 修复：返回固定跳转 chat.html -->
   <button onclick="goChatList()">←</button>
   <h1 id="chatTitle">聊天</h1>
   <button onclick="openPersona()">⚙</button>
@@ -260,28 +259,56 @@ const PERSONA_KEY='persona_'+CHAT_ID;
 
 let BASE_TITLE='聊天';
 
-/* ★ 修复：明确返回聊天列表 */
-function goChatList(){
-  location.href = 'chat.html';
-}
+function goChatList(){ location.href='chat.html'; }
 
-/* 联系人头像（AI） */
 function getContact(){
   const list=JSON.parse(localStorage.getItem('nie_contacts_v1')||'[]');
   return list.find(c=>String(c.id)===String(CHAT_ID))||{};
 }
 
-/* ★ 修复：始终返回一个“我的头像对象” */
 function getMyProfile(){
   return JSON.parse(localStorage.getItem('nie_user_' + CHAT_ID) || '{}');
 }
 
+/* ★ 新增：读取 AI 长期记忆 */
+function getAiMemory(){
+  return {
+    core: localStorage.getItem('ai_memory_core_' + CHAT_ID) || '',
+    relation: JSON.parse(localStorage.getItem('ai_memory_relation_' + CHAT_ID) || '{}'),
+    rules: localStorage.getItem('ai_memory_rules_' + CHAT_ID) || ''
+  };
+}
+
+/* ★ 新增：构建“第二层 system prompt”（不修改原 prompt） */
+function buildBehaviorPrompt(){
+  const user = getMyProfile();
+  const mem = getAiMemory();
+
+  return `
+【用户信息（必须牢记）】
+- 用户名：${user.name||'未设定'}
+- 性别：${user.gender||'未知'}
+- 用户人设：${user.persona||'无'}
+
+【长期记忆】
+${mem.core || '无'}
+
+【关系状态】
+- 类型：${mem.relation.type||'未定义'}
+- 好感度：${mem.relation.affection||'50'}
+- 依赖度：${mem.relation.dependency||'50'}
+- 当前情绪：${mem.relation.mood||'温和'}
+
+【不可违背规则】
+${mem.rules || '无'}
+
+你必须基于以上信息回应，保持关系连续性与情绪一致性。
+`.trim();
+}
+
 function openPersona(){personaModal.style.display='flex'}
 function closePersona(){personaModal.style.display='none'}
-
-function goMySetting(){
-  location.href = `my_setting.html?cid=${CHAT_ID}`;
-}
+function goMySetting(){ location.href=`my_setting.html?cid=${CHAT_ID}` }
 
 function savePersona(){
   localStorage.setItem(PERSONA_KEY,JSON.stringify({
@@ -340,7 +367,7 @@ function forceSplit(text,count){
   return parts.slice(0,count);
 }
 
-/* Prompt */
+/* 原 Prompt（完全未改） */
 function buildSystemPrompt(p){
   const count=p.limit||1;
   return `
@@ -379,6 +406,10 @@ sendBtn.onclick=async()=>{
   chatTitle.textContent='对方正在输入…';
 
   const msgs=[{role:'system',content:buildSystemPrompt(p)}];
+
+  /* ★ 新增：追加“行为接管 system prompt” */
+  msgs.push({role:'system',content:buildBehaviorPrompt()});
+
   list.slice(-10).forEach(m=>{
     msgs.push({role:m.type==='me'?'user':'assistant',content:m.text});
   });
@@ -400,7 +431,7 @@ const messagesEl=document.getElementById('messages');
 function render(){
   messagesEl.innerHTML='';
   const aiAvatar=getContact().avatar||'';
-  const myAvatar=getMyProfile().avatar || '';
+  const myAvatar=getMyProfile().avatar||'';
 
   JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{
     const row=document.createElement('div');
@@ -409,15 +440,9 @@ function render(){
     let html=m.text.replace(/（([\s\S]*?)）/g,'（<em>$1</em>）');
 
     row.innerHTML=`
-      ${m.type==='ai'
-        ? `<img class="avatar" src="${aiAvatar}">`
-        : ''
-      }
+      ${m.type==='ai'?`<img class="avatar" src="${aiAvatar}">`:''}
       <div class="msg">${html}</div>
-      ${m.type==='me'
-        ? `<img class="avatar" src="${myAvatar}">`
-        : ''
-      }
+      ${m.type==='me'?`<img class="avatar" src="${myAvatar}">`:''}
     `;
     messagesEl.appendChild(row);
   });
@@ -425,12 +450,12 @@ function render(){
 }
 render();
 </script>
-  
+
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js');
 }
 </script>
-  
+
 </body>
 </html>
