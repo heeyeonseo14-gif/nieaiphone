@@ -37,7 +37,7 @@ html,body{
   flex-direction:column;
 }
 
-/* ===== header ===== */
+/* header */
 .header{
   display:flex;
   align-items:center;
@@ -60,7 +60,7 @@ html,body{
   margin:0;
 }
 
-/* ===== card ===== */
+/* card */
 .card{
   background:var(--card);
   border-radius:20px;
@@ -85,7 +85,7 @@ input,textarea,select{
 }
 textarea{resize:none}
 
-/* ===== avatar ===== */
+/* avatar */
 .avatarWrap{
   display:flex;
   align-items:center;
@@ -107,7 +107,7 @@ textarea{resize:none}
   font-size:13px;
 }
 
-/* ===== actions ===== */
+/* actions */
 .actions{
   display:flex;
   gap:12px;
@@ -129,7 +129,7 @@ textarea{resize:none}
 <div class="app">
 
 <div class="header">
-  <button onclick="goBack()">←</button>
+  <button id="backBtn">←</button>
   <h1>我的设定</h1>
   <div style="width:42px"></div>
 </div>
@@ -139,16 +139,14 @@ textarea{resize:none}
   <label>我的头像</label>
   <div class="avatarWrap">
     <img id="avatarPreview" class="avatarPreview">
-    <button class="uploadBtn" type="button" onclick="triggerUpload()">上传头像</button>
+    <button class="uploadBtn" type="button" id="uploadBtn">上传头像</button>
   </div>
 
-  <!-- ★ 真正的 file input（独立存在） -->
   <input
     id="avatarInput"
     type="file"
     accept="image/*"
     style="display:none"
-    onchange="onAvatarChange(this)"
   >
 
   <label>我的名称</label>
@@ -166,8 +164,8 @@ textarea{resize:none}
   <textarea id="u_persona" rows="3" placeholder="例如：温柔的普通人 / 学生 / 旁观者"></textarea>
 
   <div class="actions">
-    <button class="cancel" onclick="goBack()">取消</button>
-    <button class="save" onclick="saveProfile()">保存</button>
+    <button class="cancel" id="cancelBtn">取消</button>
+    <button class="save" id="saveBtn">保存</button>
   </div>
 
 </div>
@@ -175,64 +173,66 @@ textarea{resize:none}
 </div>
 
 <script>
-const params = new URLSearchParams(location.search);
-const CHAT_ID = params.get('cid');
+document.addEventListener('DOMContentLoaded',()=>{
 
-const USER_KEY = 'nie_user_profile_v1';
+  const params = new URLSearchParams(location.search);
+  const CHAT_ID = params.get('cid');
+  const USER_KEY = 'nie_user_profile_v1';
 
-function goBack(){
-  if(CHAT_ID){
-    location.href = `chat_ui.html?cid=${CHAT_ID}`;
-  }else{
-    history.back();
+  const avatarPreview = document.getElementById('avatarPreview');
+  const avatarInput   = document.getElementById('avatarInput');
+  const u_name        = document.getElementById('u_name');
+  const u_gender      = document.getElementById('u_gender');
+  const u_persona     = document.getElementById('u_persona');
+
+  function goBack(){
+    if(CHAT_ID){
+      location.href = `chat_ui.html?cid=${CHAT_ID}`;
+    }else{
+      history.back();
+    }
   }
-}
 
-/* 主动触发上传（关键修复点） */
-function triggerUpload(){
-  document.getElementById('avatarInput').click();
-}
+  document.getElementById('backBtn').onclick = goBack;
+  document.getElementById('cancelBtn').onclick = goBack;
 
-/* 读取已有数据 */
-(function(){
-  const data = JSON.parse(localStorage.getItem(USER_KEY) || '{}');
-  if(data.name) u_name.value = data.name;
-  if(data.gender) u_gender.value = data.gender;
-  if(data.persona) u_persona.value = data.persona;
-  if(data.avatar){
-    avatarPreview.src = data.avatar;
-    avatarPreview.dataset.base64 = data.avatar;
-  }
-})();
-
-/* 头像上传 */
-function onAvatarChange(input){
-  const file = input.files[0];
-  if(!file) return;
-
-  const reader = new FileReader();
-  reader.onload = e=>{
-    avatarPreview.src = e.target.result;
-    avatarPreview.dataset.base64 = e.target.result;
+  document.getElementById('uploadBtn').onclick = ()=>{
+    avatarInput.click();
   };
-  reader.readAsDataURL(file);
-}
 
-/* 保存并返回 */
-function saveProfile(){
+  avatarInput.onchange = ()=>{
+    const file = avatarInput.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = e=>{
+      avatarPreview.src = e.target.result;
+      avatarPreview.dataset.base64 = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  /* 读取已保存数据 */
   const old = JSON.parse(localStorage.getItem(USER_KEY) || '{}');
+  if(old.name) u_name.value = old.name;
+  if(old.gender) u_gender.value = old.gender;
+  if(old.persona) u_persona.value = old.persona;
+  if(old.avatar){
+    avatarPreview.src = old.avatar;
+    avatarPreview.dataset.base64 = old.avatar;
+  }
 
-  const profile = {
-    ...old,
-    name: u_name.value.trim(),
-    gender: u_gender.value,
-    persona: u_persona.value.trim(),
-    avatar: avatarPreview.dataset.base64 || old.avatar || ''
+  document.getElementById('saveBtn').onclick = ()=>{
+    const profile = {
+      name: u_name.value.trim(),
+      gender: u_gender.value,
+      persona: u_persona.value.trim(),
+      avatar: avatarPreview.dataset.base64 || old.avatar || ''
+    };
+    localStorage.setItem(USER_KEY, JSON.stringify(profile));
+    goBack();
   };
 
-  localStorage.setItem(USER_KEY, JSON.stringify(profile));
-  goBack();
-}
+});
 </script>
 
 </body>
