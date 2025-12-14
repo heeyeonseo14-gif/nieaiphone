@@ -223,6 +223,11 @@
       // 初始略隐藏，让浮动更自然
       glow.style.opacity = '0.95';
     })();
-  </script>
+    <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js');
+}
+</script>
+  
 </body>
 </html>
