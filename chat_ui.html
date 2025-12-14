@@ -16,7 +16,7 @@
   --muted:#8b7c9b;
   --accent:#9b86e6;
 
-  /* ★【气泡变量：唯一可信来源】 */
+  /* ★【修复①】气泡唯一可信来源（只用 CSS 变量） */
   --bubble-me:linear-gradient(135deg,#cbb8ff,#9b86e6);
   --bubble-ai:linear-gradient(135deg,#f6f1ff,#ebe3ff);
 }
@@ -106,15 +106,14 @@ html,body{
   border-radius:14px;
   line-height:1.45;
   font-size:14px;
-  /* ★【修复 1】气泡颜色只吃 CSS 变量 */
+  /* ★【修复①】只吃 CSS 变量 */
   background:var(--bubble-ai);
 }
-
 .msgRow.me .msg{
   background:var(--bubble-me);
 }
 
-/* ★ 动作 / 心理描写斜体（保持） */
+/* ★ 动作 / 心理描写斜体（保留） */
 .msg em{
   font-style:italic;
   opacity:.9;
@@ -309,16 +308,12 @@ function setAI(i){
   syncBubbles();
 }
 
-/* ★【修复 1】气泡唯一同步点 */
+/* ★【修复①】气泡唯一同步点 */
 function syncBubbles(){
-  document.documentElement.style.setProperty(
-    '--bubble-me',
-    localStorage.getItem('meBubble_'+CHAT_ID) || ME_G[0]
-  );
-  document.documentElement.style.setProperty(
-    '--bubble-ai',
-    localStorage.getItem('aiBubble_'+CHAT_ID) || AI_G[0]
-  );
+  document.documentElement.style.setProperty('--bubble-me',
+    localStorage.getItem('meBubble_'+CHAT_ID) || ME_G[0]);
+  document.documentElement.style.setProperty('--bubble-ai',
+    localStorage.getItem('aiBubble_'+CHAT_ID) || AI_G[0]);
 }
 
 function savePersona(){
@@ -380,6 +375,18 @@ async function callApi(messages){
   return data.choices[0].message.content;
 }
 
+/* ★【修复②】回复条数逻辑（与动作描写完全解耦） */
+function splitReplyByLimit(text, limit){
+  const parts = text
+    .replace(/【/g,'（').replace(/】/g,'）')
+    .split(/(?<=[。！？!?])/)
+    .map(t=>t.trim())
+    .filter(Boolean);
+
+  const min = Math.max(1, Math.ceil(limit * 0.5));
+  return parts.slice(0, Math.max(min, Math.min(limit, parts.length)));
+}
+
 /* ===== system prompt ===== */
 function buildSystemPrompt(p){
   let base=`
@@ -390,20 +397,18 @@ function buildSystemPrompt(p){
 风格：${p.style||''}
 
 【强制规则】
-- 禁止使用任何 emoji、表情符号
+- 禁止使用任何 emoji 或表情符号
 `.trim();
 
   if(p.act){
     base+=`
-- 允许使用动作和心理描写
+- 允许动作和心理描写
 - 必须使用中文括号（）
-- 必须与对白在同一条回复中
 `.trim();
   }else{
     base+=`
-- 禁止任何动作描写
-- 禁止心理描写
-- 禁止使用括号（）
+- 禁止任何动作或心理描写
+- 禁止使用括号
 `.trim();
   }
   return base;
@@ -428,7 +433,7 @@ sendBtn.onclick=async()=>{
 
   const reply=await callApi(msgs);
 
-  reply.split(/\n+/).filter(Boolean).forEach((t,i)=>{
+  splitReplyByLimit(reply, p.limit||1).forEach((t,i)=>{
     setTimeout(()=>{
       list.push({type:'ai',text:t});
       localStorage.setItem(CHAT_KEY,JSON.stringify(list));
