@@ -82,7 +82,6 @@ html,body{
   gap:10px;
 }
 
-/* message row */
 .msgRow{
   display:flex;
   gap:8px;
@@ -199,7 +198,6 @@ html,body{
 
 <body>
 <div class="app">
-
 <div class="header">
   <button onclick="history.back()">←</button>
   <h1 id="chatTitle">聊天</h1>
@@ -264,7 +262,6 @@ html,body{
   <button class="cancel" onclick="closePersona()">取消</button>
   <button class="save" onclick="savePersona()">保存</button>
 </div>
-
 </div>
 </div>
 
@@ -307,34 +304,6 @@ function savePersona(){
   closePersona();
 }
 
-(function init(){
-  const c=getContact();
-  if(c.name) chatTitle.textContent=c.name;
-
-  const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
-  if(p.name)p_name.value=p.name;
-  if(p.gender)p_gender.value=p.gender;
-  if(p.persona)p_persona.value=p.persona;
-  if(p.style)p_style.value=p.style;
-  if(p.limit)p_limit.value=p.limit;
-  if(p.act)actSwitch.checked=true;
-
-  const mb=localStorage.getItem('meBubble_'+CHAT_ID);
-  const ab=localStorage.getItem('aiBubble_'+CHAT_ID);
-  if(mb)document.documentElement.style.setProperty('--bubble-me',mb);
-  if(ab)document.documentElement.style.setProperty('--bubble-ai',ab);
-
-  /* ★【新增】同步气泡选中状态（修复颜色不一致） */
-  if(mb){
-    const i = ME_G.indexOf(mb);
-    if(i>-1) mark(meRow,i);
-  }
-  if(ab){
-    const i = AI_G.indexOf(ab);
-    if(i>-1) mark(aiRow,i);
-  }
-})();
-
 /* ===== API ===== */
 function getApiConfig(){
   const raw = localStorage.getItem('nie_api_config_v1');
@@ -362,33 +331,30 @@ async function callApi(messages){
   return data.choices[0].message.content;
 }
 
-/* ===== ★【修改】拆分：只按空行，避免括号被拆 ===== */
+/* ===== ★【修改】确保回复条数一定 >= limit ===== */
 function splitReply(text, limit){
-  return text
+  let parts = text
     .split(/\n{2,}/)
     .map(t=>t.trim())
-    .filter(Boolean)
-    .slice(0, limit);
+    .filter(Boolean);
+
+  if(parts.length < limit){
+    parts = text
+      .split(/(?<=[。！？!?])/)
+      .map(t=>t.trim())
+      .filter(Boolean);
+  }
+
+  return parts.slice(0, limit);
 }
 
 /* ===== system prompt ===== */
 function buildSystemPrompt(p){
-  let prompt = `
+  return `
 你正在与用户进行一对一的私密聊天。
 人设：${p.persona||''}
 风格：${p.style||''}
-`;
-  if(p.act){
-    prompt += `
-规则：
-- 每条回复必须包含自然变化的动作或心理描写
-- 使用括号
-- 禁止重复固定句式
-`;
-  }else{
-    prompt += `规则：禁止任何动作或心理描写`;
-  }
-  return prompt.trim();
+`.trim();
 }
 
 /* ===== 发送 ===== */
@@ -425,6 +391,13 @@ sendBtn.onclick = async () => {
 /* ===== 渲染 ===== */
 const messagesEl=document.getElementById('messages');
 function render(){
+
+  /* ★【新增】每次渲染强制同步气泡颜色 */
+  const mb=localStorage.getItem('meBubble_'+CHAT_ID);
+  const ab=localStorage.getItem('aiBubble_'+CHAT_ID);
+  if(mb)document.documentElement.style.setProperty('--bubble-me',mb);
+  if(ab)document.documentElement.style.setProperty('--bubble-ai',ab);
+
   messagesEl.innerHTML='';
   const avatar=getContact().avatar||'';
   JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{
