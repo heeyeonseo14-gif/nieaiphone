@@ -424,9 +424,11 @@ function render(){
   messagesEl.scrollTop=messagesEl.scrollHeight;
 }
 render();
+</script>
+  
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js');
+  navigator.serviceWorker.register('/service-worker.js');
 }
 </script>
   
