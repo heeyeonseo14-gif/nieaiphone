@@ -175,7 +175,7 @@ html,body{
 }
 .grad.active{border-color:#9b86e6}
 
-/* 气泡主题（原 4 个，完整保留） */
+/* 气泡主题 */
 .me1{background:linear-gradient(135deg,#cbb8ff,#9b86e6)}
 .me2{background:linear-gradient(135deg,#ffd6e9,#e7b6ff)}
 .me3{background:linear-gradient(135deg,#e6f2ff,#cfe5ff)}
@@ -269,7 +269,7 @@ html,body{
 </div>
 
 <script>
-/* ===== cid 隔离（原逻辑） ===== */
+/* ===== cid 隔离 ===== */
 const params = new URLSearchParams(location.search);
 const CHAT_ID = params.get('cid');
 if(!CHAT_ID){ alert('缺少 cid'); location.href='chat.html'; }
@@ -277,7 +277,7 @@ if(!CHAT_ID){ alert('缺少 cid'); location.href='chat.html'; }
 const CHAT_KEY    = 'chat_'    + CHAT_ID;
 const PERSONA_KEY = 'persona_' + CHAT_ID;
 
-/* ===== 同步联系人 ===== */
+/* ===== 联系人 ===== */
 function getContact(){
   const list = JSON.parse(localStorage.getItem('nie_contacts_v1')||'[]');
   return list.find(c=>c.id===CHAT_ID) || {};
@@ -328,8 +328,7 @@ function savePersona(){
 /* ===== API ===== */
 function getApiConfig(){
   const raw = localStorage.getItem('nie_api_config_v1');
-  if(!raw) return null;
-  return JSON.parse(raw);
+  return raw ? JSON.parse(raw) : null;
 }
 
 async function callApi(messages){
@@ -353,57 +352,32 @@ async function callApi(messages){
   return data.choices[0].message.content;
 }
 
-/* ===== 拆分回复 ===== */
+/* ===== 拆分 ===== */
 function splitReply(text, limit){
   return text.split(/[\n。！？!?]/).map(t=>t.trim()).filter(Boolean).slice(0, limit);
 }
 
-/* ===== 渲染 ===== */
-const messagesEl=document.getElementById('messages');
-function render(){
-  messagesEl.innerHTML='';
-  const avatar=getContact().avatar||'';
-  JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{
-    const row=document.createElement('div');
-    row.className='msgRow '+m.type;
-    row.innerHTML=`
-      ${m.type==='ai' && avatar ? `<img class="avatar" src="${avatar}">` : ''}
-      <div class="msg">${m.text}</div>
-      ${m.type==='me'?'<div class="avatar"></div>':''}
-    `;
-    messagesEl.appendChild(row);
-  });
-  messagesEl.scrollTop=messagesEl.scrollHeight;
-}
-render();
-
-/* =================================================
-   ★【新增】构建 system prompt（重描写核心）
-================================================= */
+/* ===== system prompt ===== */
 function buildSystemPrompt(p){
   let prompt = `
-你正在与用户进行私密的一对一聊天。
+你正在与用户进行一对一的私密聊天。
 人设：${p.persona||''}
 风格：${p.style||''}
 `;
-
   if(p.act){
     prompt += `
 规则：
-- 每条回复必须包含自然、变化的心理或动作描写
-- 描写用括号包裹
-- 情绪与状态需随语境变化
+- 每条回复必须包含自然变化的动作或心理描写
+- 使用括号
+- 禁止重复固定句式
 `;
   }else{
-    prompt += `
-规则：
-- 禁止任何心理或动作描写
-`;
+    prompt += `规则：禁止任何动作或心理描写`;
   }
   return prompt.trim();
 }
 
-/* ===== 发送 ===== */
+/* ===== 发送（★ 此处已【去掉“他想了想”】【仅此一改】） ===== */
 sendBtn.onclick = async () => {
   if(!input.value.trim()) return;
 
@@ -426,13 +400,32 @@ sendBtn.onclick = async () => {
   const reply=await callApi(msgs);
   splitReply(reply,p.limit||1).forEach((t,i)=>{
     setTimeout(()=>{
-      list.push({type:'ai',text:t});
+      list.push({type:'ai',text:t}); <!-- ★ 不再拼接任何固定前缀 -->
       localStorage.setItem(CHAT_KEY,JSON.stringify(list));
       render();
       title.textContent=old;
     },500*(i+1));
   });
 };
+
+/* ===== 渲染 ===== */
+const messagesEl=document.getElementById('messages');
+function render(){
+  messagesEl.innerHTML='';
+  const avatar=getContact().avatar||'';
+  JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{
+    const row=document.createElement('div');
+    row.className='msgRow '+m.type;
+    row.innerHTML=`
+      ${m.type==='ai' && avatar ? `<img class="avatar" src="${avatar}">` : ''}
+      <div class="msg">${m.text}</div>
+      ${m.type==='me'?'<div class="avatar"></div>':''}
+    `;
+    messagesEl.appendChild(row);
+  });
+  messagesEl.scrollTop=messagesEl.scrollHeight;
+}
+render();
 </script>
 </body>
 </html>
