@@ -82,6 +82,7 @@ html,body{
   gap:10px;
 }
 
+/* message row */
 .msgRow{
   display:flex;
   gap:8px;
@@ -94,7 +95,8 @@ html,body{
   width:34px;
   height:34px;
   border-radius:50%;
-  background:#ddd center/cover no-repeat;
+  object-fit:cover;
+  background:#ddd;
   flex-shrink:0;
 }
 
@@ -106,9 +108,15 @@ html,body{
   font-size:14px;
 }
 
-.me .msg{background:var(--bubble-me);color:white}
-.ai .msg{background:var(--bubble-ai)}
+.me .msg{
+  background:var(--bubble-me);
+  color:white;
+}
+.ai .msg{
+  background:var(--bubble-ai);
+}
 
+/* ===== input ===== */
 .composer{
   display:flex;
   gap:8px;
@@ -128,7 +136,7 @@ html,body{
   color:white;
 }
 
-/* ===== modal ===== */
+/* ===== 人设弹窗（你原本的，没删） ===== */
 .modalMask{
   position:fixed;
   inset:0;
@@ -167,7 +175,6 @@ html,body{
 }
 .grad.active{border-color:#9b86e6}
 
-/* 气泡主题（你的，未删） */
 .me1{background:linear-gradient(135deg,#cbb8ff,#9b86e6)}
 .me2{background:linear-gradient(135deg,#ffd6e9,#e7b6ff)}
 .me3{background:linear-gradient(135deg,#e6f2ff,#cfe5ff)}
@@ -207,6 +214,7 @@ html,body{
 </div>
 </div>
 
+<!-- 人设设定 -->
 <div class="modalMask" id="personaModal">
 <div class="modal">
 <h3>人设设定</h3>
@@ -221,13 +229,13 @@ html,body{
   <option>女性</option>
 </select>
 
-<label>人设</label>
+<label>人设（生成提示）</label>
 <textarea id="p_persona"></textarea>
 
-<label>风格</label>
+<label>风格 / 习惯（生成提示）</label>
 <textarea id="p_style"></textarea>
 
-<label>回复条数</label>
+<label>回复条数（1–30）</label>
 <input id="p_limit" type="number" min="1" max="30" value="3">
 
 <label>我的气泡</label>
@@ -246,7 +254,10 @@ html,body{
   <div class="grad ai4" onclick="setAI(3)"></div>
 </div>
 
-<label><input type="checkbox" id="actSwitch"> 回复带动作</label>
+<label>
+  <input type="checkbox" id="actSwitch">
+  回复中带动作 / 心理描写
+</label>
 
 <div class="modalActions">
   <button class="cancel" onclick="closePersona()">取消</button>
@@ -256,28 +267,58 @@ html,body{
 </div>
 
 <script>
-/* ===== 关键隔离 ===== */
+/* =================================================
+   ★ 修复 1：强制使用联系人 ID，防止串聊天
+================================================= */
 const params = new URLSearchParams(location.search);
-const CHAT_ID = params.get('id') || 'default';
-const CHAT_KEY = 'chat_' + CHAT_ID;
+const CHAT_ID = params.get('id');
+
+if (!CHAT_ID) {
+  alert('缺少联系人 ID');
+  location.href = 'chat.html';
+}
+
+const CHAT_KEY    = 'chat_'    + CHAT_ID;
 const PERSONA_KEY = 'persona_' + CHAT_ID;
 
-/* ★修复：从 chat.html 同步联系人 */
+/* =================================================
+   ★ 修复 2：同步 chat.html 联系人信息（头像 + 名字）
+================================================= */
 function getContact(){
-  const list = JSON.parse(localStorage.getItem('nie_contacts_v1')||'[]');
-  return list.find(c=>c.id===CHAT_ID);
+  const list = JSON.parse(localStorage.getItem('nie_contacts_v1') || '[]');
+  return list.find(c => c.id === CHAT_ID) || {};
 }
 
 /* ===== 人设 ===== */
 function openPersona(){personaModal.style.display='flex'}
 function closePersona(){personaModal.style.display='none'}
 
-const ME_G=[...document.querySelectorAll('.me1,.me2,.me3,.me4')].map(e=>getComputedStyle(e).background);
-const AI_G=[...document.querySelectorAll('.ai1,.ai2,.ai3,.ai4')].map(e=>getComputedStyle(e).background);
+const ME_G=[
+'linear-gradient(135deg,#cbb8ff,#9b86e6)',
+'linear-gradient(135deg,#ffd6e9,#e7b6ff)',
+'linear-gradient(135deg,#e6f2ff,#cfe5ff)',
+'linear-gradient(135deg,#e7f7ec,#cdeedd)'
+];
+const AI_G=[
+'linear-gradient(135deg,#f6f1ff,#ebe3ff)',
+'linear-gradient(135deg,#fff1f7,#f0dcff)',
+'linear-gradient(135deg,#eef6ff,#ddeaff)',
+'linear-gradient(135deg,#f0fbf4,#dcf3e6)'
+];
 
-function mark(row,i){[...row.children].forEach((c,idx)=>c.classList.toggle('active',idx===i))}
-function setMe(i){document.documentElement.style.setProperty('--bubble-me',ME_G[i]);localStorage.setItem('meBubble_'+CHAT_ID,ME_G[i]);mark(meRow,i)}
-function setAI(i){document.documentElement.style.setProperty('--bubble-ai',AI_G[i]);localStorage.setItem('aiBubble_'+CHAT_ID,AI_G[i]);mark(aiRow,i)}
+function mark(row,i){
+  [...row.children].forEach((c,idx)=>c.classList.toggle('active',idx===i))
+}
+function setMe(i){
+  document.documentElement.style.setProperty('--bubble-me',ME_G[i]);
+  localStorage.setItem('meBubble_'+CHAT_ID,ME_G[i]);
+  mark(meRow,i);
+}
+function setAI(i){
+  document.documentElement.style.setProperty('--bubble-ai',AI_G[i]);
+  localStorage.setItem('aiBubble_'+CHAT_ID,AI_G[i]);
+  mark(aiRow,i);
+}
 
 function savePersona(){
   localStorage.setItem(PERSONA_KEY,JSON.stringify({
@@ -288,34 +329,47 @@ function savePersona(){
     limit:+p_limit.value,
     act:actSwitch.checked
   }));
-  chatTitle.textContent=p_name.value||chatTitle.textContent;
+  chatTitle.textContent=p_name.value || chatTitle.textContent;
   closePersona();
 }
 
-/* ★修复：AI 名称自动同步联系人 */
+/* ===== 初始化 ===== */
 (function init(){
-  const contact=getContact();
-  let p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
-  if(!p.name && contact){
-    p.name=contact.name;
-    localStorage.setItem(PERSONA_KEY,JSON.stringify(p));
-  }
-  if(p.name){p_name.value=p.name;chatTitle.textContent=p.name}
+  const contact = getContact();
+  if (contact.name) chatTitle.textContent = contact.name;
+
+  const p = JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
+  if(p.name)p_name.value=p.name;
+  if(p.gender)p_gender.value=p.gender;
+  if(p.persona)p_persona.value=p.persona;
+  if(p.style)p_style.value=p.style;
+  if(p.limit)p_limit.value=p.limit;
+  if(p.act)actSwitch.checked=true;
+
+  const mb=localStorage.getItem('meBubble_'+CHAT_ID);
+  const ab=localStorage.getItem('aiBubble_'+CHAT_ID);
+  if(mb)document.documentElement.style.setProperty('--bubble-me',mb);
+  if(ab)document.documentElement.style.setProperty('--bubble-ai',ab);
 })();
 
-/* ===== 聊天 ===== */
+/* =================================================
+   ★ 修复 3：AI 头像 100% 显示（使用 <img>）
+================================================= */
 const messagesEl=document.getElementById('messages');
 
 function render(){
   messagesEl.innerHTML='';
-  const contact=getContact();
-  const avatar=contact?.avatar||'';
+  const contact = getContact();
+  const avatar = contact.avatar || '';
 
   JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{
     const row=document.createElement('div');
     row.className='msgRow '+m.type;
     row.innerHTML=`
-      ${m.type==='ai'?`<div class="avatar" style="background-image:url(${avatar})"></div>`:''}
+      ${m.type==='ai'
+        ? `<img class="avatar" src="${avatar}">`
+        : ''
+      }
       <div class="msg">${m.text}</div>
       ${m.type==='me'?'<div class="avatar"></div>':''}
     `;
@@ -325,6 +379,7 @@ function render(){
 }
 render();
 
+/* ===== 发送 ===== */
 sendBtn.onclick=()=>{
   if(!input.value.trim())return;
   const list=JSON.parse(localStorage.getItem(CHAT_KEY)||'[]');
@@ -334,9 +389,16 @@ sendBtn.onclick=()=>{
   render();
 
   const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
-  for(let i=0;i<(p.limit||1);i++){
+  const n=p.limit||1;
+
+  for(let i=0;i<n;i++){
     setTimeout(()=>{
-      list.push({type:'ai',text:p.act?`（他想了想）这是第 ${i+1} 条回复。`:`这是第 ${i+1} 条回复。`});
+      list.push({
+        type:'ai',
+        text:p.act
+          ? `（他想了想）这是第 ${i+1} 条回复。`
+          : `这是第 ${i+1} 条回复。`
+      });
       localStorage.setItem(CHAT_KEY,JSON.stringify(list));
       render();
     },600*(i+1));
