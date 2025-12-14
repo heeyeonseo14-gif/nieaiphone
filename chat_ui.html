@@ -136,7 +136,7 @@ html,body{
   color:white;
 }
 
-/* ===== 人设弹窗（你原本的，没删） ===== */
+/* ===== 人设弹窗 ===== */
 .modalMask{
   position:fixed;
   inset:0;
@@ -175,6 +175,7 @@ html,body{
 }
 .grad.active{border-color:#9b86e6}
 
+/* 气泡主题（原 4 个，完整保留） */
 .me1{background:linear-gradient(135deg,#cbb8ff,#9b86e6)}
 .me2{background:linear-gradient(135deg,#ffd6e9,#e7b6ff)}
 .me3{background:linear-gradient(135deg,#e6f2ff,#cfe5ff)}
@@ -267,78 +268,46 @@ html,body{
 </div>
 
 <script>
-/* =================================================
-   ★ 修复 1：强制使用联系人 ID，防止串聊天
-================================================= */
+/* ===== 核心：cid 隔离 ===== */
 const params = new URLSearchParams(location.search);
-const CHAT_ID = params.get('id');
-
-if (!CHAT_ID) {
-  alert('缺少联系人 ID');
-  location.href = 'chat.html';
-}
+const CHAT_ID = params.get('cid');
+if(!CHAT_ID){ alert('缺少 cid'); location.href='chat.html'; }
 
 const CHAT_KEY    = 'chat_'    + CHAT_ID;
 const PERSONA_KEY = 'persona_' + CHAT_ID;
 
-/* =================================================
-   ★ 修复 2：同步 chat.html 联系人信息（头像 + 名字）
-================================================= */
+/* ===== 同步联系人 ===== */
 function getContact(){
-  const list = JSON.parse(localStorage.getItem('nie_contacts_v1') || '[]');
-  return list.find(c => c.id === CHAT_ID) || {};
+  const list = JSON.parse(localStorage.getItem('nie_contacts_v1')||'[]');
+  return list.find(c=>c.id===CHAT_ID) || {};
 }
 
 /* ===== 人设 ===== */
 function openPersona(){personaModal.style.display='flex'}
 function closePersona(){personaModal.style.display='none'}
 
-const ME_G=[
-'linear-gradient(135deg,#cbb8ff,#9b86e6)',
-'linear-gradient(135deg,#ffd6e9,#e7b6ff)',
-'linear-gradient(135deg,#e6f2ff,#cfe5ff)',
-'linear-gradient(135deg,#e7f7ec,#cdeedd)'
-];
-const AI_G=[
-'linear-gradient(135deg,#f6f1ff,#ebe3ff)',
-'linear-gradient(135deg,#fff1f7,#f0dcff)',
-'linear-gradient(135deg,#eef6ff,#ddeaff)',
-'linear-gradient(135deg,#f0fbf4,#dcf3e6)'
-];
+const ME_G=[...document.querySelectorAll('.me1,.me2,.me3,.me4')].map(e=>e.style.background);
+const AI_G=[...document.querySelectorAll('.ai1,.ai2,.ai3,.ai4')].map(e=>e.style.background);
 
-function mark(row,i){
-  [...row.children].forEach((c,idx)=>c.classList.toggle('active',idx===i))
-}
-function setMe(i){
-  document.documentElement.style.setProperty('--bubble-me',ME_G[i]);
-  localStorage.setItem('meBubble_'+CHAT_ID,ME_G[i]);
-  mark(meRow,i);
-}
-function setAI(i){
-  document.documentElement.style.setProperty('--bubble-ai',AI_G[i]);
-  localStorage.setItem('aiBubble_'+CHAT_ID,AI_G[i]);
-  mark(aiRow,i);
-}
+function mark(row,i){ [...row.children].forEach((c,idx)=>c.classList.toggle('active',idx===i)); }
+function setMe(i){ document.documentElement.style.setProperty('--bubble-me',ME_G[i]); localStorage.setItem('meBubble_'+CHAT_ID,ME_G[i]); mark(meRow,i); }
+function setAI(i){ document.documentElement.style.setProperty('--bubble-ai',AI_G[i]); localStorage.setItem('aiBubble_'+CHAT_ID,AI_G[i]); mark(aiRow,i); }
 
 function savePersona(){
   localStorage.setItem(PERSONA_KEY,JSON.stringify({
-    name:p_name.value,
-    gender:p_gender.value,
-    persona:p_persona.value,
-    style:p_style.value,
-    limit:+p_limit.value,
-    act:actSwitch.checked
+    name:p_name.value, gender:p_gender.value,
+    persona:p_persona.value, style:p_style.value,
+    limit:+p_limit.value, act:actSwitch.checked
   }));
-  chatTitle.textContent=p_name.value || chatTitle.textContent;
+  chatTitle.textContent = p_name.value || chatTitle.textContent;
   closePersona();
 }
 
-/* ===== 初始化 ===== */
 (function init(){
-  const contact = getContact();
-  if (contact.name) chatTitle.textContent = contact.name;
+  const c=getContact();
+  if(c.name) chatTitle.textContent=c.name;
 
-  const p = JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
+  const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
   if(p.name)p_name.value=p.name;
   if(p.gender)p_gender.value=p.gender;
   if(p.persona)p_persona.value=p.persona;
@@ -352,24 +321,17 @@ function savePersona(){
   if(ab)document.documentElement.style.setProperty('--bubble-ai',ab);
 })();
 
-/* =================================================
-   ★ 修复 3：AI 头像 100% 显示（使用 <img>）
-================================================= */
+/* ===== 聊天 ===== */
 const messagesEl=document.getElementById('messages');
 
 function render(){
   messagesEl.innerHTML='';
-  const contact = getContact();
-  const avatar = contact.avatar || '';
-
+  const avatar=getContact().avatar||'';
   JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{
     const row=document.createElement('div');
     row.className='msgRow '+m.type;
     row.innerHTML=`
-      ${m.type==='ai'
-        ? `<img class="avatar" src="${avatar}">`
-        : ''
-      }
+      ${m.type==='ai' && avatar ? `<img class="avatar" src="${avatar}">` : ''}
       <div class="msg">${m.text}</div>
       ${m.type==='me'?'<div class="avatar"></div>':''}
     `;
@@ -379,7 +341,6 @@ function render(){
 }
 render();
 
-/* ===== 发送 ===== */
 sendBtn.onclick=()=>{
   if(!input.value.trim())return;
   const list=JSON.parse(localStorage.getItem(CHAT_KEY)||'[]');
@@ -390,15 +351,9 @@ sendBtn.onclick=()=>{
 
   const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
   const n=p.limit||1;
-
   for(let i=0;i<n;i++){
     setTimeout(()=>{
-      list.push({
-        type:'ai',
-        text:p.act
-          ? `（他想了想）这是第 ${i+1} 条回复。`
-          : `这是第 ${i+1} 条回复。`
-      });
+      list.push({type:'ai',text:p.act?`（他想了想）这是第 ${i+1} 条回复。`:`这是第 ${i+1} 条回复。`});
       localStorage.setItem(CHAT_KEY,JSON.stringify(list));
       render();
     },600*(i+1));
