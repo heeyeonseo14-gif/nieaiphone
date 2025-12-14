@@ -1,399 +1,365 @@
-<!doctype html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<title>NIEaiphone · 聊天</title>
+<!doctype html> 
+<html lang="zh-CN"> 
+<head> 
+<meta charset="utf-8"/> 
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/> 
+<title>NIEaiphone · 聊天</title> 
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet"> 
+<style> 
+:root{ 
+    --bg1:#f4e8fb; 
+    --bg2:#f0e7fb; 
+    --card:#ffffff; 
+    --text:#2f2436; 
+    --muted:#8b7c9b; 
+    --accent:#9b86e6; 
+    --bubble-me:linear-gradient(135deg,#cbb8ff,#9b86e6); 
+    --bubble-ai:linear-gradient(135deg,#f6f1ff,#ebe3ff); 
+} 
+*{box-sizing:border-box} 
+html,body{ 
+    margin:0; 
+    height:100%; 
+    font-family:"Quicksand",system-ui; 
+    background:linear-gradient(180deg,var(--bg1),var(--bg2)); 
+    color:var(--text); 
+} 
+.app{ 
+    width:96%; 
+    max-width:420px; 
+    margin:0 auto; 
+    padding:14px; 
+    height:100vh; 
+    display:flex; 
+    flex-direction:column; 
+} 
+/* ===== header ===== */ 
+.header{ 
+    display:flex; 
+    align-items:center; 
+    gap:10px; 
+    margin-bottom:10px; 
+} 
+.header button{ 
+    width:42px; 
+    height:42px; 
+    border-radius:12px; 
+    border:none; 
+    background:white; 
+    font-size:18px; 
+} 
+.header h1{ 
+    flex:1; 
+    font-size:18px; 
+    font-weight:700; 
+    text-align:center; 
+    margin:0; 
+} 
+/* ===== chat ===== */ 
+.chatCard{ 
+    flex:1; 
+    min-height:0; 
+    background:var(--card); 
+    border-radius:18px; 
+    padding:14px; 
+    display:flex; 
+    flex-direction:column; 
+} 
+.messages{ 
+    flex:1; 
+    min-height:0; 
+    overflow-y:auto; 
+    display:flex; 
+    flex-direction:column; 
+    gap:10px; 
+} 
+/* message row */ 
+.msgRow{ 
+    display:flex; 
+    gap:8px; 
+    align-items:flex-end; 
+} 
+.msgRow.me{justify-content:flex-end} 
+.msgRow.ai{justify-content:flex-start} 
+.avatar{ 
+    width:34px; 
+    height:34px; 
+    border-radius:50%; 
+    background:#ddd center/cover no-repeat; 
+    flex-shrink:0; 
+} 
+.msg{ 
+    max-width:70%; 
+    padding:10px 12px; 
+    border-radius:14px; 
+    line-height:1.45; 
+    font-size:14px; 
+} 
+.me .msg{ 
+    background:var(--bubble-me); 
+    color:white; 
+} 
+.ai .msg{ 
+    background:var(--bubble-ai); 
+} 
+/* ===== input ===== */ 
+.composer{ 
+    display:flex; 
+    gap:8px; 
+    margin-top:10px; 
+} 
+.composer textarea{ 
+    flex:1; 
+    border-radius:14px; 
+    padding:10px; 
+    border:1px solid #e6def5; 
+} 
+.sendBtn{ 
+    width:54px; 
+    border:none; 
+    border-radius:14px; 
+    background:linear-gradient(135deg,#b8a6ff,#8f7be8); 
+    color:white; 
+} 
+/* ===== modal ===== */ 
+.modalMask{ 
+    position:fixed; 
+    inset:0; 
+    background:rgba(0,0,0,.45); 
+    display:none; 
+    align-items:center; 
+    justify-content:center; 
+    z-index:99; 
+} 
+.modal{ 
+    background:white; 
+    width:92%; 
+    max-width:380px; 
+    border-radius:20px; 
+    padding:16px; 
+} 
+.modal h3{text-align:center;margin:0 0 12px} 
+.modal label{ 
+    font-size:13px; 
+    color:var(--muted); 
+    margin-top:10px; 
+    display:block; 
+} 
+.modal input,.modal textarea,.modal select{ 
+    width:100%; 
+    padding:10px; 
+    border-radius:12px; 
+    border:1px solid #e6def5; 
+} 
+.modal textarea{resize:none} 
+.gradRow{display:flex;gap:10px;margin:6px 0} 
+.grad{ 
+    width:48px;height:28px;border-radius:999px; 
+    cursor:pointer;border:2px solid transparent; 
+} 
+.grad.active{border-color:#9b86e6} 
+.me1{background:linear-gradient(135deg,#cbb8ff,#9b86e6)} 
+.me2{background:linear-gradient(135deg,#ffd6e9,#e7b6ff)} 
+.me3{background:linear-gradient(135deg,#e6f2ff,#cfe5ff)} 
+.me4{background:linear-gradient(135deg,#e7f7ec,#cdeedd)} 
+.ai1{background:linear-gradient(135deg,#f6f1ff,#ebe3ff)} 
+.ai2{background:linear-gradient(135deg,#fff1f7,#f0dcff)} 
+.ai3{background:linear-gradient(135deg,#eef6ff,#ddeaff)} 
+.ai4{background:linear-gradient(135deg,#f0fbf4,#dcf3e6)} 
+.modalActions{ 
+    display:flex;gap:10px;margin-top:14px 
+} 
+.modalActions button{ 
+    flex:1;padding:12px;border-radius:999px;border:none;font-weight:700 
+} 
+.cancel{background:#f2eefc} 
+.save{background:linear-gradient(135deg,#9b8cff,#7c68e6);color:white} 
+</style> 
+</head> 
+<body> 
+<div class="app"> 
+<div class="header"> 
+    <button onclick="history.back()">←</button> 
+    <h1 id="chatTitle">聊天</h1> 
+    <button onclick="openPersona()">⚙</button> 
+</div> 
+<div class="chatCard"> 
+    <div class="messages" id="messages"></div> 
+    <div class="composer"> 
+        <textarea id="input" placeholder="输入消息…"></textarea> 
+        <button class="sendBtn" id="sendBtn">➤</button> 
+    </div> 
+</div> 
+</div> 
 
-<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+<div class="modalMask" id="personaModal"> 
+<div class="modal"> 
+    <h3>人设设定</h3> 
+    <label>AI 名称</label> 
+    <input id="p_name"> 
+    <label>性别</label> 
+    <select id="p_gender"> 
+        <option>中性</option> 
+        <option>男性</option> 
+        <option>女性</option> 
+    </select> 
+    <label>人设（生成提示）</label> 
+    <textarea id="p_persona"></textarea> 
+    <label>风格 / 习惯（生成提示）</label> 
+    <textarea id="p_style"></textarea> 
+    <label>回复条数（1–30）</label> 
+    <input id="p_limit" type="number" min="1" max="30" value="3"> 
+    <label>AI 头像</label> 
+    <input type="file" id="aiAvatarInput" accept="image/*"> 
+    <label>我的气泡</label> 
+    <div class="gradRow" id="meRow"> 
+        <div class="grad me1" onclick="setMe(0)"></div> 
+        <div class="grad me2" onclick="setMe(1)"></div> 
+        <div class="grad me3" onclick="setMe(2)"></div> 
+        <div class="grad me4" onclick="setMe(3)"></div> 
+    </div> 
+    <label>AI 气泡</label> 
+    <div class="gradRow" id="aiRow"> 
+        <div class="grad ai1" onclick="setAI(0)"></div> 
+        <div class="grad ai2" onclick="setAI(1)"></div> 
+        <div class="grad ai3" onclick="setAI(2)"></div> 
+        <div class="grad ai4" onclick="setAI(3)"></div> 
+    </div> 
+    <label> 
+        <input type="checkbox" id="actSwitch"> 回复中带动作 / 心理描写 
+    </label> 
+    <div class="modalActions"> 
+        <button class="cancel" onclick="closePersona()">取消</button> 
+        <button class="save" onclick="savePersona()">保存</button> 
+    </div> 
+</div> 
+</div> 
 
-<style>
-:root{
-  --bg1:#f4e8fb;
-  --bg2:#f0e7fb;
-  --card:#ffffff;
-  --text:#2f2436;
-  --muted:#8b7c9b;
-  --accent:#9b86e6;
+<script> 
+/* ===== 联系人隔离 ===== */ 
+const params=new URLSearchParams(location.search); 
+const CHAT_ID=params.get('id')||'default'; 
+const CHAT_KEY='chat_'+CHAT_ID; 
+const PERSONA_KEY='persona_'+CHAT_ID; 
+const AVATAR_KEY='avatar_'+CHAT_ID; 
 
-  --bubble-me:linear-gradient(135deg,#cbb8ff,#9b86e6);
-  --bubble-ai:linear-gradient(135deg,#f6f1ff,#ebe3ff);
-}
+/* ===== 人设 ===== */ 
+function openPersona(){personaModal.style.display='flex'} 
+function closePersona(){personaModal.style.display='none'} 
 
-*{box-sizing:border-box}
-html,body{
-  margin:0;
-  height:100%;
-  font-family:"Quicksand",system-ui;
-  background:linear-gradient(180deg,var(--bg1),var(--bg2));
-  color:var(--text);
-}
+const ME_G=[ 
+    'linear-gradient(135deg,#cbb8ff,#9b86e6)', 
+    'linear-gradient(135deg,#ffd6e9,#e7b6ff)', 
+    'linear-gradient(135deg,#e6f2ff,#cfe5ff)', 
+    'linear-gradient(135deg,#e7f7ec,#cdeedd)' 
+]; 
+const AI_G=[ 
+    'linear-gradient(135deg,#f6f1ff,#ebe3ff)', 
+    'linear-gradient(135deg,#fff1f7,#f0dcff)', 
+    'linear-gradient(135deg,#eef6ff,#ddeaff)', 
+    'linear-gradient(135deg,#f0fbf4,#dcf3e6)' 
+]; 
 
-.app{
-  width:96%;
-  max-width:420px;
-  margin:0 auto;
-  padding:14px;
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-}
+function mark(row,i){ 
+    [...row.children].forEach((c,idx)=>c.classList.toggle('active',idx===i)) 
+} 
+function setMe(i){ 
+    document.documentElement.style.setProperty('--bubble-me',ME_G[i]); 
+    localStorage.setItem('meBubble_'+CHAT_ID,ME_G[i]); 
+    mark(meRow,i); 
+} 
+function setAI(i){ 
+    document.documentElement.style.setProperty('--bubble-ai',AI_G[i]); 
+    localStorage.setItem('aiBubble_'+CHAT_ID,AI_G[i]); 
+    mark(aiRow,i); 
+} 
 
-/* ===== header ===== */
-.header{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-bottom:10px;
-}
-.header button{
-  width:42px;
-  height:42px;
-  border-radius:12px;
-  border:none;
-  background:white;
-  font-size:18px;
-}
-.header h1{
-  flex:1;
-  font-size:18px;
-  font-weight:700;
-  text-align:center;
-  margin:0;
-}
+/* 【已修复】头像上传后，立即刷新聊天区 */ 
+aiAvatarInput.onchange=e=>{ 
+    const f=e.target.files[0]; 
+    if(!f)return; 
+    const r=new FileReader(); 
+    r.onload=()=>{ 
+        localStorage.setItem(AVATAR_KEY,r.result); 
+        render(); // 【已修复】关键：调用 render() 刷新聊天界面
+    }; 
+    r.readAsDataURL(f); 
+}; 
 
-/* ===== chat ===== */
-.chatCard{
-  flex:1;
-  min-height:0;
-  background:var(--card);
-  border-radius:18px;
-  padding:14px;
-  display:flex;
-  flex-direction:column;
-}
+function savePersona(){ 
+    localStorage.setItem(PERSONA_KEY,JSON.stringify({ 
+        name:p_name.value, 
+        gender:p_gender.value, 
+        persona:p_persona.value, 
+        style:p_style.value, 
+        limit:+p_limit.value, 
+        act:actSwitch.checked 
+    })); 
+    chatTitle.textContent=p_name.value||'聊天'; 
+    closePersona(); 
+} 
 
-.messages{
-  flex:1;
-  min-height:0;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
+(function init(){ 
+    const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}'); 
+    if(p.name)p_name.value=p.name; 
+    if(p.gender)p_gender.value=p.gender; 
+    if(p.persona)p_persona.value=p.persona; 
+    if(p.style)p_style.value=p.style; 
+    if(p.limit)p_limit.value=p.limit; 
+    if(p.act)actSwitch.checked=true; 
+    if(p.name)chatTitle.textContent=p.name; 
+    
+    const mb=localStorage.getItem('meBubble_'+CHAT_ID); 
+    const ab=localStorage.getItem('aiBubble_'+CHAT_ID); 
+    if(mb)document.documentElement.style.setProperty('--bubble-me',mb); 
+    if(ab)document.documentElement.style.setProperty('--bubble-ai',ab); 
+})(); 
 
-/* message row */
-.msgRow{
-  display:flex;
-  gap:8px;
-  align-items:flex-end;
-}
-.msgRow.me{justify-content:flex-end}
-.msgRow.ai{justify-content:flex-start}
+/* ===== 聊天 ===== */ 
+const messagesEl=document.getElementById('messages'); 
 
-.avatar{
-  width:34px;
-  height:34px;
-  border-radius:50%;
-  background:#ddd center/cover no-repeat;
-  flex-shrink:0;
-}
+function render(){ 
+    messagesEl.innerHTML=''; 
+    const avatar=localStorage.getItem(AVATAR_KEY); 
+    JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{ 
+        const row=document.createElement('div'); 
+        row.className='msgRow '+m.type; 
+        
+        // 【已修复】关键：移除了 url() 内部的单引号，确保 Base64 图片能正确加载
+        row.innerHTML=` 
+            ${m.type==='ai' ? `<div class="avatar" style="background-image:url(${avatar||''})"></div>` : '' } 
+            <div class="msg">${m.text}</div> 
+            ${m.type==='me'?'<div class="avatar"></div>':''} 
+        `; 
+        messagesEl.appendChild(row); 
+    }); 
+    messagesEl.scrollTop=messagesEl.scrollHeight; 
+} 
 
-.msg{
-  max-width:70%;
-  padding:10px 12px;
-  border-radius:14px;
-  line-height:1.45;
-  font-size:14px;
-}
+render(); 
 
-.me .msg{
-  background:var(--bubble-me);
-  color:white;
-}
-.ai .msg{
-  background:var(--bubble-ai);
-}
-
-/* ===== input ===== */
-.composer{
-  display:flex;
-  gap:8px;
-  margin-top:10px;
-}
-.composer textarea{
-  flex:1;
-  border-radius:14px;
-  padding:10px;
-  border:1px solid #e6def5;
-}
-.sendBtn{
-  width:54px;
-  border:none;
-  border-radius:14px;
-  background:linear-gradient(135deg,#b8a6ff,#8f7be8);
-  color:white;
-}
-
-/* ===== modal ===== */
-.modalMask{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:99;
-}
-.modal{
-  background:white;
-  width:92%;
-  max-width:380px;
-  border-radius:20px;
-  padding:16px;
-}
-.modal h3{text-align:center;margin:0 0 12px}
-.modal label{
-  font-size:13px;
-  color:var(--muted);
-  margin-top:10px;
-  display:block;
-}
-.modal input,.modal textarea,.modal select{
-  width:100%;
-  padding:10px;
-  border-radius:12px;
-  border:1px solid #e6def5;
-}
-.modal textarea{resize:none}
-
-.gradRow{display:flex;gap:10px;margin:6px 0}
-.grad{
-  width:48px;height:28px;border-radius:999px;
-  cursor:pointer;border:2px solid transparent;
-}
-.grad.active{border-color:#9b86e6}
-
-.me1{background:linear-gradient(135deg,#cbb8ff,#9b86e6)}
-.me2{background:linear-gradient(135deg,#ffd6e9,#e7b6ff)}
-.me3{background:linear-gradient(135deg,#e6f2ff,#cfe5ff)}
-.me4{background:linear-gradient(135deg,#e7f7ec,#cdeedd)}
-
-.ai1{background:linear-gradient(135deg,#f6f1ff,#ebe3ff)}
-.ai2{background:linear-gradient(135deg,#fff1f7,#f0dcff)}
-.ai3{background:linear-gradient(135deg,#eef6ff,#ddeaff)}
-.ai4{background:linear-gradient(135deg,#f0fbf4,#dcf3e6)}
-
-.modalActions{
-  display:flex;gap:10px;margin-top:14px
-}
-.modalActions button{
-  flex:1;padding:12px;border-radius:999px;border:none;font-weight:700
-}
-.cancel{background:#f2eefc}
-.save{background:linear-gradient(135deg,#9b8cff,#7c68e6);color:white}
-</style>
-</head>
-
-<body>
-<div class="app">
-
-<div class="header">
-  <button onclick="history.back()">←</button>
-  <h1 id="chatTitle">聊天</h1>
-  <button onclick="openPersona()">⚙</button>
-</div>
-
-<div class="chatCard">
-  <div class="messages" id="messages"></div>
-  <div class="composer">
-    <textarea id="input" placeholder="输入消息…"></textarea>
-    <button class="sendBtn" id="sendBtn">➤</button>
-  </div>
-</div>
-</div>
-
-<!-- 人设设定 -->
-<div class="modalMask" id="personaModal">
-<div class="modal">
-<h3>人设设定</h3>
-
-<label>AI 名称</label>
-<input id="p_name">
-
-<label>性别</label>
-<select id="p_gender">
-  <option>中性</option>
-  <option>男性</option>
-  <option>女性</option>
-</select>
-
-<label>人设（生成提示）</label>
-<textarea id="p_persona"></textarea>
-
-<label>风格 / 习惯（生成提示）</label>
-<textarea id="p_style"></textarea>
-
-<label>回复条数（1–30）</label>
-<input id="p_limit" type="number" min="1" max="30" value="3">
-
-<label>AI 头像</label>
-<input type="file" id="aiAvatarInput" accept="image/*">
-
-<label>我的气泡</label>
-<div class="gradRow" id="meRow">
-  <div class="grad me1" onclick="setMe(0)"></div>
-  <div class="grad me2" onclick="setMe(1)"></div>
-  <div class="grad me3" onclick="setMe(2)"></div>
-  <div class="grad me4" onclick="setMe(3)"></div>
-</div>
-
-<label>AI 气泡</label>
-<div class="gradRow" id="aiRow">
-  <div class="grad ai1" onclick="setAI(0)"></div>
-  <div class="grad ai2" onclick="setAI(1)"></div>
-  <div class="grad ai3" onclick="setAI(2)"></div>
-  <div class="grad ai4" onclick="setAI(3)"></div>
-</div>
-
-<label>
-  <input type="checkbox" id="actSwitch">
-  回复中带动作 / 心理描写
-</label>
-
-<div class="modalActions">
-  <button class="cancel" onclick="closePersona()">取消</button>
-  <button class="save" onclick="savePersona()">保存</button>
-</div>
-</div>
-</div>
-
-<script>
-/* ===== 联系人隔离 ===== */
-const params=new URLSearchParams(location.search);
-const CHAT_ID=params.get('id')||'default';
-const CHAT_KEY='chat_'+CHAT_ID;
-const PERSONA_KEY='persona_'+CHAT_ID;
-const AVATAR_KEY='avatar_'+CHAT_ID;
-
-/* ===== 人设 ===== */
-function openPersona(){personaModal.style.display='flex'}
-function closePersona(){personaModal.style.display='none'}
-
-const ME_G=[
-'linear-gradient(135deg,#cbb8ff,#9b86e6)',
-'linear-gradient(135deg,#ffd6e9,#e7b6ff)',
-'linear-gradient(135deg,#e6f2ff,#cfe5ff)',
-'linear-gradient(135deg,#e7f7ec,#cdeedd)'
-];
-const AI_G=[
-'linear-gradient(135deg,#f6f1ff,#ebe3ff)',
-'linear-gradient(135deg,#fff1f7,#f0dcff)',
-'linear-gradient(135deg,#eef6ff,#ddeaff)',
-'linear-gradient(135deg,#f0fbf4,#dcf3e6)'
-];
-
-function mark(row,i){
-  [...row.children].forEach((c,idx)=>c.classList.toggle('active',idx===i))
-}
-function setMe(i){
-  document.documentElement.style.setProperty('--bubble-me',ME_G[i]);
-  localStorage.setItem('meBubble_'+CHAT_ID,ME_G[i]);
-  mark(meRow,i);
-}
-function setAI(i){
-  document.documentElement.style.setProperty('--bubble-ai',AI_G[i]);
-  localStorage.setItem('aiBubble_'+CHAT_ID,AI_G[i]);
-  mark(aiRow,i);
-}
-
-/* ===== ★ 唯一修复：AI 头像立即生效 ===== */
-aiAvatarInput.onchange=e=>{
-  const f=e.target.files[0];
-  if(!f)return;
-  const r=new FileReader();
-  r.onload=()=>{
-    localStorage.setItem(AVATAR_KEY,r.result);
-    render(); // ★ 关键修复：立刻刷新聊天区
-  };
-  r.readAsDataURL(f);
-};
-
-function savePersona(){
-  localStorage.setItem(PERSONA_KEY,JSON.stringify({
-    name:p_name.value,
-    gender:p_gender.value,
-    persona:p_persona.value,
-    style:p_style.value,
-    limit:+p_limit.value,
-    act:actSwitch.checked
-  }));
-  chatTitle.textContent=p_name.value||'聊天';
-  closePersona();
-}
-
-(function init(){
-  const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
-  if(p.name)p_name.value=p.name;
-  if(p.gender)p_gender.value=p.gender;
-  if(p.persona)p_persona.value=p.persona;
-  if(p.style)p_style.value=p.style;
-  if(p.limit)p_limit.value=p.limit;
-  if(p.act)actSwitch.checked=true;
-  if(p.name)chatTitle.textContent=p.name;
-
-  const mb=localStorage.getItem('meBubble_'+CHAT_ID);
-  const ab=localStorage.getItem('aiBubble_'+CHAT_ID);
-  if(mb)document.documentElement.style.setProperty('--bubble-me',mb);
-  if(ab)document.documentElement.style.setProperty('--bubble-ai',ab);
-})();
-
-/* ===== 聊天 ===== */
-const messagesEl=document.getElementById('messages');
-
-function render(){
-  messagesEl.innerHTML='';
-  const avatar=localStorage.getItem(AVATAR_KEY);
-  JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{
-    const row=document.createElement('div');
-    row.className='msgRow '+m.type;
-    row.innerHTML=`
-      ${m.type==='ai'
-        ? `<div class="avatar" style="background-image:url('${avatar||''}')"></div>`
-        : ''
-      }
-      <div class="msg">${m.text}</div>
-      ${m.type==='me'?'<div class="avatar"></div>':''}
-    `;
-    messagesEl.appendChild(row);
-  });
-  messagesEl.scrollTop=messagesEl.scrollHeight;
-}
-render();
-
-sendBtn.onclick=()=>{
-  if(!input.value.trim())return;
-  const list=JSON.parse(localStorage.getItem(CHAT_KEY)||'[]');
-  list.push({type:'me',text:input.value});
-  input.value='';
-  localStorage.setItem(CHAT_KEY,JSON.stringify(list));
-  render();
-
-  const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
-  const n=p.limit||1;
-  for(let i=0;i<n;i++){
-    setTimeout(()=>{
-      list.push({
-        type:'ai',
-        text:p.act
-          ? `（他想了想）这是第 ${i+1} 条回复。`
-          : `这是第 ${i+1} 条回复。`
-      });
-      localStorage.setItem(CHAT_KEY,JSON.stringify(list));
-      render();
-    },600*(i+1));
-  }
-};
-</script>
-</body>
+sendBtn.onclick=()=>{ 
+    if(!input.value.trim())return; 
+    const list=JSON.parse(localStorage.getItem(CHAT_KEY)||'[]'); 
+    list.push({type:'me',text:input.value}); 
+    input.value=''; 
+    localStorage.setItem(CHAT_KEY,JSON.stringify(list)); 
+    render(); 
+    
+    const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}'); 
+    const n=p.limit||1; 
+    
+    for(let i=0;i<n;i++){ 
+        setTimeout(()=>{ 
+            list.push({ 
+                type:'ai', 
+                text:p.act ? `（他想了想）这是第 ${i+1} 条回复。` : `这是第 ${i+1} 条回复。` 
+            }); 
+            localStorage.setItem(CHAT_KEY,JSON.stringify(list)); 
+            render(); 
+        },600*(i+1)); 
+    } 
+}; 
+</script> 
+</body> 
 </html>
