@@ -170,10 +170,16 @@ html,body{
 .modal textarea{resize:none}
 
 .modalActions{
-  display:flex;gap:10px;margin-top:14px
+  display:flex;
+  gap:10px;
+  margin-top:14px
 }
 .modalActions button{
-  flex:1;padding:12px;border-radius:999px;border:none;font-weight:700
+  flex:1;
+  padding:12px;
+  border-radius:999px;
+  border:none;
+  font-weight:700
 }
 .cancel{background:#f2eefc}
 .save{background:linear-gradient(135deg,#9b8cff,#7c68e6);color:white}
@@ -229,6 +235,24 @@ html,body{
   <button class="cancel" onclick="closePersona()">取消</button>
   <button class="save" onclick="savePersona()">保存</button>
 </div>
+
+<!-- ★ 新增：前往我的设定 -->
+<div style="margin-top:12px;text-align:center;">
+  <button
+    style="
+      background:none;
+      border:none;
+      color:#9b86e6;
+      font-size:14px;
+      cursor:pointer;
+      text-decoration:underline;
+    "
+    onclick="goMySetting()"
+  >
+    前往我的设定
+  </button>
+</div>
+
 </div>
 </div>
 
@@ -250,6 +274,11 @@ function getContact(){
 
 function openPersona(){personaModal.style.display='flex'}
 function closePersona(){personaModal.style.display='none'}
+
+/* ★ 新增：跳转到我的设定 */
+function goMySetting(){
+  location.href = `my_setting.html?cid=${CHAT_ID}`;
+}
 
 function savePersona(){
   localStorage.setItem(PERSONA_KEY,JSON.stringify({
