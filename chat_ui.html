@@ -135,7 +135,7 @@ html,body{
   color:white;
 }
 
-/* ===== 人设弹窗 ===== */
+/* ===== modal ===== */
 .modalMask{
   position:fixed;
   inset:0;
@@ -174,7 +174,7 @@ html,body{
 }
 .grad.active{border-color:#9b86e6}
 
-/* 气泡主题（你原本的 4 个，全保留） */
+/* 气泡主题（完整保留） */
 .me1{background:linear-gradient(135deg,#cbb8ff,#9b86e6)}
 .me2{background:linear-gradient(135deg,#ffd6e9,#e7b6ff)}
 .me3{background:linear-gradient(135deg,#e6f2ff,#cfe5ff)}
@@ -238,8 +238,6 @@ html,body{
 <label>回复条数（1–30）</label>
 <input id="p_limit" type="number" min="1" max="30" value="3">
 
-<!-- ❌【★删除】这里不再需要 AI 头像上传 -->
-
 <label>我的气泡</label>
 <div class="gradRow" id="meRow">
   <div class="grad me1" onclick="setMe(0)"></div>
@@ -269,18 +267,18 @@ html,body{
 </div>
 
 <script>
-/* ===== 联系人隔离（你原本就有） ===== */
-const params = new URLSearchParams(location.search);
-const CHAT_ID = params.get('id') || 'default';
+/* ===== 联系人隔离（核心） ===== */
+const params=new URLSearchParams(location.search);
+const CHAT_ID=params.get('id')||'default';
 
-const CHAT_KEY    = 'chat_'    + CHAT_ID;
-const PERSONA_KEY = 'persona_' + CHAT_ID;
+const CHAT_KEY='chat_'+CHAT_ID;
+const PERSONA_KEY='persona_'+CHAT_ID;
 
-/* ===== 【★新增】从 chat.html 的联系人里读取头像 ===== */
+/* ★ 修复点 1：从 chat.html 联系人中读取头像 */
 function getContactAvatar(){
-  const contacts = JSON.parse(localStorage.getItem('nie_contacts_v1') || '[]');
-  const c = contacts.find(c => c.id === CHAT_ID);
-  return c?.avatar || '';
+  const list=JSON.parse(localStorage.getItem('nie_contacts_v1')||'[]');
+  const c=list.find(i=>i.id===CHAT_ID);
+  return c && c.avatar ? c.avatar : '';
 }
 
 /* ===== 人设 ===== */
@@ -348,16 +346,20 @@ const messagesEl=document.getElementById('messages');
 
 function render(){
   messagesEl.innerHTML='';
-  const avatar = getContactAvatar(); // 【★关键修复】
+  const avatar=getContactAvatar();
 
   JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{
     const row=document.createElement('div');
     row.className='msgRow '+m.type;
-    row.innerHTML=`
-      ${m.type==='ai'
+
+    /* ★ 修复点 2：只有在 avatar 存在时才渲染头像 */
+    const avatarHTML =
+      m.type==='ai' && avatar
         ? `<div class="avatar" style="background-image:url(${avatar})"></div>`
-        : ''
-      }
+        : '';
+
+    row.innerHTML=`
+      ${avatarHTML}
       <div class="msg">${m.text}</div>
       ${m.type==='me'?'<div class="avatar"></div>':''}
     `;
