@@ -265,30 +265,11 @@ html,body{
   <button class="save" onclick="savePersona()">保存</button>
 </div>
 
-<!-- =================================================
-     ★【新增】我的设定 · 传送门（只跳转，不读写数据）
-================================================= -->
-<div style="margin-top:14px;text-align:center;">
-  <button
-    style="
-      border:none;
-      background:none;
-      color:#7c68e6;
-      font-size:13px;
-      font-weight:600;
-      cursor:pointer;
-    "
-    onclick="location.href='my_settings.html'">
-    前往我的设定
-  </button>
-</div>
-<!-- ★ 新增结束 -->
-
 </div>
 </div>
 
 <script>
-/* ===== 核心：cid 隔离 ===== */
+/* ===== cid 隔离（原逻辑，未动） ===== */
 const params = new URLSearchParams(location.search);
 const CHAT_ID = params.get('cid');
 if(!CHAT_ID){ alert('缺少 cid'); location.href='chat.html'; }
@@ -296,13 +277,13 @@ if(!CHAT_ID){ alert('缺少 cid'); location.href='chat.html'; }
 const CHAT_KEY    = 'chat_'    + CHAT_ID;
 const PERSONA_KEY = 'persona_' + CHAT_ID;
 
-/* ===== 同步联系人 ===== */
+/* ===== 同步联系人（原逻辑，未动） ===== */
 function getContact(){
   const list = JSON.parse(localStorage.getItem('nie_contacts_v1')||'[]');
   return list.find(c=>c.id===CHAT_ID) || {};
 }
 
-/* ===== 人设 ===== */
+/* ===== 人设（原逻辑，未动） ===== */
 function openPersona(){personaModal.style.display='flex'}
 function closePersona(){personaModal.style.display='none'}
 
@@ -315,9 +296,12 @@ function setAI(i){ document.documentElement.style.setProperty('--bubble-ai',AI_G
 
 function savePersona(){
   localStorage.setItem(PERSONA_KEY,JSON.stringify({
-    name:p_name.value, gender:p_gender.value,
-    persona:p_persona.value, style:p_style.value,
-    limit:+p_limit.value, act:actSwitch.checked
+    name:p_name.value,
+    gender:p_gender.value,
+    persona:p_persona.value,
+    style:p_style.value,
+    limit:+p_limit.value,
+    act:actSwitch.checked
   }));
   chatTitle.textContent = p_name.value || chatTitle.textContent;
   closePersona();
@@ -341,7 +325,43 @@ function savePersona(){
   if(ab)document.documentElement.style.setProperty('--bubble-ai',ab);
 })();
 
-/* ===== 聊天 ===== */
+/* =================================================
+   ★【新增】API 调用（只新增）
+================================================= */
+function getApiConfig(){
+  const raw = localStorage.getItem('nie_api_config_v1');
+  if(!raw) return null;
+  return JSON.parse(raw);
+}
+
+async function callApi(messages){
+  const api = getApiConfig();
+  if(!api) throw new Error('未配置 API');
+
+  const url = api.baseUrl.replace(/\/+$/,'') + '/v1/chat/completions';
+
+  const res = await fetch(url,{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer ' + api.apiKey
+    },
+    body:JSON.stringify({
+      model: api.model,
+      messages,
+      temperature:0.7
+    })
+  });
+
+  if(!res.ok){
+    throw new Error(await res.text());
+  }
+
+  const data = await res.json();
+  return data.choices[0].message.content;
+}
+
+/* ===== 聊天渲染（原逻辑，未动） ===== */
 const messagesEl=document.getElementById('messages');
 
 function render(){
@@ -361,22 +381,52 @@ function render(){
 }
 render();
 
-sendBtn.onclick=()=>{
-  if(!input.value.trim())return;
-  const list=JSON.parse(localStorage.getItem(CHAT_KEY)||'[]');
-  list.push({type:'me',text:input.value});
+/* =================================================
+   ★【修改】发送消息 → 使用真实 API
+================================================= */
+sendBtn.onclick = async () => {
+  if(!input.value.trim()) return;
+
+  const userText = input.value;
   input.value='';
+
+  const list=JSON.parse(localStorage.getItem(CHAT_KEY)||'[]');
+  list.push({type:'me',text:userText});
   localStorage.setItem(CHAT_KEY,JSON.stringify(list));
   render();
 
   const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
-  const n=p.limit||1;
-  for(let i=0;i<n;i++){
-    setTimeout(()=>{
-      list.push({type:'ai',text:p.act?`（他想了想）这是第 ${i+1} 条回复。`:`这是第 ${i+1} 条回复。`});
-      localStorage.setItem(CHAT_KEY,JSON.stringify(list));
-      render();
-    },600*(i+1));
+
+  const messages=[
+    {
+      role:'system',
+      content:
+        `性别：${p.gender||'中性'}\n`+
+        `人设：${p.persona||''}\n`+
+        `风格：${p.style||''}`
+    }
+  ];
+
+  list.slice(-10).forEach(m=>{
+    messages.push({
+      role:m.type==='me'?'user':'assistant',
+      content:m.text
+    });
+  });
+
+  try{
+    const reply = await callApi(messages);
+    list.push({
+      type:'ai',
+      text:p.act?`（他想了想）${reply}`:reply
+    });
+    localStorage.setItem(CHAT_KEY,JSON.stringify(list));
+    render();
+  }catch(e){
+    list.push({type:'ai',text:'⚠️ API 调用失败'});
+    localStorage.setItem(CHAT_KEY,JSON.stringify(list));
+    render();
+    console.error(e);
   }
 };
 </script>
