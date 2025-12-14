@@ -111,7 +111,7 @@ html,body{
   background:var(--bubble-me);
 }
 
-/* 动作 / 心理描写：斜体 */
+/* 动作 / 心理描写 ：斜体 */
 .msg em{
   font-style:italic;
   opacity:.9;
@@ -233,14 +233,20 @@ html,body{
 </div>
 
 <script>
-const params = new URLSearchParams(location.search);
-const CHAT_ID = params.get('cid');
-if(!CHAT_ID){ alert('缺少 cid'); location.href='chat.html'; }
+const params=new URLSearchParams(location.search);
+const CHAT_ID=params.get('cid');
+if(!CHAT_ID){alert('缺少 cid');location.href='chat.html';}
 
 const CHAT_KEY='chat_'+CHAT_ID;
 const PERSONA_KEY='persona_'+CHAT_ID;
 
 let BASE_TITLE='聊天';
+
+/* 联系人头像同步 */
+function getContact(){
+  const list=JSON.parse(localStorage.getItem('nie_contacts_v1')||'[]');
+  return list.find(c=>String(c.id)===String(CHAT_ID))||{};
+}
 
 function openPersona(){personaModal.style.display='flex'}
 function closePersona(){personaModal.style.display='none'}
@@ -293,32 +299,38 @@ async function callApi(messages){
   return data.choices[0].message.content;
 }
 
-/* 强制条数兜底 */
+/* 强制条数 */
 function forceSplit(text,count){
   let parts=text.split(/\n+/).map(s=>s.trim()).filter(Boolean);
-  if(parts.length<count){
-    let sentences=text.split(/(?<=[。！？!?])/).filter(Boolean);
-    let i=0;
-    while(parts.length<count){
-      parts.push(sentences[i%sentences.length]||text);
-      i++;
-    }
+  while(parts.length<count){
+    parts.push(parts[parts.length-1]||text);
   }
   return parts.slice(0,count);
 }
 
+/* ★ 核心：角色强制 Prompt */
 function buildSystemPrompt(p){
   const count=p.limit||1;
   return `
-你正在与用户聊天。
-你只能使用第一人称“我”，禁止自称名字。
-禁止 emoji。
+你是一个真实的人类角色，而不是AI、程序或模型。
+你正在与用户进行角色扮演式对话。
 
-你必须输出 ${count} 条回复。
-每一条回复单独一行，不得合并。
+【角色信息】
+姓名：${p.name||'未命名'}
+性别：${p.gender||'中性'}
+人设：${p.persona||'无'}
+性格与风格：${p.style||'自然'}
+
+【绝对规则】
+- 只能使用第一人称“我”
+- 禁止提及：AI、模型、程序、数据、系统、算法
+- 不得自我否定为非人
+- 严格代入上述角色背景
+
+你必须输出 ${count} 条回复，每条单独一行。
 
 ${p.act?
-`每一条回复必须包含中文括号（）的动作或心理描写，描写需具体，并与对白在同一条中。`
+`每一条回复必须包含中文括号（）内的动作或心理描写，并与对白在同一条中。`
 :`禁止任何动作或心理描写，禁止括号。`}
 `.trim();
 }
@@ -357,11 +369,13 @@ sendBtn.onclick=async()=>{
 const messagesEl=document.getElementById('messages');
 function render(){
   messagesEl.innerHTML='';
+  const avatar=getContact().avatar||'';
   JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{
     const row=document.createElement('div');
     row.className='msgRow '+m.type;
     let html=m.text.replace(/（([\s\S]*?)）/g,'（<em>$1</em>）');
     row.innerHTML=`
+      ${m.type==='ai'&&avatar?`<img class="avatar" src="${avatar}">`:''}
       <div class="msg">${html}</div>
     `;
     messagesEl.appendChild(row);
