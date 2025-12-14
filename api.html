@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>NIEaiphone · API 设置</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg1:#f4e8fb;
+  --bg2:#f0e7fb;
+  --card:#ffffff;
+  --text:#2f2436;
+  --muted:#8b7c9b;
+  --accent:#9b86e6;
+}
+
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  height:100%;
+  font-family:"Quicksand",system-ui;
+  background:linear-gradient(180deg,var(--bg1),var(--bg2));
+  color:var(--text);
+}
+
+.app{
+  width:96%;
+  max-width:420px;
+  margin:0 auto;
+  padding:14px;
+  min-height:100vh;
+}
+
+/* ===== header ===== */
+.header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:14px;
+}
+.header button{
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  border:none;
+  background:white;
+  font-size:18px;
+}
+.header h1{
+  flex:1;
+  text-align:center;
+  font-size:18px;
+  margin:0;
+  font-weight:700;
+}
+
+/* ===== card ===== */
+.card{
+  background:var(--card);
+  border-radius:18px;
+  padding:16px;
+}
+
+/* ===== form ===== */
+.sectionTitle{
+  font-size:16px;
+  font-weight:700;
+  margin-bottom:12px;
+  color:var(--accent);
+}
+
+label{
+  font-size:13px;
+  color:var(--muted);
+  display:block;
+  margin-top:14px;
+}
+
+input,select{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #e6def5;
+  margin-top:6px;
+  font-size:14px;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:18px;
+}
+
+button.primary{
+  flex:1;
+  border:none;
+  border-radius:999px;
+  padding:14px;
+  font-weight:700;
+  background:linear-gradient(135deg,#9b8cff,#7c68e6);
+  color:white;
+}
+
+button.ghost{
+  flex:1;
+  border:none;
+  border-radius:999px;
+  padding:14px;
+  font-weight:700;
+  background:#f2eefc;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- header -->
+  <div class="header">
+    <button onclick="history.back()">←</button>
+    <h1>API 设置</h1>
+    <div style="width:42px"></div>
+  </div>
+
+  <!-- card -->
+  <div class="card">
+    <div class="sectionTitle">API 配置</div>
+
+    <label>配置名称</label>
+    <input id="api_name" placeholder="例如：我的 OpenAI">
+
+    <label>API 类型</label>
+    <select id="api_type">
+      <option value="proxy">反代 API</option>
+    </select>
+
+    <label>反代地址（不需要添加 /v1）</label>
+    <input id="api_base" placeholder="例如：https://api.openai.com">
+
+    <label>密钥（API Key）</label>
+    <input id="api_key" placeholder="sk-..." type="password">
+
+    <label>模型</label>
+    <select id="api_model">
+      <option value="">请选择模型</option>
+      <option value="gpt-4o-mini">gpt-4o-mini</option>
+      <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+    </select>
+
+    <div class="actions">
+      <button class="ghost" onclick="saveApi(false)">仅保存</button>
+      <button class="primary" onclick="saveApi(true)">保存并使用</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* =========================
+   API 配置存储
+========================= */
+const API_KEY = 'nie_api_config_v1';
+
+function saveApi(useNow){
+  const data = {
+    id: 'api_default',
+    name: api_name.value.trim(),
+    type: api_type.value,
+    baseUrl: api_base.value.trim(),
+    apiKey: api_key.value.trim(),
+    model: api_model.value
+  };
+
+  if(!data.baseUrl || !data.apiKey){
+    alert('请填写 API 地址和 Key');
+    return;
+  }
+
+  localStorage.setItem(API_KEY, JSON.stringify(data));
+
+  if(useNow){
+    localStorage.setItem('nie_api_active', data.id);
+  }
+
+  alert('API 配置已保存');
+}
+
+/* 初始化 */
+(function init(){
+  const raw = localStorage.getItem(API_KEY);
+  if(!raw) return;
+
+  const d = JSON.parse(raw);
+  api_name.value = d.name || '';
+  api_type.value = d.type || 'proxy';
+  api_base.value = d.baseUrl || '';
+  api_key.value = d.apiKey || '';
+  api_model.value = d.model || '';
+})();
+</script>
+</body>
+</html>
