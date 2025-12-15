@@ -220,10 +220,18 @@ body{
 
 <div class="app">
 
-  <div class="header">
-    <button class="iconBtn" onclick="location.href='home.html'">←</button>
-    <h1>聊天</h1>
-    <button class="iconBtn" onclick="openAdd()">＋</button>
+<div class="header">
+  <button class="iconBtn" onclick="location.href='home.html'">←</button>
+  <h1>聊天</h1>
+
+  <!-- 我的头像按钮 -->
+  <button class="iconBtn" onclick="openMyAvatar()">
+    <img id="myAvatarBtn"
+         src=""
+         style="width:24px;height:24px;border-radius:8px;object-fit:cover;">
+  </button>
+
+  <button class="iconBtn" onclick="openAdd()">＋</button>
   </div>
 
   <div class="contacts">
@@ -235,6 +243,14 @@ body{
   </div>
 </div>
 
+<!-- 我的头像上传（隐藏） -->
+<input
+  type="file"
+  id="myAvatarInput"
+  accept="image/*"
+  style="display:none"
+/>
+  
 <!-- 添加聊天 -->
 <div class="modalMask" id="addModal">
   <div class="modal">
@@ -341,7 +357,7 @@ function del(id,e){
 
 render();
 </script>
-  
+
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js');
