@@ -181,7 +181,7 @@ html,body{
 .modalActions{
   display:flex;
   gap:10px;
-  margin-top:14px
+  margin-top:14px;
 }
 .modalActions button{
   flex:1;
@@ -192,6 +192,22 @@ html,body{
 }
 .cancel{background:#f2eefc}
 .save{background:linear-gradient(135deg,#9b8cff,#7c68e6);color:white}
+
+.actionList{
+  border-radius:14px;
+  overflow:hidden;
+}
+.actionItem{
+  padding:14px;
+  border-bottom:1px solid #eee;
+  cursor:pointer;
+}
+.actionItem:last-child{
+  border-bottom:none;
+}
+.actionItem:hover{
+  background:#f6f2ff;
+}
 </style>
 </head>
 
@@ -254,7 +270,21 @@ html,body{
     前往我的设定
   </button>
 </div>
+  
+<!-- ===== 聊天功能弹窗 ===== -->
+<div class="modalMask" id="actionModal">
+  <div class="modal">
+    <h3 style="text-align:center;margin:0 0 12px">聊天功能</h3>
 
+    <div class="actionList">
+      <div class="actionItem" onclick="action('transfer')">转账</div>
+      <div class="actionItem" onclick="action('redpacket')">红包</div>
+      <div class="actionItem" onclick="action('voice')">语音</div>
+      <div class="actionItem" onclick="action('location')">位置</div>
+      <div class="actionItem" onclick="action('offline')">线下模式</div>
+    </div>
+  </div>
+</div>
 </div>
 </div>
 
