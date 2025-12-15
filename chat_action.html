@@ -55,39 +55,28 @@ html,body{
   margin:0;
 }
 
-/* grid */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:14px;
+/* card */
+.card{
+  background:white;
+  border-radius:20px;
+  padding:6px 16px;
 }
 
-.item{
-  background:white;
-  border-radius:18px;
-  padding:14px 6px;
-  text-align:center;
+/* list item */
+.actionItem{
+  padding:16px 4px;
+  font-size:15px;
+  font-weight:600;
   cursor:pointer;
 }
-.item:hover{
-  background:#f6f2ff;
+
+.actionItem:active{
+  opacity:.6;
 }
 
-.icon{
-  width:46px;
-  height:46px;
-  border-radius:14px;
-  margin:0 auto 6px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:22px;
-  background:#f2ecff;
-  color:#7c68e6;
-}
-
-.label{
-  font-size:13px;
+.divider{
+  height:1px;
+  background:#eee;
 }
 </style>
 </head>
@@ -101,31 +90,22 @@ html,body{
     <div style="width:42px"></div>
   </div>
 
-  <div class="grid">
-    <div class="item" onclick="go('transfer')">
-      <div class="icon">💸</div>
-      <div class="label">转账</div>
-    </div>
+  <div class="card">
 
-    <div class="item" onclick="go('redpacket')">
-      <div class="icon">🧧</div>
-      <div class="label">红包</div>
-    </div>
+    <div class="actionItem" onclick="go('transfer')">转账</div>
+    <div class="divider"></div>
 
-    <div class="item" onclick="go('voice')">
-      <div class="icon">🎤</div>
-      <div class="label">语音</div>
-    </div>
+    <div class="actionItem" onclick="go('redpacket')">红包</div>
+    <div class="divider"></div>
 
-    <div class="item" onclick="go('location')">
-      <div class="icon">📍</div>
-      <div class="label">位置</div>
-    </div>
+    <div class="actionItem" onclick="go('voice')">语音</div>
+    <div class="divider"></div>
 
-    <div class="item" onclick="go('offline')">
-      <div class="icon">🌙</div>
-      <div class="label">线下模式</div>
-    </div>
+    <div class="actionItem" onclick="go('location')">位置</div>
+    <div class="divider"></div>
+
+    <div class="actionItem" onclick="go('offline')">线下模式</div>
+
   </div>
 
 </div>
@@ -139,9 +119,8 @@ function goBack(){
 }
 
 function go(type){
-  // 先占位，后面我们一个个接
   alert('即将进入功能：' + type);
-  // 未来会变成：
+  // 以后直接换成：
   // location.href = 'action_' + type + '.html?cid=' + CID;
 }
 </script>
