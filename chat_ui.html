@@ -328,6 +328,15 @@ function getMyProfile(){
   return JSON.parse(localStorage.getItem('nie_user_' + CHAT_ID) || '{}');
 }
 
+/* ===== 我的头像（来自 chat.html） ===== */
+function getMyKey(){
+  return 'nie_user_global';
+}
+
+function loadMyProfile(){
+  return JSON.parse(localStorage.getItem(getMyKey()) || '{}');
+}
+  
 /* ★ 新增 ①：长期记忆 Key + 读写 */
 const AI_MEMORY_KEY = 'ai_long_memory_' + CHAT_ID;
 
