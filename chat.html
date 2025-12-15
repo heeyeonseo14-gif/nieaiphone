@@ -356,6 +356,44 @@ function del(id,e){
 }
 
 render();
+/* ===== 我的头像（用户） ===== */
+
+function getMyKey(){
+  return 'nie_user_global';
+}
+
+function loadMyProfile(){
+  return JSON.parse(localStorage.getItem(getMyKey()) || '{}');
+}
+
+function saveMyProfile(p){
+  localStorage.setItem(getMyKey(), JSON.stringify(p));
+}
+
+function openMyAvatar(){
+  document.getElementById('myAvatarInput').click();
+}
+
+document.getElementById('myAvatarInput').addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+
+  compressImage(file, data=>{
+    const profile = loadMyProfile();
+    profile.avatar = data;
+    saveMyProfile(profile);
+    renderMyAvatar();
+  });
+});
+
+function renderMyAvatar(){
+  const p = loadMyProfile();
+  const img = document.getElementById('myAvatarBtn');
+  if(!img) return;
+  img.src = p.avatar || 'https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png';
+}
+
+renderMyAvatar();
 </script>
 
 <script>
