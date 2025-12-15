@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>聊天功能</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg1:#f4e8fb;
+  --bg2:#f0e7fb;
+  --card:#ffffff;
+  --text:#2f2436;
+  --muted:#8b7c9b;
+  --accent:#9b86e6;
+}
+
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  height:100%;
+  font-family:"Quicksand",system-ui;
+  background:linear-gradient(180deg,var(--bg1),var(--bg2));
+  color:var(--text);
+}
+
+.app{
+  width:96%;
+  max-width:420px;
+  margin:0 auto;
+  padding:14px;
+}
+
+/* header */
+.header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:16px;
+}
+.header button{
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  border:none;
+  background:white;
+  font-size:18px;
+}
+.header h1{
+  flex:1;
+  text-align:center;
+  font-size:18px;
+  margin:0;
+}
+
+/* grid */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+}
+
+.item{
+  background:white;
+  border-radius:18px;
+  padding:14px 6px;
+  text-align:center;
+  cursor:pointer;
+}
+.item:hover{
+  background:#f6f2ff;
+}
+
+.icon{
+  width:46px;
+  height:46px;
+  border-radius:14px;
+  margin:0 auto 6px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  background:#f2ecff;
+  color:#7c68e6;
+}
+
+.label{
+  font-size:13px;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+  <div class="header">
+    <button onclick="goBack()">←</button>
+    <h1>聊天功能</h1>
+    <div style="width:42px"></div>
+  </div>
+
+  <div class="grid">
+    <div class="item" onclick="go('transfer')">
+      <div class="icon">💸</div>
+      <div class="label">转账</div>
+    </div>
+
+    <div class="item" onclick="go('redpacket')">
+      <div class="icon">🧧</div>
+      <div class="label">红包</div>
+    </div>
+
+    <div class="item" onclick="go('voice')">
+      <div class="icon">🎤</div>
+      <div class="label">语音</div>
+    </div>
+
+    <div class="item" onclick="go('location')">
+      <div class="icon">📍</div>
+      <div class="label">位置</div>
+    </div>
+
+    <div class="item" onclick="go('offline')">
+      <div class="icon">🌙</div>
+      <div class="label">线下模式</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const CID = params.get('cid');
+
+function goBack(){
+  location.href = 'chat_ui.html?cid=' + CID;
+}
+
+function go(type){
+  // 先占位，后面我们一个个接
+  alert('即将进入功能：' + type);
+  // 未来会变成：
+  // location.href = 'action_' + type + '.html?cid=' + CID;
+}
+</script>
+
+</body>
+</html>
