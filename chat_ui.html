@@ -272,6 +272,10 @@ let BASE_TITLE='聊天';
 
 function goChatList(){ location.href='chat.html'; }
 
+function openActions(){
+  location.href = 'chat_action.html?cid=' + CHAT_ID;
+}
+  
 function getContact(){
   const list=JSON.parse(localStorage.getItem('nie_contacts_v1')||'[]');
   return list.find(c=>String(c.id)===String(CHAT_ID))||{};
