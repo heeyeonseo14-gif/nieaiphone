@@ -552,26 +552,51 @@ reply.split(/\n+/).forEach((t,i)=>{
 });
 };
 
-const messagesEl=document.getElementById('messages');
-function render(){
-  messagesEl.innerHTML='';
-  const aiAvatar=getContact().avatar||'';
-  const myAvatar=getMyProfile().avatar||'';
+const messagesEl = document.getElementById('messages');
 
-  JSON.parse(localStorage.getItem(CHAT_KEY)||'[]').forEach(m=>{
-    const row=document.createElement('div');
-    row.className='msgRow '+m.type;
-    let html=m.text.replace(/（([\s\S]*?)）/g,'（<em>$1</em>）');
-    row.innerHTML=`
-      ${m.type==='ai'?`<img class="avatar" src="${aiAvatar}">`:''}
+function render(){
+  messagesEl.innerHTML = '';
+
+  const aiAvatar =
+    getContact().avatar ||
+    'https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png';
+
+  const myAvatar =
+    loadMyProfile().avatar ||
+    'https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png';
+
+  const list = JSON.parse(localStorage.getItem(CHAT_KEY) || '[]');
+
+  list.forEach(m=>{
+    const row = document.createElement('div');
+    row.className = 'msgRow ' + m.type;
+
+    let html = m.text.replace(
+      /（([\s\S]*?)）/g,
+      '（<em>$1</em>）'
+    );
+
+    row.innerHTML = `
+      ${m.type === 'ai'
+        ? `<img class="avatar" src="${aiAvatar}">`
+        : ''}
+
       <div class="msg">${html}</div>
-      ${m.type==='me'?`<img class="avatar" src="${myAvatar}">`:''}
+
+      ${m.type === 'me'
+        ? `<img class="avatar" src="${myAvatar}">`
+        : ''}
     `;
+
     messagesEl.appendChild(row);
   });
-  messagesEl.scrollTop=messagesEl.scrollHeight;
+
+  messagesEl.scrollTop = messagesEl.scrollHeight;
 }
+
 render();
+
+
 </script>
 
 <script>
