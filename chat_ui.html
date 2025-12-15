@@ -300,8 +300,21 @@ let BASE_TITLE='聊天';
 
 function goChatList(){ location.href='chat.html'; }
 
-function openActions(){
-  location.href = 'chat_action.html?cid=' + CHAT_ID;
+function openAction(){
+  actionModal.style.display = 'flex';
+}
+
+actionModal.onclick = e=>{
+  if(e.target === actionModal){
+    actionModal.style.display = 'none';
+  }
+};
+
+function action(type){
+  actionModal.style.display = 'none';
+  alert('点击了功能：' + type);
+
+  // 后续你会在这里接逻辑
 }
   
 function getContact(){
