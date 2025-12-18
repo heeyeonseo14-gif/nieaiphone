@@ -480,7 +480,6 @@ function buildSystemPrompt(p){
 
 你必须输出 ${count} 条回复。
 
-${actionRule}
 `).trim();
 }
 
@@ -579,12 +578,6 @@ function render(){
 render();
 
 
-</script>
-
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/service-worker.js');
-}
 </script>
 
 </body>
