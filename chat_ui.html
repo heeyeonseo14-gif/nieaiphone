@@ -246,11 +246,6 @@ html,body{
 <label>回复条数（1–30）</label>
 <input id="p_limit" type="number" min="1" max="30" value="3">
 
-<label>
-  <input type="checkbox" id="actSwitch">
-  回复中带动作 / 心理描写
-</label>
-
 <div class="modalActions">
   <button class="cancel" onclick="closePersona()">取消</button>
   <button class="save" onclick="savePersona()">保存</button>
@@ -418,8 +413,7 @@ function savePersona(){
     gender:p_gender.value,
     persona:p_persona.value,
     style:p_style.value,
-    limit:+p_limit.value,
-    act:actSwitch.checked
+    limit:+p_limit.value
   }));
   if(p_name.value){
     BASE_TITLE=p_name.value;
@@ -435,7 +429,6 @@ function savePersona(){
   if(p.persona)p_persona.value=p.persona;
   if(p.style)p_style.value=p.style;
   if(p.limit)p_limit.value=p.limit;
-  if(p.act)actSwitch.checked=true;
 })();
 
 function getApiConfig(){
@@ -483,6 +476,7 @@ function buildSystemPrompt(p){
 - 不得重复上一条回复的句式或语义
 - 不得复述用户的原句
 - 不得使用“换一种说法”“换句话说”等形式
+- 只允许自然口语始对话
 
 你必须输出 ${count} 条回复。
 
