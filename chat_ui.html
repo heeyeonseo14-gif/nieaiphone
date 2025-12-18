@@ -547,17 +547,28 @@ const parts = reply
   .split(/(?<=[。！？\?])/)
   .map(t => t.trim())
   .filter(Boolean);
+  
+  sendPartsInOrder(parts);
 
-parts.forEach((t, i) => {
-  const baseDelay = 1200 + Math.random() * 1000;
+function sendPartsInOrder(parts, index = 0) {
+  if (index >= parts.length) {
+    chatTitle.textContent = BASE_TITLE;
+    return;
+  }
+
+  const delay =
+    index === 0
+      ? 1600 + Math.random() * 600
+      : 900 + Math.random() * 600;
 
   setTimeout(() => {
-    list.push({ type: 'ai', text: t });
+    list.push({ type: 'ai', text: parts[index] });
     localStorage.setItem(CHAT_KEY, JSON.stringify(list));
     render();
-    chatTitle.textContent = BASE_TITLE;
-  }, baseDelay * (i + 1));
-});
+
+    sendPartsInOrder(parts, index + 1);
+  }, delay);
+}
 }; 
   
 const messagesEl = document.getElementById('messages');
