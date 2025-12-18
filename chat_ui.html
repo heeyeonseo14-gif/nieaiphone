@@ -501,16 +501,26 @@ function buildSystemPrompt(p){
 }
 
 function smartSplit(text) {
-  // 第一层：中文标点断句
+  // 第一层：中文标点
   let parts = text.split(/(?<=[。！？])/);
 
   let final = [];
+
   parts.forEach(p => {
+    // 第二层：口语转折
     if (p.length > 18) {
-      // 第二层：口语断点
-      final.push(
-        ...p.split(/(?=(?:但|不过|然后|而且|所以|我想|你快|老婆))/)
-      );
+      let sub = p.split(/(?=(?:但|不过|然后|而且|所以|我想|你快|老婆))/);
+
+      sub.forEach(s => {
+        // 第三层：长度兜底（防止一整坨）
+        if (s.length > 22) {
+          for (let i = 0; i < s.length; i += 14) {
+            final.push(s.slice(i, i + 14));
+          }
+        } else {
+          final.push(s);
+        }
+      });
     } else {
       final.push(p);
     }
