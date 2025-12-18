@@ -524,17 +524,22 @@ if(!reply || typeof reply !== 'string'){
   return;
 }
 
-setTimeout(()=>{
-  reply.split(/\n+/).forEach((t,i)=>{
-    const baseDelay = 1200 + Math.random() * 1000;
+// 智能拆分回复（中文自然聊天）
+const parts = reply
+  .split(/(?<=[。！？\?])/)
+  .map(t => t.trim())
+  .filter(Boolean);
 
-    setTimeout(()=>{
-      list.push({ type:'ai', text:t });
-      localStorage.setItem(CHAT_KEY, JSON.stringify(list));
-      render();
-      chatTitle.textContent = BASE_TITLE;
-    }, baseDelay * (i + 1));
-  });
+parts.forEach((t, i) => {
+  const baseDelay = 1200 + Math.random() * 1000;
+
+  setTimeout(() => {
+    list.push({ type: 'ai', text: t });
+    localStorage.setItem(CHAT_KEY, JSON.stringify(list));
+    render();
+    chatTitle.textContent = BASE_TITLE;
+  }, baseDelay * (i + 1));
+});
 }, 800 + Math.random() * 800);
 };
 
