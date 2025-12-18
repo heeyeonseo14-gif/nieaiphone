@@ -501,11 +501,13 @@ function buildSystemPrompt(p){
 }
 
 function smartSplit(text) {
-  let parts = text.split(/(?<=[。！？\?])/);
+  // 第一层：中文标点断句
+  let parts = text.split(/(?<=[。！？])/);
 
   let final = [];
   parts.forEach(p => {
     if (p.length > 18) {
+      // 第二层：口语断点
       final.push(
         ...p.split(/(?=(?:但|不过|然后|而且|所以|我想|你快|老婆))/)
       );
@@ -515,7 +517,7 @@ function smartSplit(text) {
   });
 
   return final.map(t => t.trim()).filter(Boolean);
- } 
+}
   
 sendBtn.onclick=async()=>{
   if(!input.value.trim())return;
