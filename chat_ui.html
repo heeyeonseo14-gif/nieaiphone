@@ -464,18 +464,7 @@ async function callApi(messages){
 function buildSystemPrompt(p){
   const count = p.limit || 1;
 
-  const actionRule = p.act
-    ? '每一条回复必须包含中文括号（）内的动作或心理描写。'
-    : `禁止任何动作或心理描写。
-
-额外规则：
-- 每一条回复必须在“内容、说法或侧重点”上与其他回复明显不同
-- 不得重复上一条回复的句式或语义
-- 不得复述用户的原句
-- 不得使用“换一种说法”“换句话说”等形式
-- 即使没有动作或心理描写，也必须自然、完整、像真实对话`;
-
-  return (`
+ return (`
 你是一个真实的人类角色，而不是AI、程序或模型。
 你正在与用户进行角色扮演式对话。
 
@@ -488,6 +477,12 @@ function buildSystemPrompt(p){
 【规则】
 - 只能使用第一人称“我”
 - 禁止提及AI、模型、程序
+- 允许停顿、省略、反问
+- 像真实聊天，而不是写作
+- 每一条回复必须在“内容、说法或侧重点”上与其他回复明显不同
+- 不得重复上一条回复的句式或语义
+- 不得复述用户的原句
+- 不得使用“换一种说法”“换句话说”等形式
 
 你必须输出 ${count} 条回复。
 
@@ -537,12 +532,14 @@ if(!reply || typeof reply !== 'string'){
 }
 
 reply.split(/\n+/).forEach((t,i)=>{
+  const baseDelay = 600 + Math.random() * 500;
+
   setTimeout(()=>{
     list.push({type:'ai',text:t});
     localStorage.setItem(CHAT_KEY,JSON.stringify(list));
     render();
     chatTitle.textContent=BASE_TITLE;
-  },300*(i+1));
+  }, baseDelay * (i + 1));
 });
 };
 
@@ -565,10 +562,7 @@ function render(){
     const row = document.createElement('div');
     row.className = 'msgRow ' + m.type;
 
-    let html = m.text.replace(
-      /（([\s\S]*?)）/g,
-      '（<em>$1</em>）'
-    );
+    let html = m.text;
 
     row.innerHTML = `
       ${m.type === 'ai'
