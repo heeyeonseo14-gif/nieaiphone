@@ -500,6 +500,23 @@ function buildSystemPrompt(p){
 `).trim();
 }
 
+function smartSplit(text) {
+  let parts = text.split(/(?<=[。！？\?])/);
+
+  let final = [];
+  parts.forEach(p => {
+    if (p.length > 18) {
+      final.push(
+        ...p.split(/(?=(?:但|不过|然后|而且|所以|我想|你快|老婆))/)
+      );
+    } else {
+      final.push(p);
+    }
+  });
+
+  return final.map(t => t.trim()).filter(Boolean);
+ } 
+  
 sendBtn.onclick=async()=>{
   if(!input.value.trim())return;
   const text=input.value;
@@ -543,10 +560,7 @@ if (!reply || typeof reply !== 'string') {
 }
 
 // 智能拆分（按中文语气）
-const parts = reply
-  .split(/(?<=[。！？\?])/)
-  .map(t => t.trim())
-  .filter(Boolean);
+const parts = smartSplit(reply);
   
   sendPartsInOrder(parts);
 
