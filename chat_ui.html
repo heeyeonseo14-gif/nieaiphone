@@ -512,19 +512,19 @@ sendBtn.onclick=async()=>{
 
 const reply = await callApi(msgs);
 
-/* ★ 修复：API 兜底，防止 JS 中断 */
-if(!reply || typeof reply !== 'string'){
+/* ★ 兜底 */
+if (!reply || typeof reply !== 'string') {
   list.push({
-    type:'ai',
-    text:'……我刚刚有点走神了，可以再说一次吗？'
+    type: 'ai',
+    text: '……我刚刚有点走神了，可以再说一次吗？'
   });
-  localStorage.setItem(CHAT_KEY,JSON.stringify(list));
+  localStorage.setItem(CHAT_KEY, JSON.stringify(list));
   render();
   chatTitle.textContent = BASE_TITLE;
   return;
 }
 
-// 智能拆分回复（中文自然聊天）
+// 智能拆分（按中文语气）
 const parts = reply
   .split(/(?<=[。！？\?])/)
   .map(t => t.trim())
@@ -540,8 +540,6 @@ parts.forEach((t, i) => {
     chatTitle.textContent = BASE_TITLE;
   }, baseDelay * (i + 1));
 });
-}, 800 + Math.random() * 800);
-};
 
 const messagesEl = document.getElementById('messages');
 
