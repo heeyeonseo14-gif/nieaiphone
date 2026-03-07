@@ -20,8 +20,9 @@ body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
   background:linear-gradient(180deg,#f5edff,#efe7fb);
   color:var(--text);
-
   min-height:100dvh;
+
+  padding-bottom:env(safe-area-inset-bottom);
 }
 
 /* ===== App ===== */
@@ -119,6 +120,8 @@ body{
 /* ===== 底部 ===== */
 .bottom{
   padding:12px;
+  padding-bottom:calc(12px + env(safe-area-inset-bottom));
+  flex-shrink:0;
 }
 .bottom button{
   width:100%;
