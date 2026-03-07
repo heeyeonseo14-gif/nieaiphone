@@ -639,24 +639,67 @@ if(!name){
 name="群聊"
 }
 
-const members=[...document.querySelectorAll("#memberList input:checked")]
-.map(i=>i.value)
+/* 【修复】安全获取成员 */
 
-/* 【新增】没有成员也允许创建 */
+let members=[]
+document.querySelectorAll("#memberList input").forEach(cb=>{
+if(cb.checked){
+members.push(cb.value)
+}
+})
 
 list.push({
 
 id:"g"+Date.now(),
+
 name:name,
+
 avatar:groupAvatarData || "https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png",
+
 type:"group",
+
 members:members,
+
 lastMsg:"",
+
 lastTime:Date.now()
 
 })
 
 }else{
+
+const name=document.getElementById("contactName").value.trim()
+
+if(!name){
+alert("请输入联系人名称")
+return
+}
+
+list.push({
+
+id:"c"+Date.now(),
+
+name:name,
+
+avatar:avatarData || "https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png",
+
+type:"single",
+
+lastMsg:"",
+
+lastTime:Date.now()
+
+})
+
+}
+
+save(list)
+
+closeAdd()
+
+render()
+
+}
 
 const name=document.getElementById("contactName").value.trim()
 
