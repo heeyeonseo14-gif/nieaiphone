@@ -249,12 +249,14 @@ window.addEventListener('beforeinstallprompt', (e) => {
   document.body.appendChild(btn);
 });
 </script> 
-  
-<script>
+
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js');
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(reg => console.log('Service Worker registered'))
+      .catch(err => console.log('Service Worker failed', err));
+  });
 }
-</script>
   
 </body>
 </html>
