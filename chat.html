@@ -32,14 +32,10 @@ html,body{
 .app{
   max-width:430px;
   margin:0 auto;
-
   height:100dvh;
-
   display:flex;
   flex-direction:column;
-
   backdrop-filter:blur(12px);
-
   padding-bottom:env(safe-area-inset-bottom);
 }
 
@@ -47,7 +43,6 @@ html,body{
 
 .header{
   padding:14px;
-
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -61,10 +56,8 @@ html,body{
 .iconBtn{
   min-width:36px;
   height:36px;
-
   border:none;
   border-radius:12px;
-
   background:white;
   font-size:16px;
 }
@@ -74,9 +67,7 @@ html,body{
 .chatList{
   flex:1;
   min-height:0;
-
   padding:12px;
-
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
 }
@@ -87,16 +78,13 @@ html,body{
 
   display:flex;
   gap:12px;
-
   padding:12px;
 
   background:rgba(255,255,255,.75);
   backdrop-filter:blur(10px);
 
   border-radius:16px;
-
   margin-bottom:10px;
-
   cursor:pointer;
 }
 
@@ -114,7 +102,6 @@ html,body{
 .nameRow{
   display:flex;
   justify-content:space-between;
-
   font-weight:600;
 }
 
@@ -134,40 +121,28 @@ html,body{
 .unread{
   background:#ff4d4f;
   color:white;
-
   font-size:11px;
-
   padding:2px 6px;
-
   border-radius:999px;
-
   margin-left:6px;
 }
 
 /* 底部导航 */
 
 .nav{
-
   display:flex;
-
   border-top:1px solid rgba(0,0,0,.05);
-
   background:rgba(255,255,255,.8);
   backdrop-filter:blur(10px);
 }
 
 .nav button{
-
   flex:1;
-
   border:none;
   background:none;
-
   padding:12px 0;
-
   font-size:14px;
   font-weight:600;
-
   color:#777;
 }
 
@@ -175,7 +150,7 @@ html,body{
   color:var(--accent);
 }
 
-/* 【新增】添加聊天弹窗样式 */
+/* 弹窗 */
 
 .modalMask{
 position:fixed;
@@ -244,14 +219,32 @@ background:linear-gradient(135deg,#9b8cff,#7c68e6);
 color:white;
 }
 
+/* 群聊 */
+
+.groupBtn{
+width:100%;
+padding:12px;
+border-radius:14px;
+border:1px solid #ddd;
+background:#faf8ff;
+font-weight:600;
+margin-bottom:12px;
+cursor:pointer;
+}
+
+.memberList{
+max-height:120px;
+overflow:auto;
+margin-bottom:10px;
+font-size:14px;
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="app">
-
-<!-- HEADER -->
 
 <div class="header">
 
@@ -263,33 +256,21 @@ color:white;
 
 </div>
 
-<!-- 聊天列表 -->
-
 <div class="chatList" id="chatList"></div>
-
-<!-- 底部导航 -->
 
 <div class="nav">
 
-<button class="active" onclick="goChat()">
-聊天
-</button>
+<button class="active">聊天</button>
 
-<button onclick="goFeed()">
-朋友圈
-</button>
+<button onclick="goFeed()">朋友圈</button>
 
-<!-- 【修改】钱包 → 设置 -->
-
-<button onclick="goSetting()">
-设置
-</button>
+<button onclick="goSetting()">设置</button>
 
 </div>
 
 </div>
 
-<!-- 【新增】添加聊天弹窗 -->
+<!-- 添加聊天 -->
 
 <div class="modalMask" id="addModal">
 
@@ -303,6 +284,21 @@ color:white;
 
 <button class="pickBtn" onclick="pickAvatar()">选择头像</button>
 <input type="file" id="avatarInput" accept="image/*" hidden>
+
+<button class="groupBtn" onclick="toggleGroup()">创建群聊</button>
+
+<div id="groupPanel" style="display:none">
+
+<input id="groupName" placeholder="群聊名称">
+
+<img id="groupAvatarPreview" class="avatarPreview">
+
+<button class="pickBtn" onclick="pickGroupAvatar()">选择群头像</button>
+<input type="file" id="groupAvatarInput" accept="image/*" hidden>
+
+<div id="memberList" class="memberList"></div>
+
+</div>
 
 <div class="modalActions">
 
@@ -348,8 +344,8 @@ const chatList=document.getElementById("chatList")
 
 chatList.innerHTML=""
 
-list
-.sort((a,b)=>b.lastTime-a.lastTime)
+list.sort((a,b)=>b.lastTime-a.lastTime)
+
 .forEach(c=>{
 
 const div=document.createElement("div")
@@ -382,7 +378,6 @@ ${c.unread?`<span class="unread">${c.unread}</span>`:""}
 </div>
 
 </div>
-
 `
 
 div.onclick=()=>{
@@ -397,33 +392,31 @@ chatList.appendChild(div)
 
 render()
 
-/* 底部导航 */
-
-function goChat(){}
-
 function goFeed(){
 location.href="feed.html"
 }
-
-/* 【修改】钱包 → 设置 */
 
 function goSetting(){
 location.href="my_setting.html"
 }
 
-/* 【新增】添加聊天功能 */
+/* 添加聊天 */
 
 let avatarData=""
+let groupMode=false
+let groupAvatarData=""
 
 function openAdd(){
+
 document.getElementById("addModal").style.display="flex"
+
+renderMembers()
+
 }
 
 function closeAdd(){
 document.getElementById("addModal").style.display="none"
 }
-
-/* 选择头像 */
 
 function pickAvatar(){
 document.getElementById("avatarInput").click()
@@ -452,15 +445,105 @@ reader.readAsDataURL(file)
 
 })
 
-/* 保存联系人 */
+/* 群聊 */
+
+function toggleGroup(){
+
+groupMode=!groupMode
+
+document.getElementById("groupPanel").style.display=
+groupMode?"block":"none"
+
+}
+
+function pickGroupAvatar(){
+document.getElementById("groupAvatarInput").click()
+}
+
+document.getElementById("groupAvatarInput").addEventListener("change",e=>{
+
+const file=e.target.files[0]
+
+if(!file) return
+
+const reader=new FileReader()
+
+reader.onload=function(ev){
+
+groupAvatarData=ev.target.result
+
+const img=document.getElementById("groupAvatarPreview")
+
+img.src=groupAvatarData
+img.style.display="block"
+
+}
+
+reader.readAsDataURL(file)
+
+})
+
+function renderMembers(){
+
+const list=load()
+
+const box=document.getElementById("memberList")
+
+box.innerHTML=""
+
+list.forEach(c=>{
+
+const div=document.createElement("div")
+
+div.innerHTML=`
+<label>
+<input type="checkbox" value="${c.id}">
+${c.name}
+</label>
+`
+
+box.appendChild(div)
+
+})
+
+}
+
+/* 保存 */
 
 function saveContact(){
+
+const list=load()
+
+if(groupMode){
+
+const name=document.getElementById("groupName").value.trim()
+
+const members=[...document.querySelectorAll("#memberList input:checked")]
+.map(i=>i.value)
+
+list.push({
+
+id:"g"+Date.now(),
+
+name:name||"群聊",
+
+avatar:groupAvatarData,
+
+type:"group",
+
+members:members,
+
+lastMsg:"",
+
+lastTime:Date.now()
+
+})
+
+}else{
 
 const name=document.getElementById("contactName").value.trim()
 
 if(!name) return
-
-const list=load()
 
 list.push({
 
@@ -477,6 +560,8 @@ lastMsg:"",
 lastTime:Date.now()
 
 })
+
+}
 
 save(list)
 
