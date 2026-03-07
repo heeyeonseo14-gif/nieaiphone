@@ -25,6 +25,8 @@
 html,body{
   margin:0;
   height:100%;
+  padding-bottom: env(safe-area-inset-bottom);  /* 新增这一行 */
+
   font-family:"Quicksand",system-ui;
   background:linear-gradient(180deg,var(--bg1),var(--bg2));
   color:var(--text);
@@ -35,7 +37,7 @@ html,body{
   max-width:420px;
   margin:0 auto;
   padding:14px;
-  height:100vh;
+  height:100dvh;
   display:flex;
   flex-direction:column;
 }
@@ -72,6 +74,7 @@ html,body{
   padding:14px;
   display:flex;
   flex-direction:column;
+  overflow:hidden;   /* 新增 */
 }
 
 .messages{
@@ -123,6 +126,7 @@ html,body{
   border-radius:14px;
   padding:10px;
   border:1px solid #e6def5;
+  max-height:120px;
 }
 .sendBtn{
   width:54px;
