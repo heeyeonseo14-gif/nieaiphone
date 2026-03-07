@@ -225,6 +225,30 @@
       glow.style.opacity = '0.95';
     })();
     </script>
+
+ <script>
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  const btn = document.createElement('button');
+  btn.innerText = "安装 NIEaiphone";
+  btn.style.position = "fixed";
+  btn.style.bottom = "20px";
+  btn.style.left = "50%";
+  btn.style.transform = "translateX(-50%)";
+  btn.style.zIndex = "9999";
+
+  btn.onclick = () => {
+    deferredPrompt.prompt();
+    deferredPrompt = null;
+  };
+
+  document.body.appendChild(btn);
+});
+</script> 
   
 <script>
 if ('serviceWorker' in navigator) {
