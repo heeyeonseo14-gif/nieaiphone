@@ -228,7 +228,7 @@
       <div class="field">
         <label>图标图片替换（每个图标分别上传或填 URL）</label>
 
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
           <div>
             <div style="font-weight:600;margin-bottom:6px">聊天 (chat)</div>
             <input type="file" data-key="chat" class="iconFile" accept="image/*">
@@ -485,7 +485,7 @@ music: 'music.html'
   
   <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/service-worker.js');
+  navigator.serviceWorker.register('./service-worker.js');
 }
 </script>
   
