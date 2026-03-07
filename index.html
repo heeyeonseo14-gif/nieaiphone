@@ -250,18 +250,26 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 </script> 
 
-<!-- Service Worker 暂时关闭开发 -->
-<!--
 <script>
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js')
-      .then(reg => console.log('Service Worker registered'))
-      .catch(err => console.log('Service Worker failed', err));
+
+  navigator.serviceWorker.register('./service-worker.js')
+  .then(reg => {
+
+    console.log('SW registered');
+
+    // 每次打开检查更新
+    reg.update();
+
+    // 每60秒检查更新
+    setInterval(()=>{
+      reg.update();
+    },60000);
+
   });
+
 }
 </script>
--->
   
 </body>
 </html>
