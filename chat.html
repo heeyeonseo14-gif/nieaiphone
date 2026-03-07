@@ -175,6 +175,75 @@ html,body{
   color:var(--accent);
 }
 
+/* 【新增】添加聊天弹窗样式 */
+
+.modalMask{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.45);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:99;
+}
+
+.modal{
+background:white;
+width:92%;
+max-width:360px;
+border-radius:20px;
+padding:18px;
+}
+
+.modal input{
+width:100%;
+padding:12px;
+margin-bottom:12px;
+border-radius:12px;
+border:1px solid #e3dcf3;
+}
+
+.pickBtn{
+width:100%;
+padding:12px;
+border-radius:14px;
+border:1px dashed #d8d0f0;
+background:#faf8ff;
+font-weight:600;
+margin-bottom:12px;
+}
+
+.avatarPreview{
+width:72px;
+height:72px;
+border-radius:18px;
+display:none;
+margin:6px auto 12px;
+object-fit:cover;
+}
+
+.modalActions{
+display:flex;
+gap:10px;
+}
+
+.modalActions button{
+flex:1;
+padding:12px;
+border-radius:999px;
+border:none;
+font-weight:700;
+}
+
+.modalActions button:first-child{
+background:#f2eefc;
+}
+
+.modalActions button:last-child{
+background:linear-gradient(135deg,#9b8cff,#7c68e6);
+color:white;
+}
+
 </style>
 </head>
 
@@ -210,9 +279,37 @@ html,body{
 朋友圈
 </button>
 
-<button onclick="goWallet()">
-钱包
+<!-- 【修改】钱包 → 设置 -->
+
+<button onclick="goSetting()">
+设置
 </button>
+
+</div>
+
+</div>
+
+<!-- 【新增】添加聊天弹窗 -->
+
+<div class="modalMask" id="addModal">
+
+<div class="modal">
+
+<h3>添加聊天</h3>
+
+<input id="contactName" placeholder="联系人名称">
+
+<img id="avatarPreview" class="avatarPreview">
+
+<button class="pickBtn" onclick="pickAvatar()">选择头像</button>
+<input type="file" id="avatarInput" accept="image/*" hidden>
+
+<div class="modalActions">
+
+<button onclick="closeAdd()">取消</button>
+<button onclick="saveContact()">创建</button>
+
+</div>
 
 </div>
 
@@ -308,8 +405,85 @@ function goFeed(){
 location.href="feed.html"
 }
 
-function goWallet(){
-location.href="wallet.html"
+/* 【修改】钱包 → 设置 */
+
+function goSetting(){
+location.href="my_setting.html"
+}
+
+/* 【新增】添加聊天功能 */
+
+let avatarData=""
+
+function openAdd(){
+document.getElementById("addModal").style.display="flex"
+}
+
+function closeAdd(){
+document.getElementById("addModal").style.display="none"
+}
+
+/* 选择头像 */
+
+function pickAvatar(){
+document.getElementById("avatarInput").click()
+}
+
+document.getElementById("avatarInput").addEventListener("change",e=>{
+
+const file=e.target.files[0]
+
+if(!file) return
+
+const reader=new FileReader()
+
+reader.onload=function(ev){
+
+avatarData=ev.target.result
+
+const img=document.getElementById("avatarPreview")
+
+img.src=avatarData
+img.style.display="block"
+
+}
+
+reader.readAsDataURL(file)
+
+})
+
+/* 保存联系人 */
+
+function saveContact(){
+
+const name=document.getElementById("contactName").value.trim()
+
+if(!name) return
+
+const list=load()
+
+list.push({
+
+id:"c"+Date.now(),
+
+name:name,
+
+avatar:avatarData,
+
+type:"single",
+
+lastMsg:"",
+
+lastTime:Date.now()
+
+})
+
+save(list)
+
+closeAdd()
+
+render()
+
 }
 
 </script>
