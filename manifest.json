@@ -2,7 +2,7 @@
   "name": "NIEaiphone",
   "short_name": "NIE",
   "description": "NIEaiphone · 沉浸式 AI 角色聊天空间",
-  "start_url": "./",
+  "start_url": "/nieaiphone/",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
