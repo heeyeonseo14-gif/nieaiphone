@@ -701,31 +701,6 @@ render()
 
 }
 
-const name=document.getElementById("contactName").value.trim()
-
-if(!name) return
-
-list.push({
-
-id:"c"+Date.now(),
-name:name,
-avatar:avatarData || "https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png",
-type:"single",
-lastMsg:"",
-lastTime:Date.now()
-
-})
-
-}
-
-save(list)
-
-closeAdd()
-
-render()
-
-}
-
 </script>
 
 </body>
