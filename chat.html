@@ -31,6 +31,10 @@ html,body{
   margin:0 auto;
 
   height:100dvh;
+  box-sizing:border-box;
+
+  padding-bottom:env(safe-area-inset-bottom); /* ⭐放这里 */
+
   overflow:hidden;
 
   display:flex;
@@ -121,7 +125,6 @@ html,body{
 /* ===== 底部 ===== */
 .bottom{
   padding:12px;
-  padding-bottom:calc(12px + env(safe-area-inset-bottom));
   flex-shrink:0;
 }
 .bottom button{
