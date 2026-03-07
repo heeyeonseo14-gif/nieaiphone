@@ -1,4 +1,4 @@
-const CACHE_NAME = "nieaiphone-cache-v2";
+const CACHE_NAME = "nieaiphone-cache-v3";
 
 const urlsToCache = [
   "./",
