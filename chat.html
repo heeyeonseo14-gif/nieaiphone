@@ -237,11 +237,33 @@ margin-bottom:12px;
 cursor:pointer;
 }
 
+/* 【新增】成员列表UI升级 */
+
 .memberList{
-max-height:120px;
+max-height:140px;
 overflow:auto;
 margin-bottom:10px;
+}
+
+.memberItem{
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:10px 12px;
+background:#faf8ff;
+border-radius:12px;
+margin-bottom:6px;
 font-size:14px;
+cursor:pointer;
+}
+
+.memberItem input{
+width:18px;
+height:18px;
+}
+
+.memberName{
+flex:1;
 }
 
 </style>
@@ -486,7 +508,7 @@ function openAdd(){
 
 document.getElementById("addModal").style.display="flex"
 
-/* 重置 */
+/* 【新增】完全重置防止残留 */
 
 document.getElementById("contactName").value=""
 document.getElementById("groupName").value=""
@@ -567,6 +589,8 @@ reader.readAsDataURL(file)
 
 })
 
+/* 【修改】成员列表UI */
+
 function renderMembers(){
 
 const list=load()
@@ -578,12 +602,22 @@ list.forEach(c=>{
 
 const div=document.createElement("div")
 
+div.className="memberItem"
+
 div.innerHTML=`
-<label>
+
+<span class="memberName">${c.name}</span>
+
 <input type="checkbox" value="${c.id}">
-${c.name}
-</label>
+
 `
+
+/* 【新增】点击整行勾选 */
+
+div.onclick=()=>{
+const cb=div.querySelector("input")
+cb.checked=!cb.checked
+}
 
 box.appendChild(div)
 
@@ -608,11 +642,13 @@ name="群聊"
 const members=[...document.querySelectorAll("#memberList input:checked")]
 .map(i=>i.value)
 
+/* 【新增】没有成员也允许创建 */
+
 list.push({
 
 id:"g"+Date.now(),
 name:name,
-avatar:groupAvatarData,
+avatar:groupAvatarData || "https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png",
 type:"group",
 members:members,
 lastMsg:"",
@@ -630,7 +666,7 @@ list.push({
 
 id:"c"+Date.now(),
 name:name,
-avatar:avatarData,
+avatar:avatarData || "https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png",
 type:"single",
 lastMsg:"",
 lastTime:Date.now()
