@@ -173,6 +173,25 @@
         </div>
       </div>
 
+      <!-- ===== 新增 START：桌面图标 ===== -->
+
+<div class="icon" data-key="instagram" tabindex="0" role="button" aria-label="Instagram">
+  <div class="iconImg"><img id="icon-instagram" src="" alt="Instagram"></div>
+  <div class="iconLabel">Instagram</div>
+</div>
+
+<div class="icon" data-key="worldbook" tabindex="0" role="button" aria-label="世界书">
+  <div class="iconImg"><img id="icon-worldbook" src="" alt="世界书"></div>
+  <div class="iconLabel">世界书</div>
+</div>
+
+<div class="icon" data-key="music" tabindex="0" role="button" aria-label="音乐">
+  <div class="iconImg"><img id="icon-music" src="" alt="音乐"></div>
+  <div class="iconLabel">音乐</div>
+</div>
+
+<!-- ===== 新增 END ===== -->
+      
       <div style="flex:1"></div>
     </div>
 
@@ -263,7 +282,10 @@
       title: 'NIEaiphone',
       subtitle: '欢迎回家 · 点击图标打开应用',
       logo: '',
-      icons: { chat:'', diary:'', forum:'', api:'', theme:'', more:'' }
+      icons: { 
+  chat:'', diary:'', forum:'', api:'', theme:'', more:'',
+  instagram:'', worldbook:'', music:''
+      }
     };
 
     const builtin = {
@@ -274,6 +296,9 @@
       api: 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect rx='24' width='100%' height='100%' fill='transparent'/><text x='50%' y='52%' font-size='96' text-anchor='middle' dominant-baseline='central'>🛠️</text></svg>`),
       theme: 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect rx='24' width='100%' height='100%' fill='transparent'/><text x='50%' y='52%' font-size='96' text-anchor='middle' dominant-baseline='central'>🎨</text></svg>`),
       more: 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><rect rx='24' width='100%' height='100%' fill='transparent'/><text x='50%' y='52%' font-size='110' text-anchor='middle' dominant-baseline='central'>✨</text></svg>`)
+      instagram: 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><text x='50%' y='52%' font-size='110' text-anchor='middle'>📷</text></svg>`),
+      worldbook: 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><text x='50%' y='52%' font-size='110' text-anchor='middle'>🌍</text></svg>`),
+      music: 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><text x='50%' y='52%' font-size='110' text-anchor='middle'>🎵</text></svg>`),
     };
 
     function loadState(){
@@ -403,7 +428,18 @@
     document.querySelectorAll('.icon').forEach(el=>{
       el.addEventListener('click', ()=>{
         const key = el.getAttribute('data-key');
-        const mapping = { chat: 'chat.html', diary: 'diary.html', forum: 'forum.html', api: 'api.html', theme: 'theme.html', more: 'ai_memory_v2.html' };
+        const mapping = {
+chat: 'chat.html',
+diary: 'diary.html',
+forum: 'forum.html',
+api: 'api.html',
+theme: 'theme.html',
+more: 'ai_memory_v2.html',
+
+instagram: 'instagram.html',
+worldbook: 'worldbook.html',
+music: 'music.html'
+};
         const href = mapping[key] || '#';
         if(href === '#') { alert('该功能将来会开放（更多功能占位）。'); }
         else { location.href = href; }
