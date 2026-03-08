@@ -292,15 +292,6 @@ font-weight:600;
 </div>
 
 <div class="composer">
-
-<button class="plusBtn" onclick="openAction()">＋</button>
-
-<textarea id="input" placeholder="输入消息…"></textarea>
-
-<button class="sendBtn" id="sendBtn">➤</button>
-
-</div>
-
 <!-- 人设设定 -->
 
 <div class="modalMask" id="personaModal">
@@ -339,6 +330,7 @@ font-weight:600;
 </div>
 </div>
 
+
 <!-- 聊天功能 -->
 
 <div class="modalMask" id="actionModal">
@@ -364,6 +356,7 @@ font-weight:600;
 </div>
 </div>
 
+
 <script>
 
 /* ===== 参数 ===== */
@@ -374,7 +367,15 @@ const CHAT_ID=params.get("cid")
 const CHAT_KEY="chat_"+CHAT_ID
 const PERSONA_KEY="persona_"+CHAT_ID
 
-/* ★新增：头像同步 */
+
+/* ===== DOM ===== */
+
+const sendBtn=document.getElementById("sendBtn")
+const input=document.getElementById("input")
+const messagesEl=document.getElementById("messages")
+
+
+/* ===== 头像同步 ===== */
 
 const contacts=JSON.parse(localStorage.getItem("nie_contacts_v1")||"[]")
 const contact=contacts.find(c=>String(c.id)===String(CHAT_ID))||{}
@@ -383,7 +384,8 @@ const aiAvatar=contact.avatar||""
 const myProfile=JSON.parse(localStorage.getItem("nie_user_global")||"{}")
 const myAvatar=myProfile.avatar||""
 
-/* ★新增：加载人设 */
+
+/* ===== 加载人设 ===== */
 
 (function(){
 
@@ -396,6 +398,7 @@ if(p.persona) p_persona.value=p.persona
 if(p.name) chatTitle.textContent=p.name
 
 })();
+
 
 /* ===== modal ===== */
 
@@ -415,6 +418,7 @@ actionModal.onclick=e=>{
 if(e.target===actionModal)actionModal.style.display="none"
 }
 
+
 /* ===== 人设保存 ===== */
 
 function savePersona(){
@@ -433,6 +437,13 @@ chatTitle.textContent=p_name.value||"聊天"
 closePersona()
 
 }
+<button class="plusBtn" onclick="openAction()">＋</button>
+
+<textarea id="input" placeholder="输入消息…"></textarea>
+
+<button class="sendBtn" id="sendBtn">➤</button>
+
+</div>
 
 /* ===== 聊天背景 ===== */
 
@@ -470,6 +481,8 @@ document.querySelector(".chatCard").style.backgroundImage="url("+bg+")"
 
 applyBg()
 
+
+
 /* ===== 气泡颜色 ===== */
 
 const COLOR_KEY="bubble_color_"+CHAT_ID
@@ -491,6 +504,8 @@ if(savedColor){
 document.documentElement.style.setProperty("--bubble-color",savedColor+"55")
 
 }
+
+
 
 /* ===== API ===== */
 
@@ -524,11 +539,13 @@ messages
 
 const data=await res.json()
 
-return data.choices[0].message.content
+return data?.choices?.[0]?.message?.content || "..."
 
 }
 
-/* ★新增：AI拆分消息 */
+
+
+/* ===== AI拆分消息 ===== */
 
 function splitReply(text){
 
@@ -536,9 +553,9 @@ return text.split(/(?<=[。！？])/).map(t=>t.trim()).filter(Boolean)
 
 }
 
-/* ===== 渲染聊天 ===== */
 
-const messagesEl=document.getElementById("messages")
+
+/* ===== 渲染聊天 ===== */
 
 function render(){
 
@@ -585,6 +602,8 @@ messagesEl.scrollTop=messagesEl.scrollHeight
 }
 
 render()
+
+
 
 /* ===== 发送消息 ===== */
 
@@ -638,7 +657,9 @@ chatTitle.textContent=persona.name||"聊天"
 
 }
 
-/* ★新增：AI主动聊天 */
+
+
+/* ===== AI主动聊天 ===== */
 
 function aiAutoMessage(){
 
@@ -687,4 +708,4 @@ aiAutoMessage()
 </script>
 
 </body>
-</html>
+</html> 
