@@ -370,7 +370,19 @@ font-weight:600;
 
 <script>
 
-/* ★修复：DOM提前绑定 */
+/* ★修复1：固定CHAT_ID防止刷新丢聊天 */
+
+const params=new URLSearchParams(location.search)
+
+let CHAT_ID=params.get("cid")
+
+if(!CHAT_ID){
+CHAT_ID=localStorage.getItem("nie_last_chat") || "default"
+}
+
+localStorage.setItem("nie_last_chat",CHAT_ID)
+
+/* 原代码 */
 
 const sendBtn=document.getElementById("sendBtn")
 const input=document.getElementById("input")
@@ -390,20 +402,8 @@ const bubbleColor=document.getElementById("bubbleColor")
 
 const messagesEl=document.getElementById("messages")
 
-/* ===== 参数 ===== */
-
-const params=new URLSearchParams(location.search)
-
-/* ★修复：cid为空导致数据丢失 */
-
-const CHAT_ID=params.get("cid") || "default"
-
 const CHAT_KEY="chat_"+CHAT_ID
 const PERSONA_KEY="persona_"+CHAT_ID
-
-/* ===== 联系人数据 ===== */
-
-/* ★新增：防止联系人为空 */
 
 let contacts=JSON.parse(localStorage.getItem("nie_contacts_v1")||"[]")
 
@@ -426,21 +426,21 @@ const aiAvatar=contact.avatar||""
 const myProfile=JSON.parse(localStorage.getItem("nie_user_global")||"{}")
 const myAvatar=myProfile.avatar||""
 
-/* ===== 加载人设 ===== */
+/* 加载人设 */
 
 (function(){
 
 const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||"{}")
 
-if(p.name) p_name.value=p.name
-if(p.gender) p_gender.value=p.gender
-if(p.persona) p_persona.value=p.persona
+/* ★修复2：防止DOM为空崩溃 */
+
+if(p.name && p_name) p_name.value=p.name
+if(p.gender && p_gender) p_gender.value=p.gender
+if(p.persona && p_persona) p_persona.value=p.persona
 
 if(p.name) chatTitle.textContent=p.name
 
 })()
-
-/* ===== modal ===== */
 
 function openPersona(){
 personaModal.style.display="flex"
@@ -458,8 +458,6 @@ actionModal.onclick=e=>{
 if(e.target===actionModal)actionModal.style.display="none"
 }
 
-/* ===== 保存人设 ===== */
-
 function savePersona(){
 
 const data={
@@ -476,8 +474,6 @@ chatTitle.textContent=p_name.value||"聊天"
 closePersona()
 
 }
-
-/* ===== 聊天背景 ===== */
 
 const BG_KEY="chat_bg_"+CHAT_ID
 
@@ -517,9 +513,9 @@ document.querySelector(".chatCard").style.backgroundImage="url("+bg+")"
 
 }
 
-applyBg()
+/* ★修复3：页面加载后应用壁纸 */
 
-/* ===== 气泡颜色 ===== */
+window.addEventListener("load",applyBg)
 
 const COLOR_KEY="bubble_color_"+CHAT_ID
 
@@ -544,8 +540,6 @@ if(savedColor){
 document.documentElement.style.setProperty("--bubble-color",savedColor+"55")
 
 }
-
-/* ===== API ===== */
 
 function getApiConfig(){
 
@@ -592,21 +586,25 @@ return "AI请求失败"
 
 }
 
-/* ===== AI拆分 ===== */
-
 function splitReply(text){
 
 return text.split(/(?<=[。！？])/).map(t=>t.trim()).filter(Boolean)
 
 }
 
-/* ===== 渲染聊天 ===== */
-
 function render(){
 
 messagesEl.innerHTML=""
 
-const list=JSON.parse(localStorage.getItem(CHAT_KEY)||"[]")
+/* ★修复4：JSON保护 */
+
+let list
+
+try{
+list=JSON.parse(localStorage.getItem(CHAT_KEY)||"[]")
+}catch{
+list=[]
+}
 
 let lastTime=0
 
@@ -648,9 +646,6 @@ messagesEl.scrollTop=messagesEl.scrollHeight
 
 render()
 
-/* ===== 发送消息 ===== */
-
-/* ★修复：onclick在PWA可能失效 */
 sendBtn.addEventListener("click",async()=>{
 
 const text=input.value.trim()
@@ -690,7 +685,15 @@ for(let i=0;i<parts.length;i++){
 
 await new Promise(r=>setTimeout(r,700))
 
-const list=JSON.parse(localStorage.getItem(CHAT_KEY)||"[]")
+/* ★修复5：AI push JSON保护 */
+
+let list
+
+try{
+list=JSON.parse(localStorage.getItem(CHAT_KEY)||"[]")
+}catch{
+list=[]
+}
 
 list.push({type:"ai",text:parts[i],time:Date.now()})
 
@@ -703,8 +706,6 @@ render()
 chatTitle.textContent=persona.name||"聊天"
 
 })
-
-/* ===== AI主动聊天 ===== */
 
 function aiAutoMessage(){
 
@@ -727,7 +728,13 @@ parts.forEach((p,i)=>{
 
 setTimeout(()=>{
 
-const list=JSON.parse(localStorage.getItem(CHAT_KEY)||"[]")
+let list
+
+try{
+list=JSON.parse(localStorage.getItem(CHAT_KEY)||"[]")
+}catch{
+list=[]
+}
 
 list.push({type:"ai",text:p,time:Date.now()})
 
