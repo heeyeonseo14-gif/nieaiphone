@@ -656,7 +656,13 @@ const row=document.createElement("div")
 row.className="msgRow "+m.type
 
 row.innerHTML=`
+
+${m.type==="ai"?`<img class="avatar" src="${aiAvatar}">`:""}
+
 <div class="msg">${m.text}</div>
+
+${m.type==="me"?`<img class="avatar" src="${myAvatar}">`:""}
+
 `
 
 messagesEl.appendChild(row)
@@ -706,6 +712,83 @@ localStorage.setItem(CHAT_KEY,JSON.stringify(list))
 render()
 
 }
+
+
+/* ★ 新增 START：AI增强模块 */
+
+const contacts=JSON.parse(localStorage.getItem("nie_contacts_v1")||"[]")
+const contact=contacts.find(c=>String(c.id)===String(CHAT_ID))||{}
+const aiAvatar=contact.avatar||""
+
+const myProfile=JSON.parse(localStorage.getItem("nie_user_global")||"{}")
+const myAvatar=myProfile.avatar||""
+
+function splitReply(text){
+return text.split(/(?<=[。！？])/).map(t=>t.trim()).filter(Boolean)
+}
+
+function compressHistory(list){
+if(list.length<20)return list
+return list.slice(-12)
+}
+
+function aiTypingStart(){
+chatTitle.textContent="对方正在输入..."
+}
+
+function aiTypingEnd(){
+const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||"{}")
+chatTitle.textContent=p.name||"聊天"
+}
+
+(function(){
+const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||"{}")
+if(p.name)chatTitle.textContent=p.name
+})()
+
+function aiAutoMessage(){
+
+setTimeout(async()=>{
+
+try{
+
+const persona=JSON.parse(localStorage.getItem(PERSONA_KEY)||{})
+
+const msgs=[
+{role:"system",content:persona.persona||"主动聊天"}
+]
+
+const reply=await callApi(msgs)
+
+const parts=splitReply(reply)
+
+parts.forEach((p,i)=>{
+
+setTimeout(()=>{
+
+const list=JSON.parse(localStorage.getItem(CHAT_KEY)||[])
+
+list.push({type:"ai",text:p})
+
+localStorage.setItem(CHAT_KEY,JSON.stringify(list))
+
+render()
+
+},800*i)
+
+})
+
+}catch(e){
+console.log("AI主动聊天失败",e)
+}
+
+},20000+Math.random()*20000)
+
+}
+
+aiAutoMessage()
+
+/* ★ 新增 END */
 
 </script>
 
