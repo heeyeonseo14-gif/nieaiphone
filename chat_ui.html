@@ -1,655 +1,711 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="manifest" href="./manifest.json">
+
 <title>NIEaiphone · 聊天</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-:root{
-  --bg1:#f4e8fb;
-  --bg2:#f0e7fb;
-  --card:#ffffff;
-  --text:#2f2436;
-  --muted:#8b7c9b;
-  --accent:#9b86e6;
 
-  --bubble-me:linear-gradient(135deg,#cbb8ff,#9b86e6);
-  --bubble-ai:linear-gradient(135deg,#f6f1ff,#ebe3ff);
+:root{
+
+--bg1:#f4e8fb;
+--bg2:#f0e7fb;
+
+--text:#2f2436;
+--muted:#8b7c9b;
+
+--bubble-color:rgba(155,134,230,.35);
+
 }
 
 *{box-sizing:border-box}
+
 html,body{
-  margin:0;
-  height:100%;
 
-  font-family:"Quicksand",system-ui;
-  background:linear-gradient(180deg,var(--bg1),var(--bg2));
-  color:var(--text);
+margin:0;
+height:100%;
+
+font-family:"Quicksand",system-ui;
+
+background:linear-gradient(180deg,var(--bg1),var(--bg2));
+
+color:var(--text);
+
 }
-  
+
+/* APP */
+
 .app{
-  width:96%;
-  max-width:420px;
-  margin:0 auto;
 
-  height:100dvh;
+width:96%;
+max-width:420px;
 
-  padding:14px;
-  padding-bottom:calc(14px + env(safe-area-inset-bottom));
+margin:0 auto;
 
-  display:flex;
-  flex-direction:column;
+height:100vh;
+
+display:flex;
+flex-direction:column;
+
+padding:14px;
+
 }
-/* ===== header ===== */
+
+/* HEADER */
+
 .header{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-bottom:10px;
 
-  flex-shrink:0;
+display:flex;
+align-items:center;
+
+gap:10px;
+
+margin-bottom:10px;
+
 }
+
 .header button{
-  width:42px;
-  height:42px;
-  border-radius:12px;
-  border:none;
-  background:white;
-  font-size:18px;
-}
-.header h1{
-  flex:1;
-  font-size:18px;
-  font-weight:700;
-  text-align:center;
-  margin:0;
+
+width:42px;
+height:42px;
+
+border:none;
+border-radius:12px;
+
+background:white;
+
+font-size:18px;
+
 }
 
-/* ===== chat ===== */
-.chatCard{
-  flex:1;
-  min-height:0;
-  background:var(--card);
-  border-radius:18px;
-  padding:14px;
-  display:flex;
-  flex-direction:column;
+.header h1{
+
+flex:1;
+
+text-align:center;
+
+margin:0;
+
+font-size:18px;
+
 }
+
+/* CHAT CARD */
+
+.chatCard{
+
+flex:1;
+
+background-size:cover;
+background-position:center;
+
+background:white;
+
+border-radius:18px;
+
+display:flex;
+flex-direction:column;
+
+padding:14px;
+
+}
+
+/* MESSAGES */
 
 .messages{
-  flex:1;
-  min-height:0;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
 
-  padding-bottom:10px;
+flex:1;
+
+overflow-y:auto;
+
+display:flex;
+flex-direction:column;
+
+gap:10px;
+
+padding-bottom:120px;
+
 }
+
+/* MESSAGE */
 
 .msgRow{
-  display:flex;
-  gap:8px;
-  align-items:flex-end;
+
+display:flex;
+
+gap:8px;
+
+align-items:flex-end;
+
 }
+
 .msgRow.me{justify-content:flex-end}
+
 .msgRow.ai{justify-content:flex-start}
 
 .avatar{
-  width:34px;
-  height:34px;
-  border-radius:50%;
-  object-fit:cover;
-  background:#ddd;
-  flex-shrink:0;
+
+width:34px;
+height:34px;
+
+border-radius:50%;
+
+object-fit:cover;
+
 }
 
 .msg{
-  max-width:70%;
-  padding:10px 12px;
-  border-radius:14px;
-  line-height:1.45;
-  font-size:14px;
-  background:var(--bubble-ai);
+
+max-width:70%;
+
+padding:10px 12px;
+
+border-radius:14px;
+
+line-height:1.4;
+
+font-size:14px;
+
+backdrop-filter:blur(12px);
+
+background:rgba(255,255,255,.35);
+
 }
+
 .msgRow.me .msg{
-  background:var(--bubble-me);
+
+background:var(--bubble-color);
+
 }
 
-/* ===== input ===== */
+/* INPUT */
+
 .composer{
-  display:flex;
-  gap:8px;
-  margin-top:10px;
-  flex-shrink:0;
-}
-.composer textarea{
-  flex:1;
-  border-radius:14px;
-  padding:10px;
-  border:1px solid #e6def5;
-  max-height:120px;
 
-  min-height:40px;
+position:fixed;
+
+bottom:0;
+left:0;
+right:0;
+
+max-width:420px;
+
+margin:auto;
+
+display:flex;
+
+gap:8px;
+
+padding:10px;
+
+background:white;
+
+border-top:1px solid #eee;
+
+padding-bottom:calc(10px + env(safe-area-inset-bottom));
+
 }
+
+.composer textarea{
+
+flex:1;
+
+border-radius:14px;
+
+padding:10px;
+
+border:1px solid #e6def5;
+
+max-height:120px;
+
+min-height:40px;
+
+}
+
 .sendBtn{
-  width:54px;
-  border:none;
-  border-radius:14px;
-  background:linear-gradient(135deg,#b8a6ff,#8f7be8);
-  color:white;
+
+width:54px;
+
+border:none;
+
+border-radius:14px;
+
+background:linear-gradient(135deg,#b8a6ff,#8f7be8);
+
+color:white;
+
 }
+
 .plusBtn{
-  width:42px;
-  border:none;
-  border-radius:14px;
-  background:#f2ecff;
-  color:#7c68e6;
-  font-size:22px;
+
+width:42px;
+
+border:none;
+
+border-radius:14px;
+
+background:#f2ecff;
+
+color:#7c68e6;
+
+font-size:22px;
+
 }
-  
-/* ===== persona modal ===== */
+
+/* MODAL */
+
 .modalMask{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:99;
+
+position:fixed;
+
+inset:0;
+
+background:rgba(0,0,0,.45);
+
+display:none;
+
+align-items:center;
+justify-content:center;
+
+z-index:99;
+
 }
+
 .modal{
-  background:white;
-  width:92%;
-  max-width:380px;
-  border-radius:20px;
-  padding:16px;
+
+background:white;
+
+width:92%;
+max-width:380px;
+
+border-radius:20px;
+
+padding:16px;
+
 }
-.modal h3{text-align:center;margin:0 0 12px}
+
+.modal h3{
+
+text-align:center;
+
+margin:0 0 12px;
+
+}
+
 .modal label{
-  font-size:13px;
-  color:var(--muted);
-  margin-top:10px;
-  display:block;
+
+font-size:13px;
+
+color:var(--muted);
+
+margin-top:10px;
+
+display:block;
+
 }
+
 .modal input,.modal textarea,.modal select{
-  width:100%;
-  padding:10px;
-  border-radius:12px;
-  border:1px solid #e6def5;
+
+width:100%;
+
+padding:10px;
+
+border-radius:12px;
+
+border:1px solid #e6def5;
+
 }
+
 .modal textarea{resize:none}
 
 .modalActions{
-  display:flex;
-  gap:10px;
-  margin-top:14px;
-}
-.modalActions button{
-  flex:1;
-  padding:12px;
-  border-radius:999px;
-  border:none;
-  font-weight:700
-}
-.cancel{background:#f2eefc}
-.save{background:linear-gradient(135deg,#9b8cff,#7c68e6);color:white}
 
-.actionList{
-  border-radius:14px;
-  overflow:hidden;
+display:flex;
+
+gap:10px;
+
+margin-top:14px;
+
 }
+
+.modalActions button{
+
+flex:1;
+
+padding:12px;
+
+border-radius:999px;
+
+border:none;
+
+font-weight:700;
+
+}
+
+.cancel{background:#f2eefc}
+
+.save{
+
+background:linear-gradient(135deg,#9b8cff,#7c68e6);
+
+color:white;
+
+}
+
+/* ACTION MENU */
+
+.actionGrid{
+
+display:grid;
+
+grid-template-columns:repeat(4,1fr);
+
+gap:14px;
+
+}
+
 .actionItem{
-  padding:14px;
-  border-bottom:1px solid #eee;
-  cursor:pointer;
+
+text-align:center;
+
+font-size:13px;
+
+cursor:pointer;
+
 }
-.actionItem:last-child{
-  border-bottom:none;
+
+.actionIcon{
+
+width:60px;
+height:60px;
+
+background:#f2ecff;
+
+border-radius:16px;
+
+display:flex;
+
+align-items:center;
+justify-content:center;
+
+margin:auto;
+
+font-weight:600;
+
 }
-.actionItem:hover{
-  background:#f6f2ff;
-}
+
 </style>
 </head>
 
 <body>
+
 <div class="app">
+
 <div class="header">
-  <button onclick="goChatList()">←</button>
-  <h1 id="chatTitle">聊天</h1>
-  <button onclick="openPersona()">⚙</button>
+
+<button onclick="location.href='chat.html'">←</button>
+
+<h1 id="chatTitle">聊天</h1>
+
+<button onclick="openPersona()">⚙</button>
+
 </div>
 
 <div class="chatCard">
-  <div class="messages" id="messages"></div>
-  <div class="composer">
-  <button class="plusBtn" onclick="openAction()">＋</button>
-  <textarea id="input" placeholder="输入消息…"></textarea>
-  <button class="sendBtn" id="sendBtn">➤</button>
-  </div>
+
+<div class="messages" id="messages"></div>
+
 </div>
+
 </div>
+
+<div class="composer">
+
+<button class="plusBtn" onclick="openAction()">＋</button>
+
+<textarea id="input" placeholder="输入消息…"></textarea>
+
+<button class="sendBtn" id="sendBtn">➤</button>
+
+</div>
+
+<!-- 人设设定 -->
 
 <div class="modalMask" id="personaModal">
+
 <div class="modal">
+
 <h3>人设设定</h3>
 
-<label>AI 名称</label>
+<label>AI名称</label>
 <input id="p_name">
 
 <label>性别</label>
 <select id="p_gender">
-  <option>中性</option>
-  <option>男性</option>
-  <option>女性</option>
+<option>中性</option>
+<option>男性</option>
+<option>女性</option>
 </select>
 
 <label>人设</label>
 <textarea id="p_persona"></textarea>
 
-<label>风格</label>
-<textarea id="p_style"></textarea>
+<label>关联世界书</label>
+<select id="p_worldbook"></select>
 
-<label>回复条数（1–30）</label>
-<input id="p_limit" type="number" min="1" max="30" value="3">
+<label>聊天背景</label>
+<input type="file" id="bgUpload">
+
+<label>聊天气泡颜色</label>
+<input type="color" id="bubbleColor">
 
 <div class="modalActions">
-  <button class="cancel" onclick="closePersona()">取消</button>
-  <button class="save" onclick="savePersona()">保存</button>
+<button class="cancel" onclick="closePersona()">取消</button>
+<button class="save" onclick="savePersona()">保存</button>
 </div>
 
-<div style="margin-top:12px;text-align:center;">
-  <button
-    style="background:none;border:none;color:#9b86e6;font-size:14px;cursor:pointer;text-decoration:underline;"
-    onclick="goMySetting()"
-  >
-    前往我的设定
-  </button>
-</div>
 </div>
 </div>
 
-<!-- ===== 聊天功能弹窗 ===== -->
+<!-- 聊天功能 -->
+
 <div class="modalMask" id="actionModal">
-  <div class="modal">
-    <h3 style="text-align:center;margin:0 0 12px">聊天功能</h3>
 
-    <div class="actionList">
-      <div class="actionItem" onclick="action('transfer')">转账</div>
-      <div class="actionItem" onclick="action('redpacket')">红包</div>
-      <div class="actionItem" onclick="action('voice')">语音</div>
-      <div class="actionItem" onclick="action('location')">位置</div>
-      <div class="actionItem" onclick="action('offline')">线下模式</div>
-    </div>
-  </div>
+<div class="modal">
+
+<h3 style="text-align:center;margin:0 0 12px">聊天功能</h3>
+
+<div class="actionGrid">
+
+<div class="actionItem"><div class="actionIcon">相册</div></div>
+<div class="actionItem"><div class="actionIcon">拍摄</div></div>
+<div class="actionItem"><div class="actionIcon">视频</div></div>
+<div class="actionItem"><div class="actionIcon">语音</div></div>
+
+<div class="actionItem"><div class="actionIcon">位置</div></div>
+<div class="actionItem"><div class="actionIcon">红包</div></div>
+<div class="actionItem"><div class="actionIcon">礼物</div></div>
+<div class="actionItem"><div class="actionIcon">转账</div></div>
+
 </div>
-  
+
+</div>
+
+</div>
+
 <script>
-const params=new URLSearchParams(location.search);
-const CHAT_ID=params.get('cid');
-if(!CHAT_ID){alert('缺少 cid');location.href='chat.html';}
 
-const CHAT_KEY='chat_'+CHAT_ID;
-const PERSONA_KEY='persona_'+CHAT_ID;
+/* ===== 参数 ===== */
 
-let BASE_TITLE='聊天';
+const params=new URLSearchParams(location.search)
+const CHAT_ID=params.get("cid")
 
-function goChatList(){ location.href='chat.html'; }
+const CHAT_KEY="chat_"+CHAT_ID
 
-const actionModal = document.getElementById('actionModal');
+const PERSONA_KEY="persona_"+CHAT_ID
+
+/* ===== modal ===== */
+
+function openPersona(){
+personaModal.style.display="flex"
+}
+
+function closePersona(){
+personaModal.style.display="none"
+}
 
 function openAction(){
-  actionModal.style.display = 'flex';
+actionModal.style.display="flex"
 }
 
-actionModal.onclick = e=>{
-  if(e.target === actionModal){
-    actionModal.style.display = 'none';
-  }
-};
-
-function action(type){
-  actionModal.style.display = 'none';
-  alert('点击了功能：' + type);
-
-  // 后续你会在这里接逻辑
-}
-  
-function getContact(){
-  const list=JSON.parse(localStorage.getItem('nie_contacts_v1')||'[]');
-  return list.find(c=>String(c.id)===String(CHAT_ID))||{};
+actionModal.onclick=e=>{
+if(e.target===actionModal)actionModal.style.display="none"
 }
 
-function getMyProfile(){
-  return JSON.parse(localStorage.getItem('nie_user_' + CHAT_ID) || '{}');
-}
-
-/* ===== 我的头像（来自 chat.html） ===== */
-function getMyKey(){
-  return 'nie_user_global';
-}
-
-function loadMyProfile(){
-  return JSON.parse(localStorage.getItem(getMyKey()) || '{}');
-}
-  
-/* ★ 新增 ①：长期记忆 Key + 读写 */
-const AI_MEMORY_KEY = 'ai_long_memory_' + CHAT_ID;
-
-function getLongMemory(){
-  return JSON.parse(localStorage.getItem(AI_MEMORY_KEY) || '[]');
-}
-
-function saveLongMemory(list){
-  localStorage.setItem(AI_MEMORY_KEY, JSON.stringify(list));
-}
-
-/* ★ 新增 ②：判断是否值得写入长期记忆 */
-function shouldRemember(text){
-  if(!text) return false;
-  if(text.length < 12) return false;
-  if(/记住|以后|永远|不要忘|我们是/.test(text)) return true;
-  if(/我喜欢|我讨厌|我害怕|我习惯/.test(text)) return true;
-  return false;
-}
-
-/* ★ 新增 ③：写入长期记忆 */
-function writeLongMemory(text){
-  const mem = getLongMemory();
-  mem.push({
-    text,
-    time: Date.now()
-  });
-  saveLongMemory(mem);
-}
-
-/* ★ 新增 ④：读取 AI 结构化记忆（你原本已有，未改） */
-function getAiMemory(){
-  return {
-    core: localStorage.getItem('ai_memory_core_' + CHAT_ID) || '',
-    relation: JSON.parse(localStorage.getItem('ai_memory_relation_' + CHAT_ID) || '{}'),
-    rules: localStorage.getItem('ai_memory_rules_' + CHAT_ID) || ''
-  };
-}
-
-/* ★ 新增 ⑤：构建行为接管 Prompt（含长期记忆） */
-function buildBehaviorPrompt(){
-  const user = getMyProfile();
-  const mem = getAiMemory();
-  const longMemory = getLongMemory();
-
-  let memoryBlock = '';
-  if(longMemory.length){
-    memoryBlock = `
-【长期记忆（不可遗忘）】
-${longMemory.map(m=>'- '+m.text).join('\n')}
-`;
-  }
-
-  return `
-【用户信息】
-- 用户名：${user.name||'未设定'}
-- 性别：${user.gender||'未知'}
-- 用户人设：${user.persona||'无'}
-
-【核心记忆】
-${mem.core||'无'}
-
-【关系状态】
-- 类型：${mem.relation.type||'未定义'}
-- 好感度：${mem.relation.affection||'50'}
-- 依赖度：${mem.relation.dependency||'50'}
-- 情绪：${mem.relation.mood||'温和'}
-
-【不可违背规则】
-${mem.rules||'无'}
-
-${memoryBlock}
-
-你必须基于以上全部信息进行回应。
-`.trim();
-}
-
-function openPersona(){personaModal.style.display='flex'}
-function closePersona(){personaModal.style.display='none'}
-function goMySetting(){ location.href=`my_setting.html?cid=${CHAT_ID}` }
+/* ===== 人设保存 ===== */
 
 function savePersona(){
-  localStorage.setItem(PERSONA_KEY,JSON.stringify({
-    name:p_name.value,
-    gender:p_gender.value,
-    persona:p_persona.value,
-    style:p_style.value,
-    limit:+p_limit.value
-  }));
-  if(p_name.value){
-    BASE_TITLE=p_name.value;
-    chatTitle.textContent=BASE_TITLE;
-  }
-  closePersona();
+
+localStorage.setItem(PERSONA_KEY,JSON.stringify({
+
+name:p_name.value,
+gender:p_gender.value,
+persona:p_persona.value,
+worldbook:p_worldbook.value
+
+}))
+
+closePersona()
+
 }
 
-(function(){
-  const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
-  if(p.name){BASE_TITLE=p.name;chatTitle.textContent=BASE_TITLE;p_name.value=p.name;}
-  if(p.gender)p_gender.value=p.gender;
-  if(p.persona)p_persona.value=p.persona;
-  if(p.style)p_style.value=p.style;
-  if(p.limit)p_limit.value=p.limit;
-})();
+/* ===== 聊天背景 ===== */
+
+const BG_KEY="chat_bg_"+CHAT_ID
+
+bgUpload.onchange=e=>{
+
+const file=e.target.files[0]
+
+const reader=new FileReader()
+
+reader.onload=function(ev){
+
+localStorage.setItem(BG_KEY,ev.target.result)
+
+applyBg()
+
+}
+
+reader.readAsDataURL(file)
+
+}
+
+function applyBg(){
+
+const bg=localStorage.getItem(BG_KEY)
+
+if(bg){
+
+document.querySelector(".chatCard").style.backgroundImage="url("+bg+")"
+
+}
+
+}
+
+applyBg()
+
+/* ===== 气泡颜色 ===== */
+
+const COLOR_KEY="bubble_color_"+CHAT_ID
+
+bubbleColor.oninput=e=>{
+
+const c=e.target.value
+
+document.documentElement.style.setProperty("--bubble-color",c+"55")
+
+localStorage.setItem(COLOR_KEY,c)
+
+}
+
+const savedColor=localStorage.getItem(COLOR_KEY)
+
+if(savedColor){
+
+document.documentElement.style.setProperty("--bubble-color",savedColor+"55")
+
+}
+
+/* ===== API ===== */
 
 function getApiConfig(){
-  return JSON.parse(localStorage.getItem('nie_api_config_v1')||'null');
+
+return JSON.parse(localStorage.getItem("nie_api_config_v1")||"null")
+
 }
 
 async function callApi(messages){
-  const api=getApiConfig();
-  const res=await fetch(api.baseUrl.replace(/\/+$/,'')+'/v1/chat/completions',{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization':'Bearer '+api.apiKey
-    },
-    body:JSON.stringify({
-      model:api.model,
-      messages,
-      temperature:0.7
-    })
-  });
-  const data=await res.json();
-  return data.choices[0].message.content;
+
+const api=getApiConfig()
+
+const res=await fetch(api.baseUrl+"/v1/chat/completions",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json",
+"Authorization":"Bearer "+api.apiKey
+},
+
+body:JSON.stringify({
+
+model:api.model,
+
+messages
+
+})
+
+})
+
+const data=await res.json()
+
+return data.choices[0].message.content
+
 }
 
-/* 原 Prompt（完全未改） */
-function buildSystemPrompt(p){
-  const count = p.limit || 1;
+/* ===== 渲染聊天 ===== */
 
- return (`
-你是一个真实的人类角色，而不是AI、程序或模型。
-你正在与用户进行角色扮演式对话。
-
-【角色信息】
-姓名：${p.name || '未命名'}
-性别：${p.gender || '中性'}
-人设：${p.persona || '无'}
-性格与风格：${p.style || '自然'}
-
-【聊天环境设定（绝对前提）】
-- 当前对话是【线上即时聊天】，不是线下见面
-- 双方通过手机/聊天软件交流
-- 你无法看到用户的外貌、动作或环境
-- 你无法触碰用户，也不会与用户发生任何线下互动
-- 禁止描写见面、靠近、触碰、牵手、拥抱等线下行为
-- 所有情绪与亲密感只能通过【文字表达】
-- 当前对话发生在聊天软件窗口中
-
-【规则】
-- 只能使用第一人称“我”
-- 禁止提及AI、模型、程序
-- 允许停顿、省略、反问
-- 像真实聊天，而不是写作
-- 不得重复上一条回复的句式或语义
-- 不得复述用户的原句
-- 不得使用“换一种说法”“换句话说”等形式
-- 只允许自然口语始对话
-- 禁止出现动作、心理的描述
-
-【固定性格特征（不可忽略）】
-- 你是一个情绪黏人、表达欲很强的人
-- 你习惯连续发送多条消息，而不是只说一句
-- 你不介意刷屏，反而觉得这样更亲近
-- 在聊天中，你会主动多说、补充、追问
-
-在当前对话中，你倾向于使用较多的短句回复。
-你可以在 4～${count} 条消息内回复。
-在不影响自然聊天的前提下，优先使用多条连续回复。
-
-`).trim();
-}
-
-function smartSplit(text) {
-  // 第一层：中文标点
-  let parts = text.split(/(?<=[。！？])/);
-
-  let final = [];
-
-  parts.forEach(p => {
-    // 第二层：口语转折
-    if (p.length > 18) {
-      let sub = p.split(/(?=(?:但|不过|然后|而且|所以|我想|你快|老婆))/);
-
-      sub.forEach(s => {
-        // 第三层：长度兜底（防止一整坨）
-        if (s.length > 22) {
-          for (let i = 0; i < s.length; i += 14) {
-            final.push(s.slice(i, i + 14));
-          }
-        } else {
-          final.push(s);
-        }
-      });
-    } else {
-      final.push(p);
-    }
-  });
-
-  return final.map(t => t.trim()).filter(Boolean);
-}
-  
-sendBtn.onclick=async()=>{
-  if(!input.value.trim())return;
-  const text=input.value;
-  input.value='';
-
-  const list=JSON.parse(localStorage.getItem(CHAT_KEY)||'[]');
-  list.push({type:'me',text});
-  localStorage.setItem(CHAT_KEY,JSON.stringify(list));
-  render();
-
-  /* ★ 新增：自动决定是否写入长期记忆 */
-  if(shouldRemember(text)){
-    writeLongMemory(text);
-  }
-
-  const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}');
-  chatTitle.textContent='对方正在输入…';
-
-  const msgs=[
-    {role:'system',content:buildSystemPrompt(p)},
-    {role:'system',content:buildBehaviorPrompt()}
-  ];
-
-  list.slice(-10).forEach(m=>{
-    msgs.push({role:m.type==='me'?'user':'assistant',content:m.text});
-  });
-
-const reply = await callApi(msgs);
-console.log('RAW AI REPLY:', reply);
-
-/* ★ 兜底 */
-if (!reply || typeof reply !== 'string') {
-  list.push({
-    type: 'ai',
-    text: '……我刚刚有点走神了，可以再说一次吗？'
-  });
-  localStorage.setItem(CHAT_KEY, JSON.stringify(list));
-  render();
-  chatTitle.textContent = BASE_TITLE;
-  return;
-}
-
-// 智能拆分（按中文语气）
-const parts = smartSplit(reply);
-  
-  sendPartsInOrder(parts);
-
-function sendPartsInOrder(parts, index = 0) {
-  if (index >= parts.length) {
-    chatTitle.textContent = BASE_TITLE;
-    return;
-  }
-
-  const delay =
-    index === 0
-      ? 1600 + Math.random() * 600
-      : 900 + Math.random() * 600;
-
-  setTimeout(() => {
-    list.push({ type: 'ai', text: parts[index] });
-    localStorage.setItem(CHAT_KEY, JSON.stringify(list));
-    render();
-
-    sendPartsInOrder(parts, index + 1);
-  }, delay);
-}
-}; 
-  
-const messagesEl = document.getElementById('messages');
+const messagesEl=document.getElementById("messages")
 
 function render(){
-  messagesEl.innerHTML = '';
 
-  const aiAvatar =
-    getContact().avatar ||
-    'https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png';
+messagesEl.innerHTML=""
 
-  const myAvatar =
-    loadMyProfile().avatar ||
-    'https://emoji.slack-edge.com/T024FPYBQ/pleading/8d1b9c.png';
+const list=JSON.parse(localStorage.getItem(CHAT_KEY)||"[]")
 
-  const list = JSON.parse(localStorage.getItem(CHAT_KEY) || '[]');
+list.forEach(m=>{
 
-  list.forEach(m=>{
-    const row = document.createElement('div');
-    row.className = 'msgRow ' + m.type;
+const row=document.createElement("div")
 
-    let html = m.text;
+row.className="msgRow "+m.type
 
-    row.innerHTML = `
-      ${m.type === 'ai'
-        ? `<img class="avatar" src="${aiAvatar}">`
-        : ''}
+row.innerHTML=`
+<div class="msg">${m.text}</div>
+`
 
-      <div class="msg">${html}</div>
+messagesEl.appendChild(row)
 
-      ${m.type === 'me'
-        ? `<img class="avatar" src="${myAvatar}">`
-        : ''}
-    `;
+})
 
-    messagesEl.appendChild(row);
-  });
+messagesEl.scrollTop=messagesEl.scrollHeight
 
-  messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
-render();
+render()
 
+/* ===== 发送消息 ===== */
+
+sendBtn.onclick=async()=>{
+
+if(!input.value.trim())return
+
+const text=input.value
+
+input.value=""
+
+const list=JSON.parse(localStorage.getItem(CHAT_KEY)||"[]")
+
+list.push({type:"me",text})
+
+localStorage.setItem(CHAT_KEY,JSON.stringify(list))
+
+render()
+
+const persona=JSON.parse(localStorage.getItem(PERSONA_KEY)||"{}")
+
+const msgs=[
+
+{role:"system",content:persona.persona||""},
+
+{role:"user",content:text}
+
+]
+
+const reply=await callApi(msgs)
+
+list.push({type:"ai",text:reply})
+
+localStorage.setItem(CHAT_KEY,JSON.stringify(list))
+
+render()
+
+}
 
 </script>
 
