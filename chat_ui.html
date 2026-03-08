@@ -651,7 +651,6 @@ render()
 /* ===== 发送消息 ===== */
 
 /* ★修复：onclick在PWA可能失效 */
-
 sendBtn.addEventListener("click",async()=>{
 
 const text=input.value.trim()
@@ -660,12 +659,10 @@ if(!text)return
 
 input.value=""
 
-const list=JSON.parse(localStorage.getItem(CHAT_KEY)||"")
-
 let arr
 
 try{
-arr=JSON.parse(localStorage.getItem(CHAT_KEY)||"[]")
+arr=JSON.parse(localStorage.getItem(CHAT_KEY) || "[]")
 }catch{
 arr=[]
 }
