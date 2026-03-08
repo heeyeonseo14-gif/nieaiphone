@@ -506,8 +506,28 @@ const params=new URLSearchParams(location.search)
 const CHAT_ID=params.get("cid")
 
 const CHAT_KEY="chat_"+CHAT_ID
-
 const PERSONA_KEY="persona_"+CHAT_ID
+/* ★ 新增：加载人设 */
+
+(function(){
+
+const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||"{}")
+
+if(!p) return
+
+if(p.name) p_name.value=p.name
+if(p.gender) p_gender.value=p.gender
+if(p.persona) p_persona.value=p.persona
+
+})();
+/* ★ 修复：头像同步 */
+
+const contacts=JSON.parse(localStorage.getItem("nie_contacts_v1")||"[]")
+const contact=contacts.find(c=>String(c.id)===String(CHAT_ID))||{}
+const aiAvatar=contact.avatar||""
+
+const myProfile=JSON.parse(localStorage.getItem("nie_user_global")||"{}")
+const myAvatar=myProfile.avatar||""
 
 /* ===== modal ===== */
 
@@ -539,6 +559,9 @@ persona:p_persona.value,
 worldbook:p_worldbook.value
 
 }))
+
+/* ★ 新增 */
+chatTitle.textContent = p_name.value || "聊天"
 
 closePersona()
 
