@@ -26,377 +26,244 @@
 *{box-sizing:border-box}
 
 html,body{
-
 margin:0;
 height:100%;
-
 font-family:"Quicksand",system-ui;
-
 background:linear-gradient(180deg,var(--bg1),var(--bg2));
-
 color:var(--text);
-
 }
 
 /* APP */
 
 .app{
-
 width:96%;
 max-width:420px;
-
 margin:0 auto;
-
 height:100vh;
-
 display:flex;
 flex-direction:column;
-
 padding:14px;
-
 }
 
 /* HEADER */
 
 .header{
-
 display:flex;
 align-items:center;
-
 gap:10px;
-
 margin-bottom:10px;
-
 }
 
 .header button{
-
 width:42px;
 height:42px;
-
 border:none;
 border-radius:12px;
-
 background:white;
-
 font-size:18px;
-
 }
 
 .header h1{
-
 flex:1;
-
 text-align:center;
-
 margin:0;
-
 font-size:18px;
-
 }
 
 /* CHAT CARD */
 
 .chatCard{
-
 flex:1;
-
 background-size:cover;
 background-position:center;
-
 background:white;
-
 border-radius:18px;
-
 display:flex;
 flex-direction:column;
-
 padding:14px;
-
 }
 
 /* MESSAGES */
 
 .messages{
-
 flex:1;
-
 overflow-y:auto;
-
 display:flex;
 flex-direction:column;
-
 gap:10px;
-
 padding-bottom:120px;
-
 }
 
 /* MESSAGE */
 
 .msgRow{
-
 display:flex;
-
 gap:8px;
-
 align-items:flex-end;
-
 }
 
 .msgRow.me{justify-content:flex-end}
-
 .msgRow.ai{justify-content:flex-start}
 
 .avatar{
-
 width:34px;
 height:34px;
-
 border-radius:50%;
-
 object-fit:cover;
-
 }
 
 .msg{
-
 max-width:70%;
-
 padding:10px 12px;
-
 border-radius:14px;
-
 line-height:1.4;
-
 font-size:14px;
-
 backdrop-filter:blur(12px);
-
 background:rgba(255,255,255,.35);
-
 }
 
 .msgRow.me .msg{
-
 background:var(--bubble-color);
+}
 
+/* ★新增：时间 */
+
+.msgTime{
+font-size:11px;
+color:#999;
+text-align:center;
+margin:6px 0;
 }
 
 /* INPUT */
 
 .composer{
-
 position:fixed;
-
 bottom:0;
 left:0;
 right:0;
-
 max-width:420px;
-
 margin:auto;
-
 display:flex;
-
 gap:8px;
-
 padding:10px;
-
 background:white;
-
 border-top:1px solid #eee;
-
 padding-bottom:calc(10px + env(safe-area-inset-bottom));
-
 }
 
 .composer textarea{
-
 flex:1;
-
 border-radius:14px;
-
 padding:10px;
-
 border:1px solid #e6def5;
-
 max-height:120px;
-
 min-height:40px;
-
 }
 
 .sendBtn{
-
 width:54px;
-
 border:none;
-
 border-radius:14px;
-
 background:linear-gradient(135deg,#b8a6ff,#8f7be8);
-
 color:white;
-
 }
 
 .plusBtn{
-
 width:42px;
-
 border:none;
-
 border-radius:14px;
-
 background:#f2ecff;
-
 color:#7c68e6;
-
 font-size:22px;
-
 }
 
 /* MODAL */
 
 .modalMask{
-
 position:fixed;
-
 inset:0;
-
 background:rgba(0,0,0,.45);
-
 display:none;
-
 align-items:center;
 justify-content:center;
-
 z-index:99;
-
 }
 
 .modal{
-
 background:white;
-
 width:92%;
 max-width:380px;
-
 border-radius:20px;
-
 padding:16px;
-
 }
 
 .modal h3{
-
 text-align:center;
-
 margin:0 0 12px;
-
 }
 
 .modal label{
-
 font-size:13px;
-
 color:var(--muted);
-
 margin-top:10px;
-
 display:block;
-
 }
 
 .modal input,.modal textarea,.modal select{
-
 width:100%;
-
 padding:10px;
-
 border-radius:12px;
-
 border:1px solid #e6def5;
-
 }
 
 .modal textarea{resize:none}
 
 .modalActions{
-
 display:flex;
-
 gap:10px;
-
 margin-top:14px;
-
 }
 
 .modalActions button{
-
 flex:1;
-
 padding:12px;
-
 border-radius:999px;
-
 border:none;
-
 font-weight:700;
-
 }
 
 .cancel{background:#f2eefc}
 
 .save{
-
 background:linear-gradient(135deg,#9b8cff,#7c68e6);
-
 color:white;
-
 }
 
 /* ACTION MENU */
 
 .actionGrid{
-
 display:grid;
-
 grid-template-columns:repeat(4,1fr);
-
 gap:14px;
-
 }
 
 .actionItem{
-
 text-align:center;
-
 font-size:13px;
-
 cursor:pointer;
-
 }
 
 .actionIcon{
-
 width:60px;
 height:60px;
-
 background:#f2ecff;
-
 border-radius:16px;
-
 display:flex;
-
 align-items:center;
 justify-content:center;
-
 margin:auto;
-
 font-weight:600;
-
 }
 
 </style>
@@ -495,7 +362,6 @@ font-weight:600;
 </div>
 
 </div>
-
 </div>
 
 <script>
@@ -507,20 +373,8 @@ const CHAT_ID=params.get("cid")
 
 const CHAT_KEY="chat_"+CHAT_ID
 const PERSONA_KEY="persona_"+CHAT_ID
-/* ★ 新增：加载人设 */
 
-(function(){
-
-const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||"{}")
-
-if(!p) return
-
-if(p.name) p_name.value=p.name
-if(p.gender) p_gender.value=p.gender
-if(p.persona) p_persona.value=p.persona
-
-})();
-/* ★ 修复：头像同步 */
+/* ★新增：头像同步 */
 
 const contacts=JSON.parse(localStorage.getItem("nie_contacts_v1")||"[]")
 const contact=contacts.find(c=>String(c.id)===String(CHAT_ID))||{}
@@ -528,6 +382,20 @@ const aiAvatar=contact.avatar||""
 
 const myProfile=JSON.parse(localStorage.getItem("nie_user_global")||"{}")
 const myAvatar=myProfile.avatar||""
+
+/* ★新增：加载人设 */
+
+(function(){
+
+const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||"{}")
+
+if(p.name) p_name.value=p.name
+if(p.gender) p_gender.value=p.gender
+if(p.persona) p_persona.value=p.persona
+
+if(p.name) chatTitle.textContent=p.name
+
+})();
 
 /* ===== modal ===== */
 
@@ -560,8 +428,7 @@ worldbook:p_worldbook.value
 
 }))
 
-/* ★ 新增 */
-chatTitle.textContent = p_name.value || "聊天"
+chatTitle.textContent=p_name.value||"聊天"
 
 closePersona()
 
@@ -649,7 +516,6 @@ headers:{
 body:JSON.stringify({
 
 model:api.model,
-
 messages
 
 })
@@ -659,6 +525,14 @@ messages
 const data=await res.json()
 
 return data.choices[0].message.content
+
+}
+
+/* ★新增：AI拆分消息 */
+
+function splitReply(text){
+
+return text.split(/(?<=[。！？])/).map(t=>t.trim()).filter(Boolean)
 
 }
 
@@ -672,7 +546,21 @@ messagesEl.innerHTML=""
 
 const list=JSON.parse(localStorage.getItem(CHAT_KEY)||"[]")
 
+let lastTime=0
+
 list.forEach(m=>{
+
+if(m.time && m.time-lastTime>300000){
+
+const time=document.createElement("div")
+time.className="msgTime"
+time.innerText=new Date(m.time).toLocaleTimeString()
+
+messagesEl.appendChild(time)
+
+}
+
+lastTime=m.time||Date.now()
 
 const row=document.createElement("div")
 
@@ -710,7 +598,7 @@ input.value=""
 
 const list=JSON.parse(localStorage.getItem(CHAT_KEY)||"[]")
 
-list.push({type:"me",text})
+list.push({type:"me",text,time:Date.now()})
 
 localStorage.setItem(CHAT_KEY,JSON.stringify(list))
 
@@ -726,9 +614,19 @@ const msgs=[
 
 ]
 
+chatTitle.textContent="对方正在输入..."
+
 const reply=await callApi(msgs)
 
-list.push({type:"ai",text:reply})
+const parts=splitReply(reply)
+
+for(let i=0;i<parts.length;i++){
+
+await new Promise(r=>setTimeout(r,700))
+
+const list=JSON.parse(localStorage.getItem(CHAT_KEY)||"[]")
+
+list.push({type:"ai",text:parts[i],time:Date.now()})
 
 localStorage.setItem(CHAT_KEY,JSON.stringify(list))
 
@@ -736,38 +634,11 @@ render()
 
 }
 
+chatTitle.textContent=persona.name||"聊天"
 
-/* ★ 新增 START：AI增强模块 */
-
-const contacts=JSON.parse(localStorage.getItem("nie_contacts_v1")||"[]")
-const contact=contacts.find(c=>String(c.id)===String(CHAT_ID))||{}
-const aiAvatar=contact.avatar||""
-
-const myProfile=JSON.parse(localStorage.getItem("nie_user_global")||"{}")
-const myAvatar=myProfile.avatar||""
-
-function splitReply(text){
-return text.split(/(?<=[。！？])/).map(t=>t.trim()).filter(Boolean)
 }
 
-function compressHistory(list){
-if(list.length<20)return list
-return list.slice(-12)
-}
-
-function aiTypingStart(){
-chatTitle.textContent="对方正在输入..."
-}
-
-function aiTypingEnd(){
-const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||"{}")
-chatTitle.textContent=p.name||"聊天"
-}
-
-(function(){
-const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||"{}")
-if(p.name)chatTitle.textContent=p.name
-})()
+/* ★新增：AI主动聊天 */
 
 function aiAutoMessage(){
 
@@ -775,10 +646,14 @@ setTimeout(async()=>{
 
 try{
 
-const persona=JSON.parse(localStorage.getItem(PERSONA_KEY)||{})
+const persona=JSON.parse(localStorage.getItem(PERSONA_KEY)||"{}")
 
 const msgs=[
-{role:"system",content:persona.persona||"主动聊天"}
+
+{role:"system",content:persona.persona||"主动聊天"},
+
+{role:"user",content:"主动开启聊天"}
+
 ]
 
 const reply=await callApi(msgs)
@@ -789,29 +664,25 @@ parts.forEach((p,i)=>{
 
 setTimeout(()=>{
 
-const list=JSON.parse(localStorage.getItem(CHAT_KEY)||[])
+const list=JSON.parse(localStorage.getItem(CHAT_KEY)||"[]")
 
-list.push({type:"ai",text:p})
+list.push({type:"ai",text:p,time:Date.now()})
 
 localStorage.setItem(CHAT_KEY,JSON.stringify(list))
 
 render()
 
-},800*i)
+},900*i)
 
 })
 
-}catch(e){
-console.log("AI主动聊天失败",e)
-}
+}catch(e){console.log(e)}
 
 },20000+Math.random()*20000)
 
 }
 
 aiAutoMessage()
-
-/* ★ 新增 END */
 
 </script>
 
