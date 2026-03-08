@@ -321,7 +321,7 @@ const bubbleColor=document.getElementById("bubbleColor")
 /* ===== 参数 ===== */
 
 const params=new URLSearchParams(location.search)
-const CHAT_ID=params.get("cid")
+const CHAT_ID=params.get("cid") || "test"
 
 const CHAT_KEY="chat_"+CHAT_ID
 const PERSONA_KEY="persona_"+CHAT_ID
@@ -456,6 +456,10 @@ async function callApi(messages){
 
 const api=getApiConfig()
 
+if(!api){
+return "API未设置"
+}
+
 const res=await fetch(api.baseUrl+"/v1/chat/completions",{
 
 method:"POST",
@@ -466,18 +470,15 @@ headers:{
 },
 
 body:JSON.stringify({
-
 model:api.model,
 messages
-
 })
 
 })
 
 const data=await res.json()
 
-return data.choices[0].message.content
-
+return data?.choices?.[0]?.message?.content || "..."
 }
 
 /* ★新增：AI拆分消息 */
