@@ -71,11 +71,14 @@ html,body{
 }
 
 /* 聊天列表 */
-
+/* 【修改】防止被底部导航遮住 */
 .chatList{
   flex:1;
   min-height:0;
+
   padding:12px;
+  padding-bottom:90px; /* 新增 */
+
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
 }
@@ -144,12 +147,24 @@ html,body{
 }
 
 /* 底部导航 */
+/* 【修改】底部导航固定 */
 
 .nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+
+  max-width:430px;
+  margin:auto;
+
   display:flex;
+
   border-top:1px solid rgba(0,0,0,.05);
   background:rgba(255,255,255,.8);
   backdrop-filter:blur(10px);
+
+  padding-bottom:env(safe-area-inset-bottom);
 }
 
 .nav button{
