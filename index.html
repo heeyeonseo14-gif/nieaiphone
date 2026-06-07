@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh">
 
@@ -16,9 +15,7 @@ content="width=device-width,initial-scale=1">
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:
--apple-system,
-sans-serif;
+font-family:-apple-system,sans-serif;
 }
 
 body{
@@ -28,17 +25,16 @@ height:100vh;
 overflow:hidden;
 
 background:
-
 linear-gradient(
 180deg,
 #EEE5FF,
-#DED0F7,
-#C8B4EA
+#DED1F8,
+#CAB5EA
 );
 
 }
 
-/* 云背景 */
+/* 云 */
 
 body::before{
 
@@ -46,45 +42,37 @@ content:"";
 
 position:fixed;
 
-inset:-20%;
+inset:-30%;
 
 background:
 
 radial-gradient(
 circle,
-rgba(255,255,255,.5),
+rgba(255,255,255,.45),
 transparent 65%
 );
 
-filter:blur(120px);
+filter:blur(140px);
 
 animation:
-floatCloud
-18s
-infinite
-alternate;
+cloud
+18s infinite alternate;
 
 }
 
-@keyframes floatCloud{
+@keyframes cloud{
 
 from{
 
 transform:
-translate(
--4%,
-0
-);
+translate(-5%,0);
 
 }
 
 to{
 
 transform:
-translate(
-4%,
-5%
-);
+translate(5%,5%);
 
 }
 
@@ -92,7 +80,7 @@ translate(
 
 /* 页面 */
 
-.screen{
+.page{
 
 position:absolute;
 
@@ -104,8 +92,6 @@ flex-direction:column;
 
 align-items:center;
 
-transition:.4s;
-
 }
 
 /* 锁屏 */
@@ -116,13 +102,11 @@ padding-top:120px;
 
 color:white;
 
-z-index:2;
-
 }
 
 .time{
 
-font-size:92px;
+font-size:90px;
 
 font-weight:200;
 
@@ -132,7 +116,7 @@ font-weight:200;
 
 font-size:18px;
 
-opacity:.9;
+opacity:.85;
 
 }
 
@@ -144,7 +128,7 @@ width:86%;
 
 height:250px;
 
-border-radius:38px;
+border-radius:40px;
 
 background:
 
@@ -156,18 +140,7 @@ rgba(
 );
 
 backdrop-filter:
-
-blur(28px);
-
-border:
-
-1px solid
-rgba(
-255,
-255,
-255,
-.25
-);
+blur(30px);
 
 display:flex;
 
@@ -181,13 +154,13 @@ align-items:center;
 
 .lock-title{
 
-font-size:34px;
+font-size:32px;
 
 }
 
 .lock-text{
 
-margin-top:12px;
+margin-top:10px;
 
 opacity:.8;
 
@@ -199,13 +172,13 @@ margin-top:auto;
 
 margin-bottom:70px;
 
-opacity:.9;
+color:white;
 
 }
 
-/* 登录 */
+/* 创建世界 */
 
-#login{
+#create{
 
 display:none;
 
@@ -215,11 +188,11 @@ padding-top:170px;
 
 }
 
-.login-box{
+.box{
 
 width:86%;
 
-padding:30px;
+padding:32px;
 
 border-radius:38px;
 
@@ -233,38 +206,29 @@ rgba(
 );
 
 backdrop-filter:
-
-blur(28px);
-
-border:
-
-1px solid
-rgba(
-255,
-255,
-255,
-.25
-);
+blur(30px);
 
 }
 
-.login-title{
+.title{
 
 color:white;
 
 font-size:30px;
 
-margin-bottom:8px;
-
 }
 
-.login-sub{
+.sub{
 
 color:white;
 
 opacity:.8;
 
-margin-bottom:26px;
+margin:
+
+8px
+0
+26px;
 
 }
 
@@ -280,7 +244,7 @@ border:none;
 
 outline:none;
 
-border-radius:20px;
+border-radius:18px;
 
 background:
 
@@ -291,11 +255,9 @@ rgba(
 .45
 );
 
-font-size:16px;
-
 }
 
-.button{
+.btn{
 
 width:100%;
 
@@ -303,13 +265,9 @@ padding:18px;
 
 border:none;
 
-border-radius:20px;
+border-radius:18px;
 
 font-size:16px;
-
-background:
-
-white;
 
 }
 
@@ -325,7 +283,7 @@ align-items:center;
 
 color:white;
 
-font-size:32px;
+font-size:26px;
 
 }
 
@@ -336,16 +294,19 @@ font-size:32px;
 <body>
 
 
+
 <!-- 锁屏 -->
 
 <div
-class="screen"
+class="page"
 id="lock">
 
 <div
 class="time"
 id="clock">
-16:55
+
+16:32
+
 </div>
 
 <div
@@ -379,7 +340,7 @@ class="lock-text">
 <div
 class="unlock">
 
-↑ 点击解锁
+↑ 点击继续
 
 </div>
 
@@ -387,45 +348,56 @@ class="unlock">
 
 
 
-<!-- 登录 -->
+<!-- 创建世界 -->
 
 <div
-class="screen"
-id="login">
+class="page"
+id="create">
 
 <div
-class="login-box">
+class="box">
 
 <div
-class="login-title">
+class="title">
 
-登录
+创建你的世界
 
 </div>
 
 <div
-class="login-sub">
+class="sub">
 
-继续你的旅程
+每一个名字，
+都会开启独属于你的故事。
 
 </div>
+
 
 <input
+
 class="input"
-id="username"
-placeholder="账号">
+
+id="name"
+
+placeholder="用户名">
+
 
 <input
+
 class="input"
+
 id="password"
+
 type="password"
+
 placeholder="密码">
 
-<button
-class="button"
-onclick="goHome()">
 
-进入
+<button
+class="btn"
+onclick="createWorld()">
+
+开始旅程
 
 </button>
 
@@ -438,136 +410,114 @@ onclick="goHome()">
 <!-- 主页 -->
 
 <div
-class="screen"
+class="page"
 id="home">
 
-主页（下一步做）
+欢迎进入主页
 
 </div>
+
 
 
 <script>
 
 /* 时间 */
 
-function clock(){
+function time(){
 
-let now=
+clock.innerText=
 
 new Date()
 
-document
-.getElementById(
-"clock"
-)
-
-.innerHTML=
-
-now.toLocaleTimeString(
+.toLocaleTimeString(
 [],
 {
-hour:
-"2-digit",
-
-minute:
-"2-digit"
+hour:"2-digit",
+minute:"2-digit"
 }
-
 )
 
 }
 
-clock()
+time()
 
 setInterval(
-clock,
+time,
 1000
 )
 
 
 /* 解锁 */
 
-document
-.getElementById(
-"lock"
-)
-
-.addEventListener(
-"click",
+lock.onclick=
 
 function(){
 
-this.style.display=
+lock.style.display=
 "none"
 
-document
-.getElementById(
-"login"
-)
-
-.style.display=
+create.style.display=
 "flex"
 
 }
 
-)
 
+/* 创建账号 */
 
-/* 登录 */
+function createWorld(){
 
-function goHome(){
+let user=
 
-let u=
+name.value
 
-document
-.getElementById(
-"username"
-)
+let pass=
 
-.value
-
-let p=
-
-document
-.getElementById(
-"password"
-)
-
-.value
+password.value
 
 
 if(
-u
-&&
-p
+!user||
+!pass
 ){
 
-document
-.getElementById(
-"login"
+alert(
+"请输入用户名和密码"
 )
 
-.style.display=
+return
+
+}
+
+
+localStorage.setItem(
+
+"user",
+
+user
+
+)
+
+localStorage.setItem(
+
+"pass",
+
+pass
+
+)
+
+
+create.style.display=
 "none"
 
-
-document
-.getElementById(
-"home"
-)
-
-.style.display=
+home.style.display=
 "flex"
 
-}
+home.innerHTML=
 
-else{
-
-alert(
-"请输入账号密码"
-)
-
-}
+`
+欢迎回来<br><br>
+${user}
+`
 
 }
 
