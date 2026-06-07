@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh">
 
@@ -17,7 +18,6 @@ padding:0;
 box-sizing:border-box;
 font-family:
 -apple-system,
-BlinkMacSystemFont,
 sans-serif;
 }
 
@@ -31,14 +31,14 @@ background:
 
 linear-gradient(
 180deg,
-#EEE6FF,
-#DCCEF7,
-#CBB6EA
+#EEE5FF,
+#DED0F7,
+#C8B4EA
 );
 
 }
 
-/* 云 */
+/* 云背景 */
 
 body::before{
 
@@ -46,36 +46,33 @@ content:"";
 
 position:fixed;
 
-width:140%;
-height:140%;
-
-left:-20%;
-
-top:-20%;
+inset:-20%;
 
 background:
 
 radial-gradient(
 circle,
 rgba(255,255,255,.5),
-transparent 60%
+transparent 65%
 );
 
-filter:
-blur(120px);
+filter:blur(120px);
 
 animation:
-cloud 18s infinite alternate;
+floatCloud
+18s
+infinite
+alternate;
 
 }
 
-@keyframes cloud{
+@keyframes floatCloud{
 
 from{
 
 transform:
 translate(
--5%,
+-4%,
 0
 );
 
@@ -85,8 +82,8 @@ to{
 
 transform:
 translate(
-5%,
-4%
+4%,
+5%
 );
 
 }
@@ -95,12 +92,11 @@ translate(
 
 /* 页面 */
 
-.page{
+.screen{
 
 position:absolute;
 
-width:100%;
-height:100%;
+inset:0;
 
 display:flex;
 
@@ -108,7 +104,7 @@ flex-direction:column;
 
 align-items:center;
 
-transition:.5s;
+transition:.4s;
 
 }
 
@@ -120,11 +116,13 @@ padding-top:120px;
 
 color:white;
 
+z-index:2;
+
 }
 
 .time{
 
-font-size:90px;
+font-size:92px;
 
 font-weight:200;
 
@@ -144,9 +142,9 @@ margin-top:90px;
 
 width:86%;
 
-height:260px;
+height:250px;
 
-border-radius:40px;
+border-radius:38px;
 
 background:
 
@@ -159,7 +157,7 @@ rgba(
 
 backdrop-filter:
 
-blur(30px);
+blur(28px);
 
 border:
 
@@ -183,15 +181,13 @@ align-items:center;
 
 .lock-title{
 
-font-size:32px;
-
-margin-bottom:12px;
+font-size:34px;
 
 }
 
 .lock-text{
 
-font-size:16px;
+margin-top:12px;
 
 opacity:.8;
 
@@ -202,8 +198,6 @@ opacity:.8;
 margin-top:auto;
 
 margin-bottom:70px;
-
-color:white;
 
 opacity:.9;
 
@@ -217,17 +211,17 @@ display:none;
 
 justify-content:center;
 
+padding-top:170px;
+
 }
 
 .login-box{
 
-margin-top:180px;
-
 width:86%;
 
-padding:32px;
+padding:30px;
 
-border-radius:40px;
+border-radius:38px;
 
 background:
 
@@ -240,7 +234,7 @@ rgba(
 
 backdrop-filter:
 
-blur(30px);
+blur(28px);
 
 border:
 
@@ -268,9 +262,9 @@ margin-bottom:8px;
 
 color:white;
 
-opacity:.75;
+opacity:.8;
 
-margin-bottom:28px;
+margin-bottom:26px;
 
 }
 
@@ -284,6 +278,8 @@ margin-bottom:14px;
 
 border:none;
 
+outline:none;
+
 border-radius:20px;
 
 background:
@@ -295,13 +291,11 @@ rgba(
 .45
 );
 
-outline:none;
-
 font-size:16px;
 
 }
 
-.btn{
+.button{
 
 width:100%;
 
@@ -311,16 +305,11 @@ border:none;
 
 border-radius:20px;
 
+font-size:16px;
+
 background:
 
-rgba(
-255,
-255,
-255,
-.8
-);
-
-font-size:16px;
+white;
 
 }
 
@@ -350,13 +339,13 @@ font-size:32px;
 <!-- 锁屏 -->
 
 <div
-class="page"
+class="screen"
 id="lock">
 
 <div
 class="time"
-id="time">
-16:52
+id="clock">
+16:55
 </div>
 
 <div
@@ -401,7 +390,7 @@ class="unlock">
 <!-- 登录 -->
 
 <div
-class="page"
+class="screen"
 id="login">
 
 <div
@@ -421,29 +410,20 @@ class="login-sub">
 
 </div>
 
-
 <input
-
 class="input"
-
-id="user"
-
+id="username"
 placeholder="账号">
 
 <input
-
 class="input"
-
+id="password"
 type="password"
-
-id="pass"
-
 placeholder="密码">
 
-
 <button
-class="btn"
-onclick="login()">
+class="button"
+onclick="goHome()">
 
 进入
 
@@ -458,7 +438,7 @@ onclick="login()">
 <!-- 主页 -->
 
 <div
-class="page"
+class="screen"
 id="home">
 
 主页（下一步做）
@@ -466,86 +446,117 @@ id="home">
 </div>
 
 
-
 <script>
 
 /* 时间 */
 
-function update(){
+function clock(){
 
 let now=
+
 new Date()
 
-let time=
+document
+.getElementById(
+"clock"
+)
+
+.innerHTML=
 
 now.toLocaleTimeString(
 [],
 {
-hour:"2-digit",
-minute:"2-digit"
+hour:
+"2-digit",
+
+minute:
+"2-digit"
 }
-)
 
-document
-.getElementById(
-"time"
 )
-.innerText=
-
-time
 
 }
 
-update()
+clock()
 
 setInterval(
-update,
+clock,
 1000
 )
 
 
-
 /* 解锁 */
 
-lock.onclick=
+document
+.getElementById(
+"lock"
+)
 
-()=>{
+.addEventListener(
+"click",
 
-lock.style.opacity=0
+function(){
 
-setTimeout(()=>{
-
-lock.style.display=
+this.style.display=
 "none"
 
-login.style.display=
-"flex"
+document
+.getElementById(
+"login"
+)
 
-},300)
+.style.display=
+"flex"
 
 }
 
+)
 
 
 /* 登录 */
 
-function login(){
+function goHome(){
 
 let u=
-user.value
+
+document
+.getElementById(
+"username"
+)
+
+.value
 
 let p=
-pass.value
+
+document
+.getElementById(
+"password"
+)
+
+.value
+
 
 if(
-u &&
+u
+&&
 p
 ){
 
-login.style.display=
+document
+.getElementById(
+"login"
+)
+
+.style.display=
 "none"
 
-home.style.display=
+
+document
+.getElementById(
+"home"
+)
+
+.style.display=
 "flex"
 
 }
@@ -553,7 +564,7 @@ home.style.display=
 else{
 
 alert(
-"请输入账号和密码"
+"请输入账号密码"
 )
 
 }
