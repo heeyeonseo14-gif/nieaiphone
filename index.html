@@ -4,10 +4,11 @@
 <head>
 
 <meta charset="UTF-8">
+
 <meta name="viewport"
 content="width=device-width,initial-scale=1">
 
-<title>Your World</title>
+<title>YaNie</title>
 
 <style>
 
@@ -15,7 +16,12 @@ content="width=device-width,initial-scale=1">
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:-apple-system,sans-serif;
+
+font-family:
+
+"Trebuchet MS",
+sans-serif;
+
 }
 
 body{
@@ -25,11 +31,12 @@ height:100vh;
 overflow:hidden;
 
 background:
+
 linear-gradient(
 180deg,
-#EEE5FF,
-#DED1F8,
-#CAB5EA
+#F3EDFF,
+#E5D9FA,
+#D5C1F2
 );
 
 }
@@ -48,15 +55,18 @@ background:
 
 radial-gradient(
 circle,
-rgba(255,255,255,.45),
+rgba(255,255,255,.55),
 transparent 65%
 );
 
-filter:blur(140px);
+filter:
+blur(160px);
 
 animation:
 cloud
-18s infinite alternate;
+16s
+infinite
+alternate;
 
 }
 
@@ -65,14 +75,20 @@ cloud
 from{
 
 transform:
-translate(-5%,0);
+translate(
+-5%,
+0
+);
 
 }
 
 to{
 
 transform:
-translate(5%,5%);
+translate(
+5%,
+6%
+);
 
 }
 
@@ -98,37 +114,65 @@ align-items:center;
 
 #lock{
 
-padding-top:120px;
+padding-top:110px;
 
 color:white;
 
 }
 
+/* 时间 */
+
 .time{
 
-font-size:90px;
+font-size:74px;
 
-font-weight:200;
+font-weight:700;
+
+letter-spacing:-3px;
+
+color:
+
+#FFF9FF;
+
+text-shadow:
+
+0 0 30px
+rgba(
+255,
+255,
+255,
+.25
+);
 
 }
+
+/* 日期 */
 
 .date{
 
-font-size:18px;
+margin-top:-8px;
 
-opacity:.85;
+font-size:22px;
+
+color:
+
+#FAF3FF;
+
+opacity:.9;
 
 }
 
+/* 卡片 */
+
 .lock-card{
 
-margin-top:90px;
+margin-top:100px;
 
-width:86%;
+width:84%;
 
-height:250px;
+height:240px;
 
-border-radius:40px;
+border-radius:42px;
 
 background:
 
@@ -140,7 +184,17 @@ rgba(
 );
 
 backdrop-filter:
-blur(30px);
+blur(28px);
+
+border:
+
+1px solid
+rgba(
+255,
+255,
+255,
+.2
+);
 
 display:flex;
 
@@ -152,138 +206,53 @@ align-items:center;
 
 }
 
+/* 标题 */
+
 .lock-title{
 
-font-size:32px;
+font-size:34px;
+
+font-weight:700;
+
+color:
+
+#FFF8FF;
 
 }
+
+/* 副标题 */
 
 .lock-text{
 
-margin-top:10px;
+margin-top:14px;
 
-opacity:.8;
+font-size:22px;
+
+letter-spacing:2px;
+
+color:
+
+#F6EEFF;
+
+opacity:.88;
 
 }
+
+/* 底部 */
 
 .unlock{
 
 margin-top:auto;
 
-margin-bottom:70px;
+margin-bottom:72px;
 
-color:white;
+font-size:18px;
 
-}
+color:
 
-/* 创建世界 */
+#F8F0FF;
 
-#create{
-
-display:none;
-
-justify-content:center;
-
-padding-top:170px;
-
-}
-
-.box{
-
-width:86%;
-
-padding:32px;
-
-border-radius:38px;
-
-background:
-
-rgba(
-255,
-255,
-255,
-.18
-);
-
-backdrop-filter:
-blur(30px);
-
-}
-
-.title{
-
-color:white;
-
-font-size:30px;
-
-}
-
-.sub{
-
-color:white;
-
-opacity:.8;
-
-margin:
-
-8px
-0
-26px;
-
-}
-
-.input{
-
-width:100%;
-
-padding:18px;
-
-margin-bottom:14px;
-
-border:none;
-
-outline:none;
-
-border-radius:18px;
-
-background:
-
-rgba(
-255,
-255,
-255,
-.45
-);
-
-}
-
-.btn{
-
-width:100%;
-
-padding:18px;
-
-border:none;
-
-border-radius:18px;
-
-font-size:16px;
-
-}
-
-/* 主页 */
-
-#home{
-
-display:none;
-
-justify-content:center;
-
-align-items:center;
-
-color:white;
-
-font-size:26px;
+opacity:.85;
 
 }
 
@@ -293,9 +262,6 @@ font-size:26px;
 
 <body>
 
-
-
-<!-- 锁屏 -->
 
 <div
 class="page"
@@ -309,6 +275,7 @@ id="clock">
 
 </div>
 
+
 <div
 class="date">
 
@@ -317,24 +284,26 @@ class="date">
 </div>
 
 
+
 <div
 class="lock-card">
 
 <div
 class="lock-title">
 
-欢迎回来
+欢迎进入你的世界
 
 </div>
 
 <div
 class="lock-text">
 
-轻触进入你的世界
+YaNie
 
 </div>
 
 </div>
+
 
 
 <div
@@ -348,82 +317,11 @@ class="unlock">
 
 
 
-<!-- 创建世界 -->
-
-<div
-class="page"
-id="create">
-
-<div
-class="box">
-
-<div
-class="title">
-
-创建你的世界
-
-</div>
-
-<div
-class="sub">
-
-每一个名字，
-都会开启独属于你的故事。
-
-</div>
-
-
-<input
-
-class="input"
-
-id="name"
-
-placeholder="用户名">
-
-
-<input
-
-class="input"
-
-id="password"
-
-type="password"
-
-placeholder="密码">
-
-
-<button
-class="btn"
-onclick="createWorld()">
-
-开始旅程
-
-</button>
-
-</div>
-
-</div>
-
-
-
-<!-- 主页 -->
-
-<div
-class="page"
-id="home">
-
-欢迎进入主页
-
-</div>
-
-
-
 <script>
 
 /* 时间 */
 
-function time(){
+function updateClock(){
 
 clock.innerText=
 
@@ -432,94 +330,45 @@ new Date()
 .toLocaleTimeString(
 [],
 {
-hour:"2-digit",
-minute:"2-digit"
+hour:
+"2-digit",
+
+minute:
+"2-digit"
 }
+
 )
 
 }
 
-time()
+updateClock()
 
 setInterval(
-time,
+updateClock,
 1000
 )
 
 
-/* 解锁 */
+/* 进入主页 */
 
-lock.onclick=
+document
+.getElementById(
+"lock"
+)
+
+.addEventListener(
+
+"click",
 
 function(){
 
-lock.style.display=
-"none"
+window.location.href=
 
-create.style.display=
-"flex"
+"home.html"
 
 }
 
-
-/* 创建账号 */
-
-function createWorld(){
-
-let user=
-
-name.value
-
-let pass=
-
-password.value
-
-
-if(
-!user||
-!pass
-){
-
-alert(
-"请输入用户名和密码"
 )
-
-return
-
-}
-
-
-localStorage.setItem(
-
-"user",
-
-user
-
-)
-
-localStorage.setItem(
-
-"pass",
-
-pass
-
-)
-
-
-create.style.display=
-"none"
-
-home.style.display=
-"flex"
-
-home.innerHTML=
-
-`
-欢迎回来<br><br>
-${user}
-`
-
-}
 
 </script>
 
