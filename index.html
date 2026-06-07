@@ -184,27 +184,97 @@ height:240px;
 
 border-radius:42px;
 
+/* 真玻璃 */
+
 background:
+
+linear-gradient(
+
+135deg,
 
 rgba(
 255,
 255,
 255,
 .18
-);
+),
 
-backdrop-filter:
-blur(28px);
-
-border:
-
-1px solid
 rgba(
 255,
 255,
 255,
-.2
+.06
+)
+
 );
+
+backdrop-filter:
+
+blur(40px)
+
+saturate(170%);
+
+-webkit-backdrop-filter:
+
+blur(40px)
+
+saturate(170%);
+
+/* 边缘高光 */
+
+border:
+
+1px solid
+
+rgba(
+255,
+255,
+255,
+.28
+);
+
+/* 外阴影 */
+
+box-shadow:
+
+0 20px 60px
+rgba(
+175,
+145,
+225,
+.12),
+
+0 0 0 1px
+rgba(
+255,
+255,
+255,
+.08)
+
+/* 内高光 */
+,
+
+inset
+
+0 1px 1px
+
+rgba(
+255,
+255,
+255,
+.55)
+
+,
+
+inset
+
+0 -10px 40px
+
+rgba(
+255,
+255,
+255,
+.05);
 
 display:flex;
 
@@ -214,8 +284,55 @@ justify-content:center;
 
 align-items:center;
 
+overflow:hidden;
+
+position:relative;
+
 }
 
+/* 玻璃反光 */
+
+.lock-card::before{
+
+content:"";
+
+position:absolute;
+
+top:-80%;
+
+left:-60%;
+
+width:120%;
+
+height:220%;
+
+background:
+
+linear-gradient(
+
+90deg,
+
+transparent,
+
+rgba(
+255,
+255,
+255,
+.18
+),
+
+transparent
+
+);
+
+transform:
+
+rotate(
+25deg
+);
+
+}
+  
 /* 标题 */
 
 .lock-title{
@@ -224,17 +341,21 @@ font-size:22px;
 
 font-weight:700;
 
-line-height:1.6;
-
 color:
 
-#FFF7FD;
+#FFFDFE;
 
-letter-spacing:1px;
+text-shadow:
 
-font-family:
+0 4px 18px
+rgba(
+255,
+255,
+255,
+.25
+);
 
-"Georgia";
+z-index:3;
 
 }
 
@@ -244,21 +365,27 @@ font-family:
 
 margin-top:18px;
 
-font-size:32px;
+font-size:34px;
 
-font-weight:600;
-
-letter-spacing:4px;
+font-weight:500;
 
 color:
 
 #FFFFFF;
 
-opacity:.95;
+opacity:.98;
 
-font-family:
+text-shadow:
 
-"Cursive";
+0 6px 26px
+rgba(
+255,
+255,
+255,
+.22
+);
+
+z-index:3;
 
 }
 
