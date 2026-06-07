@@ -4,7 +4,8 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
 
 <title>Your World</title>
 
@@ -14,7 +15,10 @@
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+font-family:
+-apple-system,
+BlinkMacSystemFont,
+sans-serif;
 }
 
 body{
@@ -24,16 +28,17 @@ height:100vh;
 overflow:hidden;
 
 background:
+
 linear-gradient(
 180deg,
-#EADFFF,
-#DCCDF6,
-#C6B2E8
+#EEE6FF,
+#DCCEF7,
+#CBB6EA
 );
 
 }
 
-/* 云层 */
+/* 云 */
 
 body::before{
 
@@ -44,31 +49,46 @@ position:fixed;
 width:140%;
 height:140%;
 
+left:-20%;
+
+top:-20%;
+
 background:
 
 radial-gradient(
 circle,
-rgba(255,255,255,.65),
+rgba(255,255,255,.5),
 transparent 60%
 );
 
-filter:blur(90px);
+filter:
+blur(120px);
 
 animation:
-cloud 25s linear infinite;
+cloud 18s infinite alternate;
 
 }
 
 @keyframes cloud{
 
-0%{
+from{
+
 transform:
-translateX(-10%);
+translate(
+-5%,
+0
+);
+
 }
 
-100%{
+to{
+
 transform:
-translateX(10%);
+translate(
+5%,
+4%
+);
+
 }
 
 }
@@ -88,7 +108,7 @@ flex-direction:column;
 
 align-items:center;
 
-transition:.45s;
+transition:.5s;
 
 }
 
@@ -96,7 +116,7 @@ transition:.45s;
 
 #lock{
 
-padding-top:90px;
+padding-top:120px;
 
 color:white;
 
@@ -104,7 +124,7 @@ color:white;
 
 .time{
 
-font-size:78px;
+font-size:90px;
 
 font-weight:200;
 
@@ -112,30 +132,68 @@ font-weight:200;
 
 .date{
 
-margin-top:-10px;
+font-size:18px;
 
-opacity:.8;
+opacity:.9;
 
 }
 
-.card{
+.lock-card{
 
-margin-top:60px;
+margin-top:90px;
 
-width:88%;
+width:86%;
 
 height:260px;
 
-border-radius:36px;
+border-radius:40px;
 
 background:
-rgba(255,255,255,.18);
+
+rgba(
+255,
+255,
+255,
+.18
+);
 
 backdrop-filter:
-blur(24px);
+
+blur(30px);
 
 border:
-1px solid rgba(255,255,255,.25);
+
+1px solid
+rgba(
+255,
+255,
+255,
+.25
+);
+
+display:flex;
+
+flex-direction:column;
+
+justify-content:center;
+
+align-items:center;
+
+}
+
+.lock-title{
+
+font-size:32px;
+
+margin-bottom:12px;
+
+}
+
+.lock-text{
+
+font-size:16px;
+
+opacity:.8;
 
 }
 
@@ -145,6 +203,8 @@ margin-top:auto;
 
 margin-bottom:70px;
 
+color:white;
+
 opacity:.9;
 
 }
@@ -153,70 +213,95 @@ opacity:.9;
 
 #login{
 
-justify-content:center;
-
 display:none;
+
+justify-content:center;
 
 }
 
 .login-box{
 
+margin-top:180px;
+
 width:86%;
 
-padding:30px;
+padding:32px;
 
-border-radius:36px;
+border-radius:40px;
 
 background:
-rgba(255,255,255,.2);
+
+rgba(
+255,
+255,
+255,
+.18
+);
 
 backdrop-filter:
-blur(24px);
+
+blur(30px);
+
+border:
+
+1px solid
+rgba(
+255,
+255,
+255,
+.25
+);
 
 }
 
-.title{
+.login-title{
+
+color:white;
 
 font-size:30px;
 
-margin-bottom:10px;
-
-color:white;
+margin-bottom:8px;
 
 }
 
-.sub{
-
-font-size:14px;
+.login-sub{
 
 color:white;
 
-opacity:.8;
+opacity:.75;
 
-margin-bottom:30px;
+margin-bottom:28px;
 
 }
 
-input{
+.input{
 
 width:100%;
 
 padding:18px;
 
-margin-bottom:16px;
+margin-bottom:14px;
 
 border:none;
 
-border-radius:18px;
+border-radius:20px;
 
 background:
-rgba(255,255,255,.5);
+
+rgba(
+255,
+255,
+255,
+.45
+);
 
 outline:none;
 
+font-size:16px;
+
 }
 
-button{
+.btn{
 
 width:100%;
 
@@ -224,11 +309,16 @@ padding:18px;
 
 border:none;
 
-border-radius:18px;
+border-radius:20px;
 
 background:
 
-rgba(255,255,255,.8);
+rgba(
+255,
+255,
+255,
+.8
+);
 
 font-size:16px;
 
@@ -246,7 +336,7 @@ align-items:center;
 
 color:white;
 
-font-size:28px;
+font-size:32px;
 
 }
 
@@ -256,20 +346,49 @@ font-size:28px;
 
 <body>
 
+
 <!-- 锁屏 -->
 
-<div id="lock" class="page">
+<div
+class="page"
+id="lock">
 
-<div class="time" id="time"></div>
+<div
+class="time"
+id="time">
+16:52
+</div>
 
-<div class="date">
+<div
+class="date">
+
 星期日
+
 </div>
 
-<div class="card">
+
+<div
+class="lock-card">
+
+<div
+class="lock-title">
+
+欢迎回来
+
 </div>
 
-<div class="unlock">
+<div
+class="lock-text">
+
+轻触进入你的世界
+
+</div>
+
+</div>
+
+
+<div
+class="unlock">
 
 ↑ 点击解锁
 
@@ -278,38 +397,55 @@ font-size:28px;
 </div>
 
 
+
 <!-- 登录 -->
 
-<div id="login" class="page">
+<div
+class="page"
+id="login">
 
-<div class="login-box">
+<div
+class="login-box">
 
-<div class="title">
-
-欢迎回来
-
-</div>
-
-<div class="sub">
-
-登录进入你的世界
-
-</div>
-
-<input
-id="user"
-placeholder="账号"
->
-
-<input
-id="pass"
-type="password"
-placeholder="密码"
->
-
-<button onclick="login()">
+<div
+class="login-title">
 
 登录
+
+</div>
+
+<div
+class="login-sub">
+
+继续你的旅程
+
+</div>
+
+
+<input
+
+class="input"
+
+id="user"
+
+placeholder="账号">
+
+<input
+
+class="input"
+
+type="password"
+
+id="pass"
+
+placeholder="密码">
+
+
+<button
+class="btn"
+onclick="login()">
+
+进入
 
 </button>
 
@@ -318,27 +454,29 @@ placeholder="密码"
 </div>
 
 
+
 <!-- 主页 -->
 
-<div id="home" class="page">
+<div
+class="page"
+id="home">
 
-主页（之后做）
+主页（下一步做）
 
 </div>
+
 
 
 <script>
 
 /* 时间 */
 
-function time(){
+function update(){
 
 let now=
 new Date()
 
-document
-.getElementById("time")
-.innerText=
+let time=
 
 now.toLocaleTimeString(
 [],
@@ -348,34 +486,46 @@ minute:"2-digit"
 }
 )
 
+document
+.getElementById(
+"time"
+)
+.innerText=
+
+time
+
 }
 
-time()
+update()
 
 setInterval(
-time,
+update,
 1000
 )
 
+
+
 /* 解锁 */
 
-document
-.getElementById("lock")
-.onclick=
+lock.onclick=
 
-function(){
+()=>{
 
 lock.style.opacity=0
 
 setTimeout(()=>{
 
-lock.style.display="none"
+lock.style.display=
+"none"
 
-login.style.display="flex"
+login.style.display=
+"flex"
 
 },300)
 
 }
+
+
 
 /* 登录 */
 
@@ -392,9 +542,11 @@ u &&
 p
 ){
 
-login.style.display="none"
+login.style.display=
+"none"
 
-home.style.display="flex"
+home.style.display=
+"flex"
 
 }
 
