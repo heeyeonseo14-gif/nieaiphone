@@ -1,275 +1,415 @@
-<!doctype html>
-<html lang="zh-CN">
+<!DOCTYPE html>
+<html lang="zh">
+
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#9b86e6">
-  <title>NIEaiphone</title>
 
-  <!-- 软萌圆角字体 -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-  <style>
-    :root{
-      --bg1:#f0e6fb; --bg2:#e6d8f6; --card-bg: rgba(255,255,255,0.42);
-      --btn1:#9b86e6; --btn2:#7a64d0; --text:#322741;
-      --accent: #b78ef5;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0}
-    body{
-      font-family:"Quicksand","Nunito","Segoe UI",sans-serif;
-      background: linear-gradient(135deg, var(--bg1), var(--bg2) 60%, #d5c6f0);
-      background-size:200% 200%;
-      animation: bgMove 10s linear infinite;
-      display:flex;align-items:center;justify-content:center;
-      color:var(--text);padding:20px;
-    }
-    @keyframes bgMove{
-      0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}
-    }
+<title>Your World</title>
 
-    /* 卡片：浮动 + 光晕变化 */
-    .container{
-      width:92%;max-width:420px;padding:36px 28px;border-radius:28px;
-      background:var(--card-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-      box-shadow:
-        0 20px 46px rgba(50,35,65,0.14),
-        inset 0 6px 20px rgba(255,255,255,0.22);
-      text-align:left;position:relative;overflow:visible;
-      transform-origin:center;
-      animation: floaty 6s ease-in-out infinite;
-    }
-    @keyframes floaty{
-      0%{ transform: translateY(0) rotateZ(-0.2deg) }
-      50%{ transform: translateY(-10px) rotateZ(0.2deg) }
-      100%{ transform: translateY(0) rotateZ(-0.2deg) }
-    }
+<style>
 
-    /* 微光（随浮动轻微变亮） */
-    .glow {
-      position:absolute;left:-6%;top:-6%;right:-6%;bottom:-6%;pointer-events:none;border-radius:32px;
-      background: radial-gradient(60% 40% at 20% 20%, rgba(183,142,245,0.12), transparent 20%),
-                  radial-gradient(50% 30% at 80% 70%, rgba(255,255,255,0.06), transparent 25%);
-      filter: blur(10px);
-      transition: opacity .6s ease;
-    }
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+}
 
-    /* 标题区域 */
-    .header {
-      display:flex;align-items:center;gap:14px;padding-left:6px;
-    }
-    .emoji {
-      width:56px;height:56px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;
-      background: linear-gradient(180deg,#fff,#fff7);
-      box-shadow: 0 8px 22px rgba(124,93,232,0.14);
-      transition: transform .3s ease;
-      /* 心跳动画 */
-      animation: heartbeat 2.2s ease-in-out infinite;
-    }
-    @keyframes heartbeat{
-      0%{ transform: scale(1) }
-      25%{ transform: scale(1.06) }
-      40%{ transform: scale(0.98) }
-      60%{ transform: scale(1.04) }
-      100%{ transform: scale(1) }
-    }
+body{
 
-    h1{
-      margin:0;font-size:34px;font-weight:700;color:var(--text);
-      letter-spacing:0.6px;
-      display:flex;align-items:center;gap:10px;
-    }
+height:100vh;
 
-    /* 中间居中布局（卡片中内容居中显示） */
-    .inner {
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:18px;padding:6px 6px 2px;
-    }
+overflow:hidden;
 
-    /* 按钮：呼吸 + 按下效果 + 悬停加光 */
-    .btn {
-      display:block;width:92%;max-width:340px;padding:14px 14px;border-radius:16px;
-      background: linear-gradient(135deg, var(--btn1), var(--btn2));
-      color:white;font-size:17px;font-weight:700;text-decoration:none;text-align:center;
-      box-shadow: 0 10px 28px rgba(124,93,232,0.28), inset 0 -2px 6px rgba(255,255,255,0.18);
-      transition: transform .18s cubic-bezier(.22,.9,.26,1), box-shadow .18s, filter .18s;
-      animation: breathe 3.6s ease-in-out infinite;
-      position:relative;overflow:visible;
-    }
-    @keyframes breathe{
-      0%{ box-shadow: 0 8px 20px rgba(124,93,232,0.26); transform: translateY(0) }
-      50%{ box-shadow: 0 14px 34px rgba(124,93,232,0.36); transform: translateY(-2px) }
-      100%{ box-shadow: 0 8px 20px rgba(124,93,232,0.26); transform: translateY(0) }
-    }
-    .btn:active{ transform: translateY(2px) scale(.994); animation:none; box-shadow: 0 6px 14px rgba(124,93,232,0.18) }
-    .btn:hover{ filter:brightness(1.03) }
-
-    /* 粒子容器（位于卡片之上） */
-    .particles {
-      position:absolute;left:0;right:0;top:0;bottom:0;pointer-events:none;overflow:visible;
-    }
-    .particle {
-      position:absolute;left:50%;top:50%;
-      font-size:16px;opacity:0;transform:translate(-50%,-50%) scale(0.9);
-      will-change: transform, opacity;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.12);
-    }
-
-    /* 适配 */
-    @media (max-height:700px){
-      .container{ padding:24px 18px }
-      h1{ font-size:30px }
-      .emoji{ width:48px;height:48px;font-size:22px }
-    }
-  </style>
-</head>
-<body>
-  <div class="container" role="region" aria-label="NIEaiphone 欢迎页">
-    <div class="glow" aria-hidden="true"></div>
-
-    <div class="inner">
-      <div class="header" aria-hidden="false" style="width:100%;justify-content:flex-start">
-        <div class="emoji" id="heartEmoji" title="心形">💜</div>
-        <h1>NIEaiphone</h1>
-      </div>
-
-      <a class="btn" id="homeBtn" href="home.html" aria-label="回到你的小家">回到你的小家</a>
-    </div>
-
-    <!-- 粒子容器 -->
-    <div class="particles" id="particles"></div>
-  </div>
-
-  <script>
-    // 粒子特效：点击按钮时从按钮位置生成若干爱心并上升消失
-    (function(){
-      const btn = document.getElementById('homeBtn');
-      const particles = document.getElementById('particles');
-
-      function createParticle(x, y, char){
-        const el = document.createElement('div');
-        el.className = 'particle';
-        el.textContent = char || '💜';
-        particles.appendChild(el);
-
-        // 随机偏移与大小
-        const size = 14 + Math.random()*12;
-        el.style.fontSize = size + 'px';
-        el.style.left = x + 'px';
-        el.style.top = y + 'px';
-
-        // 随机动画参数
-        const dx = (Math.random()-0.5) * 140; // x偏移
-        const dy = -120 - Math.random()*160; // y向上
-        const rot = (Math.random()-0.5) * 60; // 旋转度
-        const duration = 900 + Math.random()*800;
-
-        // 使用 JS 动画（requestAnimationFrame）
-        const start = performance.now();
-        function frame(now){
-          const t = Math.min(1, (now - start) / duration);
-          // ease out cubic
-          const ease = 1 - Math.pow(1 - t, 3);
-          el.style.transform = `translate(${dx * ease}px, ${dy * ease}px) rotate(${rot * ease}deg) scale(${1 - 0.25*ease})`;
-          el.style.opacity = String(1 - ease);
-          if(t < 1) requestAnimationFrame(frame);
-          else el.remove();
-        }
-        requestAnimationFrame(frame);
-      }
-
-      // 计算按钮位置并生成多个粒子
-      btn.addEventListener('click', function(e){
-        // 获取按钮的中心点相对于 particles 容器（相对页面）
-        const rect = btn.getBoundingClientRect();
-        const pRect = particles.getBoundingClientRect();
-        // 将按钮中心作为起点
-        const startX = rect.left + rect.width/2 - pRect.left;
-        const startY = rect.top + rect.height/2 - pRect.top;
-
-        // 生成若干爱心，带点随机延迟
-        const emojis = ['💜','💞','💗','✨','🫧'];
-        for(let i=0;i<14;i++){
-          setTimeout(()=>{
-            const ch = emojis[Math.floor(Math.random()*emojis.length)];
-            createParticle(startX + (Math.random()-0.5)*40, startY + (Math.random()-0.5)*20, ch);
-          }, i * 30);
-        }
-
-        // 视觉反馈：轻微放大心形并闪光
-        const heart = document.getElementById('heartEmoji');
-        heart.animate([
-          { transform: 'scale(1)' },
-          { transform: 'scale(1.18)' },
-          { transform: 'scale(1)' }
-        ], { duration: 420, easing: 'cubic-bezier(.22,.9,.26,1)' });
-
-        // 允许默认跳转（如果需要阻止跳转，调用 e.preventDefault())
-        // 如果你想先显示特效再跳页，取消下面注释并在 setTimeout 后跳转：
-        // e.preventDefault();
-        // setTimeout(()=>{ window.location = btn.href; }, 450);
-      });
-    })();
-
-    // 可选： 当用户悬停/触摸卡片时微调 glow 强度（更灵动）
-    (function(){
-      const cont = document.querySelector('.container');
-      const glow = document.querySelector('.glow');
-      cont.addEventListener('pointerenter', ()=>{ glow.style.opacity = '1'; glow.style.filter='blur(12px)'; });
-      cont.addEventListener('pointerleave', ()=>{ glow.style.opacity = '0.95'; glow.style.filter='blur(10px)'; });
-      // 初始略隐藏，让浮动更自然
-      glow.style.opacity = '0.95';
-    })();
-    </script>
-
- <script>
-let deferredPrompt;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-
-  const btn = document.createElement('button');
-  btn.innerText = "安装 NIEaiphone";
-  btn.style.position = "fixed";
-  btn.style.bottom = "20px";
-  btn.style.left = "50%";
-  btn.style.transform = "translateX(-50%)";
-  btn.style.zIndex = "9999";
-
-  btn.onclick = () => {
-    deferredPrompt.prompt();
-    deferredPrompt = null;
-  };
-
-  document.body.appendChild(btn);
-});
-</script> 
-
-<script>
-if ('serviceWorker' in navigator) {
-
-  navigator.serviceWorker.register('./service-worker.js')
-  .then(reg => {
-
-    console.log('SW registered');
-
-    // 每次打开检查更新
-    reg.update();
-
-    // 每60秒检查更新
-    setInterval(()=>{
-      reg.update();
-    },60000);
-
-  });
+background:
+linear-gradient(
+180deg,
+#EADFFF,
+#DCCDF6,
+#C6B2E8
+);
 
 }
+
+/* 云层 */
+
+body::before{
+
+content:"";
+
+position:fixed;
+
+width:140%;
+height:140%;
+
+background:
+
+radial-gradient(
+circle,
+rgba(255,255,255,.65),
+transparent 60%
+);
+
+filter:blur(90px);
+
+animation:
+cloud 25s linear infinite;
+
+}
+
+@keyframes cloud{
+
+0%{
+transform:
+translateX(-10%);
+}
+
+100%{
+transform:
+translateX(10%);
+}
+
+}
+
+/* 页面 */
+
+.page{
+
+position:absolute;
+
+width:100%;
+height:100%;
+
+display:flex;
+
+flex-direction:column;
+
+align-items:center;
+
+transition:.45s;
+
+}
+
+/* 锁屏 */
+
+#lock{
+
+padding-top:90px;
+
+color:white;
+
+}
+
+.time{
+
+font-size:78px;
+
+font-weight:200;
+
+}
+
+.date{
+
+margin-top:-10px;
+
+opacity:.8;
+
+}
+
+.card{
+
+margin-top:60px;
+
+width:88%;
+
+height:260px;
+
+border-radius:36px;
+
+background:
+rgba(255,255,255,.18);
+
+backdrop-filter:
+blur(24px);
+
+border:
+1px solid rgba(255,255,255,.25);
+
+}
+
+.unlock{
+
+margin-top:auto;
+
+margin-bottom:70px;
+
+opacity:.9;
+
+}
+
+/* 登录 */
+
+#login{
+
+justify-content:center;
+
+display:none;
+
+}
+
+.login-box{
+
+width:86%;
+
+padding:30px;
+
+border-radius:36px;
+
+background:
+rgba(255,255,255,.2);
+
+backdrop-filter:
+blur(24px);
+
+}
+
+.title{
+
+font-size:30px;
+
+margin-bottom:10px;
+
+color:white;
+
+}
+
+.sub{
+
+font-size:14px;
+
+color:white;
+
+opacity:.8;
+
+margin-bottom:30px;
+
+}
+
+input{
+
+width:100%;
+
+padding:18px;
+
+margin-bottom:16px;
+
+border:none;
+
+border-radius:18px;
+
+background:
+rgba(255,255,255,.5);
+
+outline:none;
+
+}
+
+button{
+
+width:100%;
+
+padding:18px;
+
+border:none;
+
+border-radius:18px;
+
+background:
+
+rgba(255,255,255,.8);
+
+font-size:16px;
+
+}
+
+/* 主页 */
+
+#home{
+
+display:none;
+
+justify-content:center;
+
+align-items:center;
+
+color:white;
+
+font-size:28px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- 锁屏 -->
+
+<div id="lock" class="page">
+
+<div class="time" id="time"></div>
+
+<div class="date">
+星期日
+</div>
+
+<div class="card">
+</div>
+
+<div class="unlock">
+
+↑ 点击解锁
+
+</div>
+
+</div>
+
+
+<!-- 登录 -->
+
+<div id="login" class="page">
+
+<div class="login-box">
+
+<div class="title">
+
+欢迎回来
+
+</div>
+
+<div class="sub">
+
+登录进入你的世界
+
+</div>
+
+<input
+id="user"
+placeholder="账号"
+>
+
+<input
+id="pass"
+type="password"
+placeholder="密码"
+>
+
+<button onclick="login()">
+
+登录
+
+</button>
+
+</div>
+
+</div>
+
+
+<!-- 主页 -->
+
+<div id="home" class="page">
+
+主页（之后做）
+
+</div>
+
+
+<script>
+
+/* 时间 */
+
+function time(){
+
+let now=
+new Date()
+
+document
+.getElementById("time")
+.innerText=
+
+now.toLocaleTimeString(
+[],
+{
+hour:"2-digit",
+minute:"2-digit"
+}
+)
+
+}
+
+time()
+
+setInterval(
+time,
+1000
+)
+
+/* 解锁 */
+
+document
+.getElementById("lock")
+.onclick=
+
+function(){
+
+lock.style.opacity=0
+
+setTimeout(()=>{
+
+lock.style.display="none"
+
+login.style.display="flex"
+
+},300)
+
+}
+
+/* 登录 */
+
+function login(){
+
+let u=
+user.value
+
+let p=
+pass.value
+
+if(
+u &&
+p
+){
+
+login.style.display="none"
+
+home.style.display="flex"
+
+}
+
+else{
+
+alert(
+"请输入账号和密码"
+)
+
+}
+
+}
+
 </script>
-  
+
 </body>
+
 </html>
