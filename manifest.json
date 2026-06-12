@@ -1,40 +1,38 @@
 {
-"name":"YaNie",
+  "name": "YaNie",
 
-"short_name":"YaNie",
+  "short_name": "YaNie",
 
-"start_url":"index.html",
+  "start_url": "./index.html",
 
-"display":"standalone",
+  "scope": "./",
 
-"background_color":"#F3EDFF",
+  "display": "standalone",
 
-"theme_color":"#D8C2F3",
+  "background_color": "#F3EDFF",
 
-"orientation":"portrait",
+  "theme_color": "#D8C2F3",
 
-"icons":[
+  "orientation": "portrait",
 
-{
+  "icons": [
 
-"src":"icon-192.png",
+    {
+      "src": "./icon-192.png",
 
-"sizes":"192x192",
+      "sizes": "192x192",
 
-"type":"image/png"
+      "type": "image/png"
+    },
 
-},
+    {
+      "src": "./icon-512.png",
 
-{
+      "sizes": "512x512",
 
-"src":"icon-512.png",
+      "type": "image/png"
+    }
 
-"sizes":"512x512",
-
-"type":"image/png"
-
+  ]
 }
 
-]
-
-}
