@@ -9,6 +9,13 @@
 content="width=device-width,initial-scale=1">
 
 <title>YaNie</title>
+<link
+rel="manifest"
+href="manifest.json">
+
+<meta
+name="theme-color"
+content="#D8C2F3">
 
 <style>
 
@@ -523,6 +530,27 @@ window.location.href=
 }
 
 )
+
+</script>
+
+<script>
+
+if(
+"serviceWorker"
+in
+navigator
+){
+
+navigator
+.serviceWorker
+
+.register(
+
+"./service-worker.js"
+
+)
+
+}
 
 </script>
 
