@@ -15,17 +15,13 @@ content="width=device-width,initial-scale=1">
 <style>
 
 *{
-
 margin:0;
-
 padding:0;
-
 box-sizing:border-box;
 
 font-family:
 
 -apple-system,
-
 sans-serif;
 
 }
@@ -36,22 +32,20 @@ height:100vh;
 
 overflow:hidden;
 
+padding:18px;
+
 background:
 
 linear-gradient(
 180deg,
 
-#F4EEFF,
+#F5EEFF,
 
-#E7D8FB,
+#E5D6FA,
 
-#D8C2F3
+#D7C0F2
 
 );
-
-padding:
-
-18px;
 
 }
 
@@ -59,7 +53,7 @@ padding:
 
 .status{
 
-height:50px;
+height:42px;
 
 display:flex;
 
@@ -67,19 +61,24 @@ justify-content:space-between;
 
 align-items:center;
 
-color:white;
+color:
 
-font-size:15px;
+rgba(
+255,
+255,
+255,
+.85
+);
 
 }
 
-/* 资料卡 */
+/* 卡片 */
 
 .profile{
 
-height:220px;
+height:200px;
 
-margin-top:10px;
+margin-top:12px;
 
 border-radius:36px;
 
@@ -101,7 +100,6 @@ rgba(
 255,
 255,
 .08
-
 )
 
 );
@@ -118,35 +116,24 @@ rgba(
 255,
 255,
 255,
-.28
+.25
 );
 
 display:flex;
 
 flex-direction:column;
 
-align-items:center;
-
 justify-content:center;
 
-box-shadow:
-
-0 20px 50px
-
-rgba(
-150,
-120,
-200,
-.1
-);
+align-items:center;
 
 }
 
 .avatar{
 
-width:88px;
+width:82px;
 
-height:88px;
+height:82px;
 
 border-radius:50%;
 
@@ -156,16 +143,16 @@ rgba(
 255,
 255,
 255,
-.5
+.45
 );
 
-margin-bottom:16px;
+margin-bottom:14px;
 
 }
 
 .name{
 
-font-size:26px;
+font-size:28px;
 
 color:white;
 
@@ -173,9 +160,7 @@ color:white;
 
 .desc{
 
-margin-top:10px;
-
-font-size:14px;
+margin-top:8px;
 
 color:
 
@@ -188,11 +173,11 @@ rgba(
 
 }
 
-/* 图标 */
+/* APP */
 
 .apps{
 
-margin-top:30px;
+margin-top:24px;
 
 display:grid;
 
@@ -200,13 +185,13 @@ grid-template-columns:
 
 1fr 1fr;
 
-gap:20px;
+gap:14px;
 
 }
 
 .app{
 
-height:110px;
+height:95px;
 
 border-radius:28px;
 
@@ -221,7 +206,7 @@ rgba(
 
 backdrop-filter:
 
-blur(30px);
+blur(32px);
 
 display:flex;
 
@@ -231,19 +216,23 @@ justify-content:center;
 
 align-items:center;
 
+text-decoration:none;
+
 color:white;
 
 }
 
 .icon{
 
-font-size:30px;
+width:30px;
+
+height:30px;
 
 margin-bottom:10px;
 
 }
 
-/* dock */
+/* Dock */
 
 .dock{
 
@@ -255,9 +244,9 @@ right:18px;
 
 bottom:26px;
 
-height:84px;
+height:78px;
 
-border-radius:32px;
+border-radius:30px;
 
 background:
 
@@ -278,7 +267,23 @@ justify-content:space-evenly;
 
 align-items:center;
 
-color:white;
+}
+
+.dock a{
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+}
+
+.dock img{
+
+width:28px;
+
+height:28px;
 
 }
 
@@ -289,16 +294,17 @@ color:white;
 <body>
 
 
-
 <div class="status">
 
 <div>
-18:32
+
+21:18
+
 </div>
 
 <div>
 
-☁️
+☁
 
 </div>
 
@@ -330,59 +336,73 @@ YaNie
 
 <div class="apps">
 
-<div class="app">
 
-<div class="icon">
+<a
+class="app"
+href="weibo.html">
 
-💬
+<img
+class="icon"
 
-</div>
+src=
 
-聊天
+"https://api.iconify.design/lucide/newspaper.svg">
 
-</div>
+微博
 
-
-
-<div class="app">
-
-<div class="icon">
-
-📖
-
-</div>
-
-世界
-
-</div>
+</a>
 
 
 
-<div class="app">
+<a
+class="app"
+href="life.html">
 
-<div class="icon">
+<img
+class="icon"
 
-🎵
+src=
 
-</div>
+"https://api.iconify.design/lucide/heart.svg">
 
-音乐
+Your Life
 
-</div>
+</a>
 
 
 
-<div class="app">
+<a
+class="app"
+href="music.html">
 
-<div class="icon">
+<img
+class="icon"
 
-⚙️
+src=
 
-</div>
+"https://api.iconify.design/lucide/headphones.svg">
 
-设置
+Music
 
-</div>
+</a>
+
+
+
+<a
+class="app"
+href="worldbook.html">
+
+<img
+class="icon"
+
+src=
+
+"https://api.iconify.design/lucide/book-heart.svg">
+
+世界书
+
+</a>
+
 
 </div>
 
@@ -390,11 +410,44 @@ YaNie
 
 <div class="dock">
 
-🏠
 
-⭐
+<a
+href="api.html">
 
-👤
+<img
+
+src=
+
+"https://api.iconify.design/lucide/cpu.svg">
+
+</a>
+
+
+
+<a
+href="appearance.html">
+
+<img
+
+src=
+
+"https://api.iconify.design/lucide/palette.svg">
+
+</a>
+
+
+
+<a
+href="memory.html">
+
+<img
+
+src=
+
+"https://api.iconify.design/lucide/brain.svg">
+
+</a>
+
 
 </div>
 
