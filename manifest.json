@@ -1,29 +1,40 @@
 {
-  "name": "NIEaiphone",
-  "short_name": "NIE",
-  "description": "NIEaiphone · 沉浸式 AI 角色聊天空间",
+"name":"YaNie",
 
-  "start_url": "./index.html?v=1",
-  "scope": "./",
+"short_name":"YaNie",
 
-  "display": "standalone",
-  "orientation": "portrait",
+"start_url":"index.html",
 
-  "background_color": "#f4e8fb",
-  "theme_color": "#9b86e6",
+"display":"standalone",
 
-  "icons": [
-    {
-      "src": "./icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ]
+"background_color":"#F3EDFF",
+
+"theme_color":"#D8C2F3",
+
+"orientation":"portrait",
+
+"icons":[
+
+{
+
+"src":"icon-192.png",
+
+"sizes":"192x192",
+
+"type":"image/png"
+
+},
+
+{
+
+"src":"icon-512.png",
+
+"sizes":"512x512",
+
+"type":"image/png"
+
+}
+
+]
+
 }
