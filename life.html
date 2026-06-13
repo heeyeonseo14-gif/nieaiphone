@@ -516,8 +516,7 @@ onchange="upload(event)">
 
 <input
 class="input"
-
-id="name"
+id="roleName"
 
 placeholder="名字">
 
@@ -636,26 +635,53 @@ let data={
 
 name:
 
-name.value,
+document
+.getElementById(
+"roleName"
+)
+.value,
 
 gender:
 
-gender.value,
+document
+.getElementById(
+"gender"
+)
+.value,
 
 personality:
 
-personality.value,
+document
+.getElementById(
+"personality"
+)
+.value,
 
 style:
 
-style.value,
+document
+.getElementById(
+"style"
+)
+.value,
 
 avatar
 
 }
 
 
-let all=
+if(!data.name){
+
+alert(
+"请输入名字"
+)
+
+return
+
+}
+
+
+let roles=
 
 JSON.parse(
 
@@ -669,22 +695,44 @@ localStorage.getItem(
 
 )
 
-all.push(
+
+roles.push(
 data
 )
+
 
 localStorage.setItem(
 
 "roles",
 
 JSON.stringify(
-all
+roles
 )
 
 )
+
+
+/* 清空 */
+
+photo.src=""
+
+avatar=""
+
+document
+.getElementById(
+"roleName"
+)
+.value=""
+
+gender.selectedIndex=0
+
+personality.value=""
+
+style.value=""
 
 modal.style.display=
 "none"
+
 
 render()
 
@@ -694,7 +742,21 @@ render()
 
 function render(){
 
-roles.innerHTML=""
+roles.innerHTML=
+
+`
+
+<div class="role">
+
+<div>
+
+我的设定
+
+</div>
+
+</div>
+
+`
 
 
 let all=
@@ -714,16 +776,14 @@ localStorage.getItem(
 
 all.forEach(
 
-r=>{
+(r,i)=>{
 
 roles.innerHTML+=`
 
 <div class="role">
 
 <img
-src="${
-r.avatar
-}">
+src="${r.avatar}">
 
 <div
 class="role-info">
@@ -731,20 +791,37 @@ class="role-info">
 <div
 class="role-name">
 
-${
-r.name
-}
+${r.name}
 
 </div>
 
 <div
 class="role-gender">
 
-${
-r.gender
-}
+${r.gender}
 
 </div>
+
+</div>
+
+
+<div
+style="
+margin-left:auto">
+
+<button
+onclick="editRole(${i})">
+
+编辑
+
+</button>
+
+<button
+onclick="deleteRole(${i})">
+
+删除
+
+</button>
 
 </div>
 
@@ -758,6 +835,51 @@ r.gender
 
 }
 
+
+function deleteRole(i){
+
+let all=
+
+JSON.parse(
+
+localStorage.getItem(
+"roles"
+)
+
+||
+
+"[]"
+
+)
+
+all.splice(
+i,
+1
+)
+
+localStorage.setItem(
+
+"roles",
+
+JSON.stringify(
+all
+)
+
+)
+
+render()
+
+}
+
+
+function editRole(i){
+
+alert(
+"编辑功能下一版做🥹"
+)
+
+}
+  
 
 function tab(
 id,
