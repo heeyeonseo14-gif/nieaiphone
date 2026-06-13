@@ -1,3 +1,5 @@
+const VERSION="yanie-v1.0.0"
+
 self.addEventListener(
 "install",
 (event)=>{
@@ -8,30 +10,67 @@ self.skipWaiting()
 )
 
 self.addEventListener(
-
 "activate",
-
 (event)=>{
 
 event.waitUntil(
 
-clients.claim()
+(async()=>{
 
+let keys=
+
+await caches.keys()
+
+for(
+let k
+of
+keys
+){
+
+if(
+k!==VERSION
+){
+
+await caches.delete(
+k
 )
 
 }
 
+}
+
+await clients.claim()
+
+})()
+
 )
 
-/* 不缓存，但允许安装 */
+}
+)
+
 
 self.addEventListener(
-
 "fetch",
 
 (event)=>{
 
-return
+event.respondWith(
+
+fetch(
+event.request
+)
+
+.catch(
+
+()=>
+
+caches.match(
+event.request
+)
+
+)
+
+)
 
 }
 )
