@@ -974,35 +974,36 @@ return
 }
 
 function openStory(
-title
+index
 ){
 
 localStorage.setItem(
 
 "currentStory",
 
-title
+index
 
 )
 
-window.location.href=
+location.href=
 
-"story.html"
+"./story.html"
 
-} 
+}
 
 all.forEach(
 
-s=>{
+(s,index)=>{
 
 storyList.innerHTML+=`
 
 <div
+
 class="story"
 
-onclick="openStory(
-'${s.title}'
-)">
+onclick="openStory(${index})"
+
+>
 
 <div class="story-name">
 
@@ -1023,9 +1024,6 @@ ${s.title}
 }
 
 )
-
-}
-  
 
 function render(){
 
