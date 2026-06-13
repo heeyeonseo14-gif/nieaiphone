@@ -377,6 +377,100 @@ object-fit:cover;
 
 }
 
+/* 开启故事 */
+
+.new-story{
+
+display:flex;
+
+justify-content:
+space-between;
+
+align-items:center;
+
+padding:22px;
+
+margin-bottom:18px;
+
+border-radius:30px;
+
+background:
+
+linear-gradient(
+
+135deg,
+
+rgba(
+255,
+255,
+255,
+.25
+),
+
+rgba(
+255,
+255,
+255,
+.08
+)
+
+);
+
+backdrop-filter:
+
+blur(40px);
+
+color:
+
+#4D4460;
+
+font-size:18px;
+
+}
+
+/* 故事 */
+
+.story{
+
+padding:18px;
+
+margin-bottom:14px;
+
+border-radius:28px;
+
+background:
+
+rgba(
+255,
+255,
+255,
+.18
+);
+
+}
+
+.story-name{
+
+font-size:18px;
+
+color:
+
+#4A4257;
+
+}
+
+.story-sub{
+
+margin-top:8px;
+
+font-size:14px;
+
+color:
+
+#7A7288;
+
+} 
+
 </style>
 
 </head>
@@ -414,15 +508,48 @@ id="now"
 
 class="section show">
 
-<div class="empty">
 
-还没有角色
+<!-- 固定入口 -->
+
+<div
+class="new-story"
+
+onclick="createStory()">
+
+<div>
+
+开启新故事
+
+</div>
+
+<div>
+
+＋
 
 </div>
 
 </div>
 
 
+
+<!-- 故事列表 -->
+
+<div
+id="storyList">
+
+<div
+class="empty">
+
+还没有故事
+
+</div>
+
+</div>
+
+
+</div>
+
+  
 
 <div
 id="status"
@@ -738,7 +865,129 @@ render()
 
 }
 
+function createStory(){
 
+let title=
+
+prompt(
+"故事名字"
+)
+
+if(
+!title
+)return
+
+
+let all=
+
+JSON.parse(
+
+localStorage.getItem(
+"stories"
+)
+
+||
+
+"[]"
+
+)
+
+
+all.unshift({
+
+title
+
+})
+
+
+localStorage.setItem(
+
+"stories",
+
+JSON.stringify(
+all
+)
+
+)
+
+
+renderStory()
+
+}
+
+
+
+function renderStory(){
+
+storyList.innerHTML=""
+
+
+let all=
+
+JSON.parse(
+
+localStorage.getItem(
+"stories"
+)
+
+||
+
+"[]"
+
+)
+
+
+if(
+!all.length
+){
+
+storyList.innerHTML=
+
+`
+
+<div class="empty">
+
+还没有故事
+
+</div>
+
+`
+
+return
+
+}
+
+
+all.forEach(
+
+s=>{
+
+storyList.innerHTML+=`
+
+<div class="story">
+
+<div class="story-name">
+
+${s.title}
+
+</div>
+
+<div class="story-sub">
+
+点击进入故事
+
+</div>
+
+</div>
+
+`
+
+}
+
+)
+
+}
+  
 
 function render(){
 
@@ -937,6 +1186,8 @@ btn.classList.add(
 
 
 render()
+
+renderStory()
 
 </script>
 
