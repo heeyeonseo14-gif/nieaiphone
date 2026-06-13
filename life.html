@@ -18,12 +18,9 @@ content="width=device-width,initial-scale=1">
 margin:0;
 padding:0;
 box-sizing:border-box;
-
 font-family:
-
 "Trebuchet MS",
 sans-serif;
-
 }
 
 body{
@@ -36,26 +33,25 @@ background:
 
 linear-gradient(
 180deg,
-
 #F5EEFF,
-
 #E6D8FA,
-
 #D8C2F3
-
 );
 
-padding:
-
-22px;
+padding:22px;
 
 }
 
-/* 标题 */
+/* 顶部 */
 
 .header{
 
-margin-top:24px;
+display:flex;
+
+justify-content:
+space-between;
+
+align-items:center;
 
 }
 
@@ -63,27 +59,44 @@ margin-top:24px;
 
 font-size:34px;
 
-font-weight:600;
-
 color:
 
-#53496A;
+#4D4460;
 
 }
 
-.sub{
+.add{
 
-margin-top:8px;
+width:42px;
 
-font-size:14px;
+height:42px;
+
+border:none;
+
+border-radius:50%;
+
+background:
+
+rgba(
+255,
+255,
+255,
+.22
+);
+
+backdrop-filter:
+
+blur(30px);
+
+font-size:26px;
 
 color:
 
-#746A85;
+#4A4257;
 
 }
 
-/* 内容区 */
+/* 内容 */
 
 .content{
 
@@ -92,90 +105,52 @@ margin-top:26px;
 height:
 
 calc(
-100vh - 250px
+100vh - 220px
 );
 
 overflow:auto;
 
-padding-bottom:120px;
+}
+
+.section{
+
+display:none;
 
 }
 
-/* 卡片 */
+.show{
 
-.card{
+display:block;
+
+}
+
+/* 空 */
+
+.empty{
+
+margin-top:120px;
+
+text-align:center;
+
+color:
+
+#746A85;
+
+}
+
+/* 设置 */
+
+.role{
+
+display:flex;
+
+align-items:center;
 
 margin-bottom:14px;
 
-padding:18px;
+padding:16px;
 
 border-radius:28px;
-
-background:
-
-linear-gradient(
-
-135deg,
-
-rgba(
-255,
-255,
-255,
-.22
-),
-
-rgba(
-255,
-255,
-255,
-.08
-)
-
-);
-
-backdrop-filter:
-
-blur(30px);
-
-}
-
-.card-title{
-
-font-size:18px;
-
-color:
-
-#544C64;
-
-}
-
-.card-sub{
-
-margin-top:8px;
-
-font-size:14px;
-
-color:
-
-#726B80;
-
-}
-
-/* TAB */
-
-.tab{
-
-position:fixed;
-
-left:20px;
-
-right:20px;
-
-bottom:22px;
-
-height:78px;
-
-border-radius:32px;
 
 background:
 
@@ -186,25 +161,87 @@ rgba(
 .18
 );
 
+}
+
+.role img{
+
+width:56px;
+
+height:56px;
+
+border-radius:50%;
+
+object-fit:cover;
+
+}
+
+.role-info{
+
+margin-left:14px;
+
+}
+
+.role-name{
+
+font-size:18px;
+
+color:
+
+#4A4257;
+
+}
+
+.role-gender{
+
+margin-top:6px;
+
+font-size:14px;
+
+color:
+
+#7A7288;
+
+}
+
+/* 底栏 */
+
+.tab{
+
+position:fixed;
+
+bottom:20px;
+
+left:20px;
+
+right:20px;
+
+height:80px;
+
+border-radius:34px;
+
+background:
+
+rgba(
+255,
+255,
+255,
+.2
+);
+
 backdrop-filter:
 
 blur(40px);
 
 display:flex;
 
-justify-content:space-around;
+justify-content:
+space-around;
 
 align-items:center;
 
 }
 
-.tab-btn{
-
-display:flex;
-
-flex-direction:column;
-
-align-items:center;
+.item{
 
 border:none;
 
@@ -214,31 +251,129 @@ color:
 
 #746A85;
 
-font-size:13px;
-
 }
 
 .active{
 
 color:
 
-#52486A;
+#4A4257;
 
-font-weight:600;
-
-}
-
-.icon{
-
-font-size:22px;
-
-margin-bottom:6px;
+font-weight:700;
 
 }
 
-.hide{
+/* 弹窗 */
+
+.modal{
+
+position:fixed;
+
+inset:0;
 
 display:none;
+
+justify-content:center;
+
+align-items:center;
+
+background:
+
+rgba(
+0,
+0,
+0,
+.2
+);
+
+}
+
+.form{
+
+width:88%;
+
+max-height:80vh;
+
+overflow:auto;
+
+padding:24px;
+
+border-radius:34px;
+
+background:
+
+rgba(
+255,
+255,
+255,
+.75
+);
+
+}
+
+.input{
+
+width:100%;
+
+padding:16px;
+
+margin-top:12px;
+
+border:none;
+
+border-radius:18px;
+
+background:
+
+#FFFFFF;
+
+}
+
+.save{
+
+margin-top:18px;
+
+width:100%;
+
+padding:16px;
+
+border:none;
+
+border-radius:20px;
+
+background:
+
+#4A4257;
+
+color:white;
+
+}
+
+.preview{
+
+width:90px;
+
+height:90px;
+
+border-radius:50%;
+
+background:
+
+#EEE;
+
+margin:auto;
+
+overflow:hidden;
+
+}
+
+.preview img{
+
+width:100%;
+
+height:100%;
+
+object-fit:cover;
 
 }
 
@@ -249,6 +384,7 @@ display:none;
 <body>
 
 
+
 <div class="header">
 
 <div class="title">
@@ -257,109 +393,58 @@ Your Life
 
 </div>
 
-<div class="sub">
+<button
+class="add"
 
-继续你的故事
+onclick="openCreate()">
+
+＋
+
+</button>
 
 </div>
 
-</div>
 
+
+<div class="content">
 
 
 <div
-class="content">
+id="now"
 
+class="section show">
 
-<!-- 当下 -->
+<div class="empty">
 
-<div id="now">
-
-<div class="card">
-
-<div class="card-title">
-
-沈星河
-
-</div>
-
-<div class="card-sub">
-
-刚刚更新剧情
+还没有角色
 
 </div>
 
 </div>
 
 
-
-<div class="card">
-
-<div class="card-title">
-
-林放
-
-</div>
-
-<div class="card-sub">
-
-正在等待你的回复
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<!-- 状态 -->
 
 <div
 id="status"
 
-class="hide">
+class="section">
 
-<div class="card">
+<div class="empty">
 
-<div class="card-title">
-
-今天的动态
-
-</div>
-
-<div class="card-sub">
-
-这里以后做朋友圈
-
-</div>
+状态施工中
 
 </div>
 
 </div>
 
 
-
-<!-- 设置 -->
 
 <div
 id="setting"
 
-class="hide">
+class="section">
 
-<div class="card">
-
-<div class="card-title">
-
-我的设定
-
-</div>
-
-<div class="card-sub">
-
-昵称｜关系｜偏好
-
-</div>
+<div id="roles">
 
 </div>
 
@@ -369,56 +454,33 @@ class="hide">
 </div>
 
 
-
-
-<!-- 底部 -->
 
 <div class="tab">
 
 <button
-class="tab-btn active"
+class="item active"
 
-onclick="switchTab('now',this)">
-
-<div class="icon">
-
-💬
-
-</div>
+onclick="tab('now',this)">
 
 当下
 
 </button>
 
 
-
 <button
-class="tab-btn"
+class="item"
 
-onclick="switchTab('status',this)">
-
-<div class="icon">
-
-🫧
-
-</div>
+onclick="tab('status',this)">
 
 状态
 
 </button>
 
 
-
 <button
-class="tab-btn"
+class="item"
 
-onclick="switchTab('setting',this)">
-
-<div class="icon">
-
-⚙️
-
-</div>
+onclick="tab('setting',this)">
 
 设置
 
@@ -428,10 +490,276 @@ onclick="switchTab('setting',this)">
 
 
 
+<div
+class="modal"
+
+id="modal">
+
+<div class="form">
+
+
+<div class="preview">
+
+<img
+id="photo">
+
+</div>
+
+
+<input
+type="file"
+accept="image/*"
+
+onchange="upload(event)">
+
+
+
+<input
+class="input"
+
+id="name"
+
+placeholder="名字">
+
+
+<select
+class="input"
+
+id="gender">
+
+<option>
+
+男
+
+</option>
+
+<option>
+
+女
+
+</option>
+
+<option>
+
+其他
+
+</option>
+
+<option>
+
+自定义
+
+</option>
+
+</select>
+
+
+
+<textarea
+class="input"
+
+id="personality"
+
+placeholder="性格">
+
+</textarea>
+
+
+
+<textarea
+class="input"
+
+id="style"
+
+placeholder="说话风格">
+
+</textarea>
+
+
+
+<button
+class="save"
+
+onclick="saveRole()">
+
+创建角色
+
+</button>
+
+</div>
+
+</div>
+
+
+
 
 <script>
 
-function switchTab(
+let avatar=""
+
+
+function openCreate(){
+
+modal.style.display=
+"flex"
+
+}
+
+
+function upload(
+e
+){
+
+let f=
+
+e.target.files[0]
+
+if(!f)return
+
+
+avatar=
+
+URL.createObjectURL(
+f
+)
+
+photo.src=
+
+avatar
+
+}
+
+
+function saveRole(){
+
+let data={
+
+name:
+
+name.value,
+
+gender:
+
+gender.value,
+
+personality:
+
+personality.value,
+
+style:
+
+style.value,
+
+avatar
+
+}
+
+
+let all=
+
+JSON.parse(
+
+localStorage.getItem(
+"roles"
+)
+
+||
+
+"[]"
+
+)
+
+all.push(
+data
+)
+
+localStorage.setItem(
+
+"roles",
+
+JSON.stringify(
+all
+)
+
+)
+
+modal.style.display=
+"none"
+
+render()
+
+}
+
+
+
+function render(){
+
+roles.innerHTML=""
+
+
+let all=
+
+JSON.parse(
+
+localStorage.getItem(
+"roles"
+)
+
+||
+
+"[]"
+
+)
+
+
+all.forEach(
+
+r=>{
+
+roles.innerHTML+=`
+
+<div class="role">
+
+<img
+src="${
+r.avatar
+}">
+
+<div
+class="role-info">
+
+<div
+class="role-name">
+
+${
+r.name
+}
+
+</div>
+
+<div
+class="role-gender">
+
+${
+r.gender
+}
+
+</div>
+
+</div>
+
+</div>
+
+`
+
+}
+
+)
+
+}
+
+
+function tab(
 id,
 btn
 ){
@@ -439,15 +767,15 @@ btn
 document
 
 .querySelectorAll(
-".content > div"
+".section"
 )
 
 .forEach(
 
 v=>
 
-v.classList.add(
-"hide"
+v.classList.remove(
+"show"
 )
 
 )
@@ -458,15 +786,15 @@ document
 id
 )
 
-.classList.remove(
-"hide"
+.classList.add(
+"show"
 )
 
 
 document
 
 .querySelectorAll(
-".tab-btn"
+".item"
 )
 
 .forEach(
@@ -485,8 +813,10 @@ btn.classList.add(
 
 }
 
-</script>
 
+render()
+
+</script>
 
 </body>
 
