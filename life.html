@@ -973,6 +973,23 @@ return
 
 }
 
+function openStory(
+title
+){
+
+localStorage.setItem(
+
+"currentStory",
+
+title
+
+)
+
+window.location.href=
+
+"story.html"
+
+} 
 
 all.forEach(
 
@@ -980,7 +997,12 @@ s=>{
 
 storyList.innerHTML+=`
 
-<div class="story">
+<div
+class="story"
+
+onclick="openStory(
+'${s.title}'
+)">
 
 <div class="story-name">
 
