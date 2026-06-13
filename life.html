@@ -973,24 +973,6 @@ return
 
 }
 
-function openStory(
-index
-){
-
-localStorage.setItem(
-
-"currentStory",
-
-index
-
-)
-
-location.href=
-
-"./story.html"
-
-}
-
 all.forEach(
 
 (s,index)=>{
@@ -1024,6 +1006,24 @@ ${s.title}
 }
 
 )
+
+function openStory(
+index
+){
+
+localStorage.setItem(
+
+"currentStory",
+
+index
+
+)
+
+location.href=
+
+"./story.html"
+
+}
 
 function render(){
 
