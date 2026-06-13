@@ -3,7 +3,7 @@
 
   "short_name": "YaNie",
 
-  "start_url": "./index.html",
+  "start_url": "index.html?v=1",
 
   "scope": "./",
 
