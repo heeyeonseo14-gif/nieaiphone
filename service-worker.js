@@ -1,6 +1,6 @@
 self.addEventListener(
 "install",
-()=>{
+(event)=>{
 
 self.skipWaiting()
 
@@ -23,6 +23,7 @@ clients.claim()
 
 )
 
+/* 不缓存，但允许安装 */
 
 self.addEventListener(
 
@@ -30,18 +31,7 @@ self.addEventListener(
 
 (event)=>{
 
-event.respondWith(
-
-fetch(
-event.request,
-{
-cache:
-"no-store"
-}
-
-)
-
-)
+return
 
 }
 )
