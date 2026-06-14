@@ -242,6 +242,124 @@ margin-bottom:10px;
 
 }
 
+/* mini player */
+
+#miniPlayer{
+
+margin-top:26px;
+
+height:95px;
+
+overflow:hidden;
+
+padding:18px;
+
+display:flex;
+
+align-items:center;
+
+border-radius:42px;
+
+background:
+
+linear-gradient(
+
+135deg,
+
+rgba(255,255,255,.24),
+
+rgba(255,255,255,.08)
+
+);
+
+backdrop-filter:
+
+blur(60px)
+saturate(180%);
+
+-webkit-backdrop-filter:
+
+blur(60px);
+
+box-shadow:
+
+0 18px 60px
+rgba(255,255,255,.14),
+
+inset
+0 1px 1px
+rgba(255,255,255,.5);
+
+}
+
+
+.cover img{
+
+width:72px;
+
+height:72px;
+
+border-radius:26px;
+
+object-fit:cover;
+
+background:white;
+
+}
+
+
+.info{
+
+margin-left:18px;
+
+flex:1;
+
+}
+
+
+#song{
+
+font-size:22px;
+
+color:#403851;
+
+font-weight:700;
+
+}
+
+
+#artist{
+
+margin-top:8px;
+
+color:#6F6880;
+
+}
+
+
+.controls button{
+
+width:60px;
+
+height:60px;
+
+border:none;
+
+border-radius:50%;
+
+background:
+
+rgba(
+255,
+255,
+255,
+.35
+);
+
+font-size:24px;
+
+}
+
 /* Dock */
 
 .dock{
@@ -413,6 +531,45 @@ src=
 </div>
 
 
+<div id="miniPlayer">
+
+<div class="cover">
+
+<img
+id="coverImg"
+src="">
+
+</div>
+
+
+<div class="info">
+
+<div id="song">
+
+未播放
+
+</div>
+
+<div id="artist">
+
+Music
+
+</div>
+
+</div>
+
+
+<div class="controls">
+
+<button onclick="toggleMusic()">
+
+▶
+
+</button>
+
+</div>
+
+</div>
 
 <div class="dock">
 
@@ -457,6 +614,44 @@ src=
 
 </div>
 
+<script>
+
+/* 读取音乐 */
+
+let current=
+
+localStorage.getItem(
+"musicName"
+)
+
+
+if(
+current
+){
+
+document
+.getElementById(
+"song"
+)
+.innerText=
+
+current
+
+}
+
+
+
+/* 点播放器 */
+
+function toggleMusic(){
+
+location.href=
+
+"./music.html"
+
+}
+
+</script>
 
 
 </body>
