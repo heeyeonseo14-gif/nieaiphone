@@ -24,9 +24,9 @@ font-family:
 
 body{
 
-height:100vh;
-
 padding:22px;
+
+min-height:100vh;
 
 background:
 
@@ -45,7 +45,7 @@ font-size:34px;
 
 color:#4D4460;
 
-margin-bottom:24px;
+margin-bottom:22px;
 
 }
 
@@ -53,7 +53,7 @@ margin-bottom:24px;
 
 padding:22px;
 
-margin-bottom:18px;
+margin-bottom:16px;
 
 border-radius:32px;
 
@@ -87,7 +87,7 @@ align-items:center;
 
 border:none;
 
-padding:10px 18px;
+padding:12px 18px;
 
 border-radius:18px;
 
@@ -101,9 +101,7 @@ color:white;
 
 .player{
 
-margin-top:18px;
-
-display:none;
+margin-top:20px;
 
 }
 
@@ -118,6 +116,16 @@ width:100%;
 margin-bottom:12px;
 
 color:#4D4460;
+
+}
+
+.now{
+
+margin-top:18px;
+
+font-size:14px;
+
+color:#7A7288;
 
 }
 
@@ -150,7 +158,7 @@ Spotify
 <button
 class="btn"
 
-onclick="openSpotify()">
+onclick="spotify()">
 
 连接
 
@@ -175,7 +183,7 @@ onclick="openSpotify()">
 <button
 class="btn"
 
-onclick="openCloud()">
+onclick="netease()">
 
 连接
 
@@ -200,33 +208,44 @@ onclick="openCloud()">
 
 type="file"
 
-accept=".mp3,audio/*"
+accept="audio/*"
 
-onchange="uploadMusic(event)">
+onchange="upload(event)">
 
 
 
 <div
-class="player"
-
-id="player">
+class="player">
 
 <div
 class="name"
 
 id="musicName">
 
+未播放
+
 </div>
+
 
 <audio
+
 controls
 
-id="audio">
+id="audio"
 
-</audio>
+></audio>
+
+
+
+<div
+class="now">
+
+切换页面后继续播放
 
 </div>
 
+
+</div>
 
 </div>
 
@@ -234,7 +253,7 @@ id="audio">
 
 <script>
 
-function openSpotify(){
+function spotify(){
 
 window.open(
 
@@ -248,7 +267,7 @@ window.open(
 
 
 
-function openCloud(){
+function netease(){
 
 window.open(
 
@@ -262,7 +281,7 @@ window.open(
 
 
 
-function uploadMusic(
+function upload(
 e
 ){
 
@@ -275,20 +294,53 @@ if(
 )return
 
 
-musicName.innerText=
-
-file.name
-
-
-audio.src=
+let url=
 
 URL.createObjectURL(
 file
 )
 
-player.style.display=
 
-"block"
+audio.src=
+
+url
+
+
+musicName.innerText=
+
+file.name
+
+
+localStorage.setItem(
+
+"musicName",
+
+file.name
+
+)
+
+}
+
+
+window.onload=
+
+()=>{
+
+let name=
+
+localStorage.getItem(
+"musicName"
+)
+
+if(
+name
+){
+
+musicName.innerText=
+
+name
+
+}
 
 }
 
